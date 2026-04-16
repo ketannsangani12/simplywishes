@@ -1,4 +1,4 @@
-@extends('layouts.app', ['headerPartial' => 'partials.header-auth'])
+@extends('layouts.app')
 
 @section('title', 'Simply Wishes - Happy Stories')
 

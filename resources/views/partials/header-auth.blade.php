@@ -108,7 +108,7 @@
                 class="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 py-2">
                 <div class="hidden lg:block">
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="happy-stories.html">Happy Stories</a>
+                    href="{{ route('happy.stories') }}">Happy Stories</a>
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
                     href="{{ route('wishers.granters.donors') }}">Wishers, Granters &amp; Donors</a>
 
@@ -125,7 +125,7 @@
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
                     href="{{ route('wishes.active') }}">Active Wishes &amp; Donations</a>
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="happy-stories.html">Happy Stories</a>
+                    href="{{ route('happy.stories') }}">Happy Stories</a>
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover-bg-gray-800"
                     href="{{ route('wishers.granters.donors') }}">Wishers, Granters &amp; Donors</a>
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover-bg-gray-800"

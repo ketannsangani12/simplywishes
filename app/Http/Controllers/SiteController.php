@@ -21,6 +21,11 @@ class SiteController extends Controller
         return view('users.user.wishers-granters-donors');
     }
 
+    public function happyStories(): View
+    {
+        return view('users.user.happy-stories');
+    }
+
     public function privacyPolicy(): View
     {
         return view('users.user.privacy-policy');

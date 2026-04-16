@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 
 Route::get('/', [SiteController::class, 'home'])->name('home');
 Route::get('/about-us', [SiteController::class, 'aboutUs'])->name('about');
+Route::get('/happy-stories', [SiteController::class, 'happyStories'])->name('happy.stories');
 Route::get('/wishers-granters-donors', [SiteController::class, 'wishersGrantersDonors'])->name('wishers.granters.donors');
 Route::get('/privacy-policy', [SiteController::class, 'privacyPolicy'])->name('privacy.policy');
 Route::get('/terms-of-use', [SiteController::class, 'termsOfUse'])->name('terms.of.use');
