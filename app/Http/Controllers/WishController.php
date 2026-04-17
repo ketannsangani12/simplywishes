@@ -16,6 +16,33 @@ use Illuminate\View\View;
 
 class WishController extends Controller
 {
+    private function storeUploadedWishImage(\Illuminate\Http\UploadedFile $file): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
+        $filename = Str::uuid()->toString() . '.' . $extension;
+
+        $candidateDirectories = [
+            public_path('uploads/wishes'),
+            base_path('../public_html/uploads/wishes'),
+        ];
+
+        $uploadDirectory = null;
+        foreach ($candidateDirectories as $directory) {
+            $parentDirectory = dirname($directory);
+            if (is_dir($directory) || is_dir($parentDirectory)) {
+                $uploadDirectory = $directory;
+                break;
+            }
+        }
+
+        $uploadDirectory ??= public_path('uploads/wishes');
+
+        File::ensureDirectoryExists($uploadDirectory);
+        $file->move($uploadDirectory, $filename);
+
+        return 'uploads/wishes/' . $filename;
+    }
+
     public function create(): View
     {
         return view('users.user.create-wish');
@@ -58,12 +85,7 @@ class WishController extends Controller
 
         $primaryImage = null;
         if ($request->hasFile('wish_image_upload')) {
-            $file = $request->file('wish_image_upload');
-            $uploadDir = public_path('uploads/wishes');
-            File::ensureDirectoryExists($uploadDir);
-            $filename = Str::uuid()->toString() . '.' . $file->getClientOriginalExtension();
-            $file->move($uploadDir, $filename);
-            $primaryImage = 'uploads/wishes/' . $filename;
+            $primaryImage = $this->storeUploadedWishImage($request->file('wish_image_upload'));
         } elseif (!empty($validated['wish_image_default'])) {
             $defaultImage = $validated['wish_image_default'];
             if (filter_var($defaultImage, FILTER_VALIDATE_URL)) {
@@ -235,12 +257,7 @@ class WishController extends Controller
 
         $primaryImage = $wish->primary_image;
         if ($request->hasFile('wish_image_upload')) {
-            $file = $request->file('wish_image_upload');
-            $uploadDir = public_path('images/wishes-upload');
-            File::ensureDirectoryExists($uploadDir);
-            $filename = Str::uuid()->toString() . '.' . $file->getClientOriginalExtension();
-            $file->move($uploadDir, $filename);
-            $primaryImage = 'images/wishes-upload/' . $filename;
+            $primaryImage = $this->storeUploadedWishImage($request->file('wish_image_upload'));
         } elseif (!empty($validated['wish_image_default'])) {
             $defaultImage = $validated['wish_image_default'];
             if (filter_var($defaultImage, FILTER_VALIDATE_URL)) {

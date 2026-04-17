@@ -14,6 +14,33 @@ use Illuminate\View\View;
 
 class DonationController extends Controller
 {
+    private function storeUploadedDonationImage(\Illuminate\Http\UploadedFile $file): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
+        $filename = Str::uuid()->toString() . '.' . $extension;
+
+        $candidateDirectories = [
+            public_path('uploads/donations'),
+            base_path('../public_html/uploads/donations'),
+        ];
+
+        $uploadDirectory = null;
+        foreach ($candidateDirectories as $directory) {
+            $parentDirectory = dirname($directory);
+            if (is_dir($directory) || is_dir($parentDirectory)) {
+                $uploadDirectory = $directory;
+                break;
+            }
+        }
+
+        $uploadDirectory ??= public_path('uploads/donations');
+
+        File::ensureDirectoryExists($uploadDirectory);
+        $file->move($uploadDirectory, $filename);
+
+        return 'uploads/donations/' . $filename;
+    }
+
     public function create(): View
     {
         return view('users.user.create-donation');
@@ -85,12 +112,7 @@ class DonationController extends Controller
 
         $image = null;
         if ($request->hasFile('donation_image_upload')) {
-            $file = $request->file('donation_image_upload');
-            $uploadDir = public_path('uploads/donations');
-            File::ensureDirectoryExists($uploadDir);
-            $filename = Str::uuid()->toString() . '.' . $file->getClientOriginalExtension();
-            $file->move($uploadDir, $filename);
-            $image = 'uploads/donations/' . $filename;
+            $image = $this->storeUploadedDonationImage($request->file('donation_image_upload'));
         } elseif (!empty($validated['donation_image_default'])) {
             $defaultImage = $validated['donation_image_default'];
             if (filter_var($defaultImage, FILTER_VALIDATE_URL)) {
