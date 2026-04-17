@@ -91,13 +91,25 @@
                 <input type="hidden" name="donation_image_default" id="donation-image-default" />
                 @php
                   $defaultDonationImages = [];
-                  $defaultDonationDir = public_path('images/wishes-default');
-                  if (is_dir($defaultDonationDir)) {
+                  $candidateDirectories = [
+                      public_path('images/wishes-default'),
+                      base_path('../public_html/images/wishes-default'),
+                  ];
+
+                  foreach ($candidateDirectories as $defaultDonationDir) {
+                      if (!is_dir($defaultDonationDir)) {
+                          continue;
+                      }
+
                       foreach (\Illuminate\Support\Facades\File::files($defaultDonationDir) as $file) {
                           $ext = strtolower($file->getExtension());
                           if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
                               $defaultDonationImages[] = 'images/wishes-default/' . $file->getFilename();
                           }
+                      }
+
+                      if ($defaultDonationImages !== []) {
+                          break;
                       }
                   }
                 @endphp
@@ -113,7 +125,7 @@
                     </button>
                   @empty
                     <div class="col-span-full text-sm text-text-muted-light dark:text-text-muted-dark px-2 py-3">
-                      No default images found in `public/images/wishes-default`.
+                      No default images found in the wishes default image directory.
                     </div>
                   @endforelse
                 </div>

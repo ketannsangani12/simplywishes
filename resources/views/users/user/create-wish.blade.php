@@ -105,13 +105,25 @@
                 <input type="hidden" name="wish_image_default" id="wish-image-default" value="{{ old('wish_image_default', $wish->primary_image ?? '') }}" />
                 @php
                   $defaultWishImages = [];
-                  $defaultWishDir = public_path('images/wishes-default');
-                  if (is_dir($defaultWishDir)) {
+                  $candidateDirectories = [
+                      public_path('images/wishes-default'),
+                      base_path('../public_html/images/wishes-default'),
+                  ];
+
+                  foreach ($candidateDirectories as $defaultWishDir) {
+                      if (!is_dir($defaultWishDir)) {
+                          continue;
+                      }
+
                       foreach (\Illuminate\Support\Facades\File::files($defaultWishDir) as $file) {
                           $ext = strtolower($file->getExtension());
                           if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
                               $defaultWishImages[] = 'images/wishes-default/' . $file->getFilename();
                           }
+                      }
+
+                      if ($defaultWishImages !== []) {
+                          break;
                       }
                   }
                 @endphp
@@ -127,7 +139,7 @@
                     </button>
                   @empty
                     <div class="col-span-full text-sm text-text-muted-light dark:text-text-muted-dark px-2 py-3">
-                      No default images found in `public/images/wishes-default`.
+                      No default images found in the wishes default image directory.
                     </div>
                   @endforelse
                 </div>
