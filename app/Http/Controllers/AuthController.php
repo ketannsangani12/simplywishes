@@ -10,9 +10,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Laravel\Socialite\Facades\Socialite;
@@ -75,6 +75,7 @@ class AuthController extends Controller
             'city' => ['required', 'integer', 'exists:cities,id'],
             'password' => ['required', 'min:6'],
             'confirm' => ['required', 'same:password'],
+            'avatar' => ['nullable', 'image', 'max:5120'],
         ]);
 
         $country = Country::find($validated['country']);
@@ -83,10 +84,29 @@ class AuthController extends Controller
 
         $profileImage = null;
         if ($request->hasFile('avatar')) {
-            $extension = $request->file('avatar')->getClientOriginalExtension();
-            $fileName = Str::uuid()->toString() . ($extension ? '.' . $extension : '');
-            $path = $request->file('avatar')->storePubliclyAs('users', $fileName, 's3');
-            $profileImage = Storage::disk('s3')->url($path);
+            $extension = strtolower($request->file('avatar')->getClientOriginalExtension() ?: $request->file('avatar')->extension() ?: 'jpg');
+            $fileName = Str::uuid()->toString() . '.' . $extension;
+
+            $candidateDirectories = [
+                public_path('uploads/users'),
+                base_path('../public_html/uploads/users'),
+            ];
+
+            $uploadDirectory = null;
+            foreach ($candidateDirectories as $directory) {
+                $parentDirectory = dirname($directory);
+                if (is_dir($directory) || is_dir($parentDirectory)) {
+                    $uploadDirectory = $directory;
+                    break;
+                }
+            }
+
+            $uploadDirectory ??= public_path('uploads/users');
+
+            File::ensureDirectoryExists($uploadDirectory);
+            $request->file('avatar')->move($uploadDirectory, $fileName);
+
+            $profileImage = 'uploads/users/' . $fileName;
         } elseif ($request->filled('avatar-default')) {
             $profileImage = 'images/users-default/' . $request->input('avatar-default');
         }

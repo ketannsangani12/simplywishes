@@ -12,7 +12,7 @@
               donating, and sharing stories.</p>
           </div>
           <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 sm:p-8">
-            <form class="space-y-6" method="post" action="{{ route('signup.submit') }}" id="signup-form" novalidate>
+            <form class="space-y-6" method="post" action="{{ route('signup.submit') }}" id="signup-form" novalidate enctype="multipart/form-data">
               @csrf
               @if ($errors->any())
                 <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
