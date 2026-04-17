@@ -147,8 +147,24 @@
                   below</p>
                 <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
                   @php
-                    $defaultImages = glob(public_path('images/users-default/*'));
-                    sort($defaultImages);
+                    $defaultImages = [];
+                    $candidateDirectories = [
+                      public_path('images/users-default'),
+                      base_path('../public_html/images/users-default'),
+                    ];
+
+                    foreach ($candidateDirectories as $directory) {
+                      if (!is_dir($directory)) {
+                        continue;
+                      }
+
+                      $defaultImages = glob($directory . '/*') ?: [];
+
+                      if ($defaultImages !== []) {
+                        sort($defaultImages);
+                        break;
+                      }
+                    }
                   @endphp
                   @foreach ($defaultImages as $index => $path)
                     @php
