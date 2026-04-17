@@ -16,6 +16,12 @@ Route::get('/happy-stories', [SiteController::class, 'happyStories'])->name('hap
 Route::get('/wishers-granters-donors', [SiteController::class, 'wishersGrantersDonors'])->name('wishers.granters.donors');
 Route::get('/privacy-policy', [SiteController::class, 'privacyPolicy'])->name('privacy.policy');
 Route::get('/terms-of-use', [SiteController::class, 'termsOfUse'])->name('terms.of.use');
+Route::get('/inbox', [SiteController::class, 'inbox'])->name('inbox')->middleware('auth');
+Route::get('/forum', [SiteController::class, 'forum'])->name('forum')->middleware('auth');
+Route::get('/my-wishes', [SiteController::class, 'myWishes'])->name('my.wishes')->middleware('auth');
+Route::get('/happy-stories/create', [SiteController::class, 'addHappyStory'])->name('happy.stories.create')->middleware('auth');
+Route::get('/my-friends', [SiteController::class, 'myFriends'])->name('my.friends')->middleware('auth');
+Route::get('/my-profile', [SiteController::class, 'updateProfile'])->name('profile.edit')->middleware('auth');
 Route::get('/wishes/create', [WishController::class, 'create'])->name('wishes.create')->middleware('auth');
 Route::post('/wishes', [WishController::class, 'store'])->name('wishes.store')->middleware('auth');
 Route::get('/wishes/active', [WishController::class, 'active'])->name('wishes.active');

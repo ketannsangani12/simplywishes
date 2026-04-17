@@ -1,4 +1,14 @@
 <header class="sticky top-0 z-50 bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-sm shadow-sm">
+      @php
+        $authUser = auth()->user();
+        $userName = trim(($authUser->first_name ?? '') . ' ' . ($authUser->last_name ?? ''));
+        $userName = $userName !== '' ? $userName : ($authUser->name ?? 'User');
+        $userInitial = strtoupper(substr($userName, 0, 1));
+        $profileImage = $authUser?->profile_image;
+        $profileImageUrl = $profileImage
+          ? (filter_var($profileImage, FILTER_VALIDATE_URL) ? $profileImage : asset($profileImage))
+          : null;
+      @endphp
       <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-wrap items-center justify-between gap-4 py-4 lg:py-0 lg:h-20">
           <a aria-label="Simply Wishes homepage" class="flex items-center gap-3 min-w-[200px]" href="{{ route('home') }}">
@@ -34,29 +44,33 @@
             <details class="relative">
               <summary aria-label="User menu"
                 class="list-none flex items-center gap-3 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue-light to-primary flex items-center justify-center text-white font-semibold">
-                  K
-                </div>
+                @if ($profileImageUrl)
+                  <img src="{{ $profileImageUrl }}" alt="{{ $userName }}" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                @else
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue-light to-primary flex items-center justify-center text-white font-semibold">
+                    {{ $userInitial }}
+                  </div>
+                @endif
                 <div class="flex items-center gap-2 text-left">
-                  <p class="text-sm font-semibold text-text-light dark:text-text-dark">Hi, Ketan</p>
+                  <p class="text-sm font-semibold text-text-light dark:text-text-dark">Hi, {{ $userName }}</p>
                   <span class="material-symbols-outlined text-base text-text-muted-light dark:text-text-muted-dark">arrow_drop_down</span>
                 </div>
               </summary>
               <div
                 class="absolute right-0 mt-2 w-72 rounded-xl shadow-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700 overflow-hidden">
                 <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-text-light dark:text-text-dark font-semibold"
-                  href="inbox.html">
+                  href="{{ route('inbox') }}">
                   <span class="material-symbols-outlined text-brand-blue-light">inbox</span>
                   <span class="flex-1">Inbox</span>
                   <span class="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold px-2">4</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-text-light dark:text-text-dark font-semibold"
-                  href="forum.html">
+                  href="{{ route('forum') }}">
                   <span class="material-symbols-outlined text-brand-blue-light">forum</span>
                   <span class="flex-1">Forum</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-text-light dark:text-text-dark font-semibold"
-                  href="my-wishes.html">
+                  href="{{ route('my.wishes') }}">
                   <span class="material-symbols-outlined text-emerald-500">favorite</span>
                   <span class="flex-1">My Wishes &amp; Donations</span>
                 </a>
@@ -71,22 +85,22 @@
                   <span class="flex-1">My Donation Drafts</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-text-light dark:text-text-dark font-semibold"
-                  href="add-happy-story.html">
+                  href="{{ route('happy.stories.create') }}">
                   <span class="material-symbols-outlined text-brand-blue-light">history_edu</span>
                   <span class="flex-1">Tell your story</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-text-light dark:text-text-dark font-semibold"
-                  href="#">
+                  href="{{ route('happy.stories') }}">
                   <span class="material-symbols-outlined text-brand-blue-light">auto_stories</span>
                   <span class="flex-1">My happy stories</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-text-light dark:text-text-dark font-semibold"
-                  href="my-friends.html">
+                  href="{{ route('my.friends') }}">
                   <span class="material-symbols-outlined text-brand-blue-light">people</span>
                   <span class="flex-1">Friends</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-text-light dark:text-text-dark font-semibold"
-                  href="my-profile.html">
+                  href="{{ route('profile.edit') }}">
                   <span class="material-symbols-outlined text-brand-blue-light">account_circle</span>
                   <span class="flex-1">My Profile</span>
                 </a>

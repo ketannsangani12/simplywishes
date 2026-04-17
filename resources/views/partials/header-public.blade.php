@@ -58,9 +58,9 @@
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
                     href="{{ route('wishes.create') }}">Make a Wish</a>
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                  href="create-donation.html">Donate an item</a>
+                  href="{{ route('donations.create') }}">Donate an item</a>
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="active-wishes.html">Active Wishes &amp; Donations</a>
+                    href="{{ route('wishes.active') }}">Active Wishes &amp; Donations</a>
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
                     href="{{ route('happy.stories') }}">Happy Stories</a>
                   <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
