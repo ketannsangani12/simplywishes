@@ -35,6 +35,8 @@ Route::delete('/activities', [ActivityController::class, 'destroy'])->name('acti
 Route::get('/donations/create', [DonationController::class, 'create'])->name('donations.create')->middleware('auth');
 Route::post('/donations', [DonationController::class, 'store'])->name('donations.store')->middleware('auth');
 Route::get('/donations/drafts', [DonationController::class, 'drafts'])->name('donations.drafts')->middleware('auth');
+Route::get('/donations/{donation}/edit', [DonationController::class, 'edit'])->name('donations.edit')->middleware('auth');
+Route::put('/donations/{donation}', [DonationController::class, 'update'])->name('donations.update')->middleware('auth');
 Route::get('/donations/{donation}', [DonationController::class, 'show'])->name('donations.show')->middleware('auth');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

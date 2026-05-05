@@ -42,13 +42,13 @@
                       <span>Updated {{ $updated }}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                      <button class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-brand-blue-light hover:border-primary hover:text-primary transition-colors" type="button">
+                      <a class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-brand-blue-light hover:border-primary hover:text-primary transition-colors" href="{{ route('donations.show', $donation->id) }}">
                         <span class="material-symbols-outlined text-base">visibility</span>
                         Preview
-                      </button>
-                      <button class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" type="button">
+                      </a>
+                      <a class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('donations.edit', $donation->id) }}">
                         <span class="material-symbols-outlined text-base">edit</span>
-                      </button>
+                      </a>
                       <button class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors" type="button">
                         <span class="material-symbols-outlined text-base">delete</span>
                       </button>

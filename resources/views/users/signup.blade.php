@@ -210,6 +210,7 @@
         const lastNameInput = document.getElementById('last-name');
         const passwordInput = document.getElementById('password');
         const confirmInput = document.getElementById('confirm');
+        const passwordToggleButtons = document.querySelectorAll('[data-toggle-password]');
         const statesUrlTemplate = countrySelect.dataset.statesUrl;
         const citiesUrlTemplate = stateSelect.dataset.citiesUrl;
 
@@ -341,6 +342,25 @@
 
         [countrySelect, stateSelect, citySelect].forEach((field) => {
           field.addEventListener('change', () => validateSelect(field, 'Please make a selection.'));
+        });
+
+        passwordToggleButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const input = document.getElementById(button.dataset.togglePassword);
+            if (!input) {
+              return;
+            }
+
+            const icon = button.querySelector('[data-icon]');
+            const isPasswordVisible = input.type === 'text';
+
+            input.type = isPasswordVisible ? 'password' : 'text';
+            button.setAttribute('aria-label', isPasswordVisible ? 'Show password' : 'Hide password');
+
+            if (icon) {
+              icon.textContent = isPasswordVisible ? 'visibility' : 'visibility_off';
+            }
+          });
         });
 
         form.addEventListener('submit', (event) => {

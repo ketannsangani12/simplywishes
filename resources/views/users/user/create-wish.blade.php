@@ -199,7 +199,7 @@
                       <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="cost">Expected Cost (USD) <span class="text-red-500">*</span></label>
                       <div class="relative">
                         <span class="absolute left-3 top-3 text-text-muted-light">$</span>
-                        <input id="cost" name="expected_cost" type="number" min="0" step="1" placeholder="250"
+                        <input id="cost" name="expected_cost" type="number" min="0" step="1" placeholder="0.00"
                           value="{{ old('expected_cost', $wish->expected_cost ?? '') }}"
                           class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark pl-8 focus:ring-2 focus:ring-primary/60 focus:border-primary" />
                       </div>

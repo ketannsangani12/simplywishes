@@ -25,11 +25,26 @@
                 </div>
               </div>
             @endif
-            <form class="p-6 sm:p-8 space-y-8" id="donation-form" action="{{ route('donations.store') }}" method="POST" enctype="multipart/form-data" novalidate>
+            @php
+              $isEdit = isset($donation);
+              $fundingValue = old('donation_funding');
+              if (!$fundingValue && isset($donation)) {
+                if ((int) $donation->non_pay_option === 1) {
+                  $fundingValue = 'no';
+                } elseif (!empty($donation->financial_assistance)) {
+                  $fundingValue = 'yes';
+                }
+              }
+            @endphp
+            <form class="p-6 sm:p-8 space-y-8" id="donation-form" action="{{ $isEdit ? route('donations.update', $donation->id) : route('donations.store') }}" method="POST" enctype="multipart/form-data" novalidate>
               @csrf
+              @if($isEdit)
+                @method('PUT')
+              @endif
               <div class="space-y-2">
                 <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="donation-title">Donation Title <span class="text-red-500">*</span></label>
                 <input id="donation-title" name="donation_title" type="text" placeholder="Give your donation a clear title"
+                  value="{{ old('donation_title', $donation->title ?? '') }}"
                   class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-2 focus:ring-primary/60 focus:border-primary" />
                 <p class="text-sm text-red-600 hidden" data-error-for="donation-title">Donation title is required.</p>
               </div>
@@ -52,7 +67,7 @@
                     <button class="p-2 rounded hover:bg-white dark:hover:bg-surface-dark" type="button"><span class="material-icons">help_outline</span></button>
                   </div>
                   <textarea id="donation-description" name="donation_description" rows="6" placeholder="Describe the donation, how and when you can provide it, and any requirements for pickup or delivery."
-                    class="w-full border-0 rounded-b-xl bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-0 resize-y"></textarea>
+                    class="w-full border-0 rounded-b-xl bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-0 resize-y">{{ old('donation_description', $donation->description ?? '') }}</textarea>
                 </div>
               </div>
 
@@ -88,7 +103,7 @@
                     </div>
                   </div>
                 </div>
-                <input type="hidden" name="donation_image_default" id="donation-image-default" />
+                <input type="hidden" name="donation_image_default" id="donation-image-default" value="{{ old('donation_image_default', $donation->image ?? '') }}" />
                 @php
                   $defaultDonationImages = [];
                   $candidateDirectories = [
@@ -135,11 +150,11 @@
                 <p class="block text-sm font-semibold text-text-light dark:text-text-dark">Does your Donation require direct funding? <span class="text-red-500">*</span></p>
                 <div class="flex items-center gap-6 text-sm">
                   <label class="inline-flex items-center gap-2">
-                    <input class="text-primary focus:ring-primary" id="donation-funding-yes" name="donation_funding" type="radio" value="yes" />
+                    <input class="text-primary focus:ring-primary" id="donation-funding-yes" name="donation_funding" type="radio" value="yes" @checked($fundingValue === 'yes') />
                     <span>Yes (Financial)</span>
                   </label>
                   <label class="inline-flex items-center gap-2">
-                    <input class="text-primary focus:ring-primary" id="donation-funding-no" name="donation_funding" type="radio" value="no" />
+                    <input class="text-primary focus:ring-primary" id="donation-funding-no" name="donation_funding" type="radio" value="no" @checked($fundingValue === 'no') />
                     <span>No (Non-Financial)</span>
                   </label>
                 </div>
@@ -150,13 +165,13 @@
                 <div class="space-y-2">
                   <p class="text-sm font-semibold text-text-light dark:text-text-dark">How would you like to give the financial assistance? <span class="text-red-500">*</span></p>
                   <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2 text-sm">
-                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="paypal" /> Paypal</label>
-                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="venmo" /> Venmo</label>
-                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="cashapp" /> CashApp</label>
-                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="google_apple_pay" /> Google/Apple Pay</label>
-                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="gofundme" /> GoFundMe</label>
-                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="zelle" /> Zelle</label>
-                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="other" /> Other</label>
+                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="paypal" @checked(old('donation_payment', $donation->financial_assistance ?? '') === 'paypal') /> Paypal</label>
+                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="venmo" @checked(old('donation_payment', $donation->financial_assistance ?? '') === 'venmo') /> Venmo</label>
+                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="cashapp" @checked(old('donation_payment', $donation->financial_assistance ?? '') === 'cashapp') /> CashApp</label>
+                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="google_apple_pay" @checked(old('donation_payment', $donation->financial_assistance ?? '') === 'google_apple_pay') /> Google/Apple Pay</label>
+                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="gofundme" @checked(old('donation_payment', $donation->financial_assistance ?? '') === 'gofundme') /> GoFundMe</label>
+                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="zelle" @checked(old('donation_payment', $donation->financial_assistance ?? '') === 'zelle') /> Zelle</label>
+                    <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_payment" type="radio" value="other" @checked(old('donation_payment', $donation->financial_assistance ?? '') === 'other') /> Other</label>
                   </div>
                   <p class="text-sm text-red-600 hidden" data-error-for="donation-payment">Please choose a financial assistance method.</p>
                 </div>
@@ -164,7 +179,8 @@
                   <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="donation-cost">Expected Cost (USD) <span class="text-red-500">*</span></label>
                   <div class="relative">
                     <span class="absolute left-3 top-3 text-text-muted-light">$</span>
-                    <input id="donation-cost" name="expected_cost" type="number" min="0" step="1" placeholder="250"
+                    <input id="donation-cost" name="expected_cost" type="number" min="0" step="1" placeholder="0.00"
+                      value="{{ old('expected_cost', $donation->expected_cost ?? '') }}"
                       class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark pl-8 focus:ring-2 focus:ring-primary/60 focus:border-primary" />
                   </div>
                   <p class="text-sm text-red-600 hidden" data-error-for="donation-cost">Expected cost is required.</p>
@@ -174,22 +190,22 @@
               <div class="rounded-xl border border-border-light dark:border-border-dark bg-slate-50/80 dark:bg-surface-dark/60 p-6 space-y-4 hidden" id="donation-method-block">
                 <p class="text-sm font-semibold text-text-light dark:text-text-dark">How would you like to give this Donation? <span class="text-red-500">*</span></p>
                 <div class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                  <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_method" type="radio" value="online_order" /> Online order</label>
-                  <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_method" type="radio" value="drop_off_pickup" /> Drop-off/Pick up Location</label>
-                  <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_method" type="radio" value="mail" /> Send in the mail</label>
-                  <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_method" type="radio" value="other" /> Other</label>
+                  <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_method" type="radio" value="online_order" @checked(old('donation_method', $donation->way_of_donation ?? '') === 'online_order') /> Online order</label>
+                  <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_method" type="radio" value="drop_off_pickup" @checked(old('donation_method', $donation->way_of_donation ?? '') === 'drop_off_pickup') /> Drop-off/Pick up Location</label>
+                  <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_method" type="radio" value="mail" @checked(old('donation_method', $donation->way_of_donation ?? '') === 'mail') /> Send in the mail</label>
+                  <label class="inline-flex items-center gap-2"><input class="text-primary focus:ring-primary" name="donation_method" type="radio" value="other" @checked(old('donation_method', $donation->way_of_donation ?? '') === 'other') /> Other</label>
                 </div>
                 <p class="text-sm text-red-600 hidden" data-error-for="donation-method">Please choose a donation method.</p>
                 <div class="space-y-2">
                   <label id="donation-method-label" class="block text-sm font-semibold text-text-light dark:text-text-dark" for="donation-notes">Add details for your selected method <span class="text-red-500">*</span></label>
                   <textarea id="donation-notes" name="donation_notes" rows="4" placeholder="Example: I can ship within 3 days, or meet within 5 miles of downtown."
-                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-2 focus:ring-primary/60 focus:border-primary resize-y"></textarea>
+                    class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-2 focus:ring-primary/60 focus:border-primary resize-y">{{ old('donation_notes', $donation->description_of_way ?? '') }}</textarea>
                 </div>
               </div>
 
               <div class="space-y-3">
                 <label class="inline-flex items-start gap-3 text-sm text-text-light dark:text-text-dark">
-                  <input id="donation-terms" name="donation_terms" class="mt-1 text-primary focus:ring-primary" type="checkbox" />
+                  <input id="donation-terms" name="donation_terms" class="mt-1 text-primary focus:ring-primary" type="checkbox" @checked(old('donation_terms', $donation->i_agree_decide ?? false)) />
                   <span>I understand that once the donation is accepted by a Wisher, I have 14 days to fulfill it. In offering this Donation, I agree to work with the Wisher to fulfill this Donation within 14 days, during which time this Donation will be marked as In Progress. After 14 days, it will be marked as Fulfilled. I will not be able to delete or update my donation once someone has accepted my offer. <span class="text-red-500">*</span></span>
                 </label>
                 <p class="text-sm text-red-600 hidden" data-error-for="donation-terms">Please acknowledge you accept this condition.</p>

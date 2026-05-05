@@ -30,5 +30,6 @@ class Donation extends Model
         'status',
         'donation_email_status',
         'created_at',
+        'date_updated',
     ];
 }
