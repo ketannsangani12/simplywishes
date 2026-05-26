@@ -228,4 +228,17 @@ class DonationController extends Controller
             ->route('donations.drafts')
             ->with('status', $isDraft ? 'Your donation draft has been updated.' : 'Your donation has been published.');
     }
+
+    public function destroy(int $donation): RedirectResponse
+    {
+        $donation = Donation::where('id', $donation)
+            ->where('created_by', Auth::id())
+            ->firstOrFail();
+
+        $donation->delete();
+
+        return redirect()
+            ->route('donations.drafts')
+            ->with('status', 'Donation draft deleted.');
+    }
 }

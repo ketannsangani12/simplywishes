@@ -49,9 +49,13 @@
                       <a class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('donations.edit', $donation->id) }}">
                         <span class="material-symbols-outlined text-base">edit</span>
                       </a>
-                      <button class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors" type="button">
-                        <span class="material-symbols-outlined text-base">delete</span>
-                      </button>
+                      <form action="{{ route('donations.destroy', $donation->id) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors" type="submit" onclick="return confirm('Delete this draft?');">
+                          <span class="material-symbols-outlined text-base">delete</span>
+                        </button>
+                      </form>
                     </div>
                   </div>
                 </article>
