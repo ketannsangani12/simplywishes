@@ -143,6 +143,10 @@
                   <span>Choose an image from your files</span>
                   <input class="hidden" type="file" name="avatar" accept="image/*" />
                 </label>
+                <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Upload a JPG, PNG, WEBP, or GIF image up to 10 MB.</p>
+                @error('avatar')
+                  <p class="text-sm text-red-600">{{ $message }}</p>
+                @enderror
                 <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Or, choose one of the default images
                   below</p>
                 <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">

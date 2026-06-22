@@ -75,7 +75,7 @@ class AuthController extends Controller
             'city' => ['required', 'integer', 'exists:cities,id'],
             'password' => ['required', 'min:6'],
             'confirm' => ['required', 'same:password'],
-            'avatar' => ['nullable', 'image', 'max:5120'],
+            'avatar' => ['nullable', 'image', 'max:10240'],
         ]);
 
         $country = Country::find($validated['country']);

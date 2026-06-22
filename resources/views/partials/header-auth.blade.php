@@ -28,7 +28,7 @@
             <span class="text-2xl font-bold font-display text-brand-blue-light dark:text-brand-blue-dark">Simply<span
                 class="text-primary">Wishes</span></span>
           </a>
-          <div class="hidden lg:flex items-center space-x-8">
+          <div class="hidden lg:flex items-center space-x-5 xl:space-x-8">
             <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
               href="{{ route('home') }}">Home</a>
             <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
@@ -43,7 +43,7 @@
           <div class="flex items-center gap-3 lg:gap-4 ml-auto">
             <details class="relative">
               <summary aria-label="User menu"
-                class="list-none flex items-center gap-3 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800">
+                class="list-none flex items-center gap-3 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 max-w-[220px] xl:max-w-[260px]">
                 @if ($profileImageUrl)
                   <img src="{{ $profileImageUrl }}" alt="{{ $userName }}" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
                 @else
@@ -51,8 +51,8 @@
                     {{ $userInitial }}
                   </div>
                 @endif
-                <div class="flex items-center gap-2 text-left">
-                  <p class="text-sm font-semibold text-text-light dark:text-text-dark">Hi, {{ $userName }}</p>
+                <div class="flex items-center gap-2 text-left min-w-0">
+                  <p class="text-sm font-semibold text-text-light dark:text-text-dark truncate">Hi, {{ $userName }}</p>
                   <span class="material-symbols-outlined text-base text-text-muted-light dark:text-text-muted-dark">arrow_drop_down</span>
                 </div>
               </summary>
@@ -113,38 +113,27 @@
                 </form>
               </div>
             </details>
-            <details class="relative">
+            <details class="relative lg:hidden">
               <summary aria-label="Open menu"
                 class="list-none p-2 rounded-md text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
                 <span class="material-symbols-outlined">menu</span>
               </summary>
               <div
                 class="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 py-2">
-                <div class="hidden lg:block">
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="{{ route('happy.stories') }}">Happy Stories</a>
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="{{ route('wishers.granters.donors') }}">Wishers, Granters &amp; Donors</a>
-
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="{{ route('about') }}">About Us</a>
-                </div>
-                <div class="lg:hidden">
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="{{ route('home') }}">Home</a>
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="{{ route('wishes.create') }}">Make a Wish</a>
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="{{ route('donations.create') }}">Donate an item</a>
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="{{ route('wishes.active') }}">Active Wishes &amp; Donations</a>
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
-                    href="{{ route('happy.stories') }}">Happy Stories</a>
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover-bg-gray-800"
-                    href="{{ route('wishers.granters.donors') }}">Wishers, Granters &amp; Donors</a>
-                  <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover-bg-gray-800"
-                    href="{{ route('about') }}">About Us</a>
-                </div>
+                <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+                  href="{{ route('home') }}">Home</a>
+                <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+                  href="{{ route('wishes.create') }}">Make a Wish</a>
+                <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+                  href="{{ route('donations.create') }}">Donate an item</a>
+                <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+                  href="{{ route('wishes.active') }}">Active Wishes &amp; Donations</a>
+                <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+                  href="{{ route('happy.stories') }}">Happy Stories</a>
+                <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+                  href="{{ route('wishers.granters.donors') }}">Wishers, Granters &amp; Donors</a>
+                <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+                  href="{{ route('about') }}">About Us</a>
               </div>
             </details>
           </div>

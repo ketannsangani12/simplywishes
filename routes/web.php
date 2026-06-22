@@ -29,6 +29,14 @@ Route::get('/wishes/drafts', [WishController::class, 'drafts'])->name('wishes.dr
 Route::get('/wishes/{wish}/edit', [WishController::class, 'edit'])->name('wishes.edit')->middleware('auth');
 Route::put('/wishes/{wish}', [WishController::class, 'update'])->name('wishes.update')->middleware('auth');
 Route::delete('/wishes/{wish}', [WishController::class, 'destroy'])->name('wishes.destroy')->middleware('auth');
+Route::post('/wishes/{wish}/grant', [WishController::class, 'grant'])->name('wishes.grant')->middleware('auth');
+Route::post('/wishes/{wish}/fulfill', [WishController::class, 'fulfill'])->name('wishes.fulfill')->middleware('auth');
+Route::post('/wishes/{wish}/report', [WishController::class, 'report'])->name('wishes.report')->middleware('auth');
+Route::post('/wishes/{wish}/comments', [WishController::class, 'storeComment'])->name('wishes.comments.store')->middleware('auth');
+Route::put('/wishes/{wish}/comments/{comment}', [WishController::class, 'updateComment'])->name('wishes.comments.update')->middleware('auth');
+Route::delete('/wishes/{wish}/comments/{comment}', [WishController::class, 'destroyComment'])->name('wishes.comments.destroy')->middleware('auth');
+Route::post('/wishes/{wish}/comments/{comment}/like', [WishController::class, 'toggleCommentLike'])->name('wishes.comments.like')->middleware('auth');
+Route::post('/wishes/{wish}/comments/{comment}/report', [WishController::class, 'reportComment'])->name('wishes.comments.report')->middleware('auth');
 Route::get('/wishes/{wish}', [WishController::class, 'show'])->name('wishes.show')->middleware('auth');
 Route::post('/activities', [ActivityController::class, 'store'])->name('activities.store')->middleware('auth');
 Route::delete('/activities', [ActivityController::class, 'destroy'])->name('activities.destroy')->middleware('auth');
@@ -38,6 +46,14 @@ Route::get('/donations/drafts', [DonationController::class, 'drafts'])->name('do
 Route::get('/donations/{donation}/edit', [DonationController::class, 'edit'])->name('donations.edit')->middleware('auth');
 Route::put('/donations/{donation}', [DonationController::class, 'update'])->name('donations.update')->middleware('auth');
 Route::delete('/donations/{donation}', [DonationController::class, 'destroy'])->name('donations.destroy')->middleware('auth');
+Route::post('/donations/{donation}/accept', [DonationController::class, 'accept'])->name('donations.accept')->middleware('auth');
+Route::post('/donations/{donation}/complete', [DonationController::class, 'complete'])->name('donations.complete')->middleware('auth');
+Route::post('/donations/{donation}/report', [DonationController::class, 'report'])->name('donations.report')->middleware('auth');
+Route::post('/donations/{donation}/comments', [DonationController::class, 'storeComment'])->name('donations.comments.store')->middleware('auth');
+Route::put('/donations/{donation}/comments/{comment}', [DonationController::class, 'updateComment'])->name('donations.comments.update')->middleware('auth');
+Route::delete('/donations/{donation}/comments/{comment}', [DonationController::class, 'destroyComment'])->name('donations.comments.destroy')->middleware('auth');
+Route::post('/donations/{donation}/comments/{comment}/like', [DonationController::class, 'toggleCommentLike'])->name('donations.comments.like')->middleware('auth');
+Route::post('/donations/{donation}/comments/{comment}/report', [DonationController::class, 'reportComment'])->name('donations.comments.report')->middleware('auth');
 Route::get('/donations/{donation}', [DonationController::class, 'show'])->name('donations.show')->middleware('auth');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

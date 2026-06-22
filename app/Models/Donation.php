@@ -11,6 +11,10 @@ class Donation extends Model
 
     protected $fillable = [
         'created_by',
+        'accepted_by',
+        'accepted_at',
+        'completed_by',
+        'completed_at',
         'title',
         'summary_title',
         'description',

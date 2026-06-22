@@ -12,6 +12,8 @@ class Wish extends Model
 
     protected $fillable = [
         'wished_by',
+        'granted_by',
+        'granted_date',
         'wish_title',
         'summary_title',
         'wish_description',
@@ -29,6 +31,10 @@ class Wish extends Model
         'i_agree_decide2',
         'wish_status',
         'process_status',
+        'process_granted_by',
+        'process_granted_date',
+        'fulfilled_by',
+        'fulfilled_date',
         'wish_progress_status',
         'created_at',
         'wish_email_status',

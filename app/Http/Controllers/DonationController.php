@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Mail\DonationCreated;
 use App\Models\Donation;
+use App\Models\DonationComment;
+use App\Models\DonationCommentLike;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
@@ -50,6 +54,7 @@ class DonationController extends Controller
     {
         $donation = Donation::where('id', $donation)
             ->where('created_by', Auth::id())
+            ->whereIn('status', [0, 1])
             ->firstOrFail();
 
         return view('users.user.create-donation', compact('donation'));
@@ -67,13 +72,44 @@ class DonationController extends Controller
 
     public function show(int $donation): View
     {
+        $userId = Auth::id();
         $donation = Donation::where('id', $donation)
-            ->where('created_by', Auth::id())
+            ->where(function ($query) {
+                $query->where('created_by', Auth::id())
+                    ->orWhereIn('status', [1, 2, 3]);
+            })
             ->firstOrFail();
 
-        $creator = \App\Models\User::where('id', $donation->created_by)->first();
+        $creator = User::where('id', $donation->created_by)->first();
+        $acceptedBy = $donation->accepted_by ? User::where('id', $donation->accepted_by)->first() : null;
+        $reportedCommentIds = DB::table('reports')
+            ->where('reporter_id', $userId)
+            ->where('reportable_type', 'comment')
+            ->pluck('reportable_id')
+            ->all();
+        $reportedCommentUserIds = DB::table('reports')
+            ->where('reporter_id', $userId)
+            ->where('reportable_type', 'comment')
+            ->whereNotNull('reported_user_id')
+            ->pluck('reported_user_id')
+            ->unique()
+            ->all();
+        $comments = DonationComment::with([
+                'user',
+                'replies' => fn ($query) => $query
+                    ->when($reportedCommentIds !== [], fn ($replyQuery) => $replyQuery->whereNotIn('id', $reportedCommentIds))
+                    ->when($reportedCommentUserIds !== [], fn ($replyQuery) => $replyQuery->whereNotIn('user_id', $reportedCommentUserIds))
+                    ->with('user')
+                    ->withCount('likes'),
+            ])
+            ->withCount('likes')
+            ->where('donation_id', $donation->id)
+            ->whereNull('parent_id')
+            ->when($reportedCommentIds !== [], fn ($query) => $query->whereNotIn('id', $reportedCommentIds))
+            ->when($reportedCommentUserIds !== [], fn ($query) => $query->whereNotIn('user_id', $reportedCommentUserIds))
+            ->latest()
+            ->get();
 
-        $userId = Auth::id();
         $favDonationIds = \App\Models\Activity::where('user_id', $userId)
             ->where('type', 'fav')
             ->whereNotNull('donation_id')
@@ -84,8 +120,204 @@ class DonationController extends Controller
             ->whereNotNull('donation_id')
             ->pluck('donation_id')
             ->all();
+        $hasReportedDonation = DB::table('reports')
+            ->where('reporter_id', $userId)
+            ->where('reportable_type', 'donation')
+            ->where('reportable_id', $donation->id)
+            ->exists();
 
-        return view('users.user.donation-preview', compact('donation', 'creator', 'favDonationIds', 'likeDonationIds'));
+        $commentIds = $comments->pluck('id')
+            ->merge($comments->flatMap(fn ($comment) => $comment->replies->pluck('id')))
+            ->unique()
+            ->values();
+
+        $likedCommentIds = DonationCommentLike::where('user_id', $userId)
+            ->whereIn('comment_id', $commentIds)
+            ->pluck('comment_id')
+            ->all();
+
+        return view('users.user.donation-preview', compact('donation', 'creator', 'acceptedBy', 'comments', 'likedCommentIds', 'favDonationIds', 'likeDonationIds', 'hasReportedDonation'));
+    }
+
+    public function report(Request $request, int $donation): RedirectResponse
+    {
+        $donation = Donation::where('id', $donation)
+            ->whereIn('status', [1, 2, 3])
+            ->firstOrFail();
+
+        if ((int) $donation->created_by === (int) Auth::id()) {
+            return redirect()
+                ->route('donations.show', $donation->id)
+                ->with('status', 'You cannot report your own donation.');
+        }
+
+        DB::table('reports')->updateOrInsert(
+            [
+                'reporter_id' => Auth::id(),
+                'reportable_type' => 'donation',
+                'reportable_id' => $donation->id,
+            ],
+            [
+                'reported_user_id' => $donation->created_by,
+                'reason' => 'Donation',
+                'details' => $request->input('details', 'Donation reported from donation preview.'),
+                'status' => 0,
+                'created_at' => now(),
+            ]
+        );
+
+        return redirect()
+            ->route('wishes.active')
+            ->with('status', 'Donation reported successfully.');
+    }
+
+    public function storeComment(Request $request, int $donation): RedirectResponse
+    {
+        $donation = Donation::where('id', $donation)
+            ->where(function ($query) {
+                $query->where('created_by', Auth::id())
+                    ->orWhereIn('status', [1, 2, 3]);
+            })
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'comment' => ['required', 'string', 'max:2000'],
+            'parent_id' => ['nullable', 'integer'],
+        ]);
+
+        $parentId = $validated['parent_id'] ?? null;
+        if ($parentId) {
+            DonationComment::where('id', $parentId)
+                ->where('donation_id', $donation->id)
+                ->firstOrFail();
+        }
+
+        DonationComment::create([
+            'donation_id' => $donation->id,
+            'user_id' => Auth::id(),
+            'parent_id' => $parentId,
+            'comment' => trim($validated['comment']),
+        ]);
+
+        return redirect()
+            ->route('donations.show', $donation->id)
+            ->with('status', 'Comment posted successfully.');
+    }
+
+    public function destroyComment(int $donation, int $comment): RedirectResponse
+    {
+        $donation = Donation::where('id', $donation)
+            ->where(function ($query) {
+                $query->where('created_by', Auth::id())
+                    ->orWhereIn('status', [1, 2, 3]);
+            })
+            ->firstOrFail();
+
+        $comment = DonationComment::where('id', $comment)
+            ->where('donation_id', $donation->id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $commentIds = DonationComment::where('id', $comment->id)
+            ->orWhere('parent_id', $comment->id)
+            ->pluck('id');
+
+        DonationCommentLike::whereIn('comment_id', $commentIds)->delete();
+        DonationComment::whereIn('id', $commentIds)->delete();
+
+        return redirect()
+            ->route('donations.show', $donation->id)
+            ->with('status', 'Comment deleted successfully.');
+    }
+
+    public function updateComment(Request $request, int $donation, int $comment): RedirectResponse
+    {
+        $donation = Donation::where('id', $donation)
+            ->where(function ($query) {
+                $query->where('created_by', Auth::id())
+                    ->orWhereIn('status', [1, 2, 3]);
+            })
+            ->firstOrFail();
+
+        $comment = DonationComment::where('id', $comment)
+            ->where('donation_id', $donation->id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'comment' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $comment->update([
+            'comment' => trim($validated['comment']),
+        ]);
+
+        return redirect()
+            ->route('donations.show', $donation->id)
+            ->with('status', 'Comment updated successfully.');
+    }
+
+    public function toggleCommentLike(int $donation, int $comment): RedirectResponse
+    {
+        $donation = Donation::where('id', $donation)
+            ->where(function ($query) {
+                $query->where('created_by', Auth::id())
+                    ->orWhereIn('status', [1, 2, 3]);
+            })
+            ->firstOrFail();
+
+        $comment = DonationComment::where('id', $comment)
+            ->where('donation_id', $donation->id)
+            ->firstOrFail();
+
+        $like = DonationCommentLike::where('comment_id', $comment->id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if ($like) {
+            $like->delete();
+        } else {
+            DonationCommentLike::create([
+                'comment_id' => $comment->id,
+                'user_id' => Auth::id(),
+                'created_at' => now(),
+            ]);
+        }
+
+        return redirect()->route('donations.show', $donation->id);
+    }
+
+    public function reportComment(Request $request, int $donation, int $comment): RedirectResponse
+    {
+        $donation = Donation::where('id', $donation)
+            ->where(function ($query) {
+                $query->where('created_by', Auth::id())
+                    ->orWhereIn('status', [1, 2, 3]);
+            })
+            ->firstOrFail();
+
+        $comment = DonationComment::where('id', $comment)
+            ->where('donation_id', $donation->id)
+            ->firstOrFail();
+
+        DB::table('reports')->updateOrInsert(
+            [
+                'reporter_id' => Auth::id(),
+                'reportable_type' => 'comment',
+                'reportable_id' => $comment->id,
+            ],
+            [
+                'reported_user_id' => $comment->user_id,
+                'reason' => 'Comment',
+                'details' => $request->input('details', 'Comment reported from donation preview.'),
+                'status' => 0,
+                'created_at' => now(),
+            ]
+        );
+
+        return redirect()
+            ->route('donations.show', $donation->id)
+            ->with('status', 'Comment reported successfully.');
     }
 
     public function store(Request $request): RedirectResponse
@@ -161,6 +393,7 @@ class DonationController extends Controller
     {
         $donation = Donation::where('id', $donation)
             ->where('created_by', Auth::id())
+            ->whereIn('status', [0, 1])
             ->firstOrFail();
 
         $isDraft = $request->input('action') === 'draft';
@@ -233,6 +466,7 @@ class DonationController extends Controller
     {
         $donation = Donation::where('id', $donation)
             ->where('created_by', Auth::id())
+            ->whereIn('status', [0, 1])
             ->firstOrFail();
 
         $donation->delete();
@@ -240,5 +474,58 @@ class DonationController extends Controller
         return redirect()
             ->route('donations.drafts')
             ->with('status', 'Donation draft deleted.');
+    }
+
+    public function accept(Request $request, int $donation): RedirectResponse
+    {
+        $donation = Donation::where('id', $donation)
+            ->where('status', 1)
+            ->firstOrFail();
+
+        if ((int) $donation->created_by === (int) Auth::id()) {
+            return redirect()
+                ->route('donations.show', $donation->id)
+                ->with('status', 'You cannot accept your own donation.');
+        }
+
+        if ((int) $donation->non_pay_option === 1) {
+            $request->validate([
+                'non_financial_agreement' => ['accepted'],
+            ], [
+                'non_financial_agreement.accepted' => 'You must agree to the non-financial donation conditions before accepting this donation.',
+            ]);
+        }
+
+        $donation->forceFill([
+            'accepted_by' => Auth::id(),
+            'accepted_at' => now(),
+            'status' => 2,
+            'process_status' => 1,
+            'date_updated' => now(),
+        ])->save();
+
+        return redirect()
+            ->route('donations.show', $donation->id)
+            ->with('status', 'Donation accepted successfully. It is now in progress.');
+    }
+
+    public function complete(int $donation): RedirectResponse
+    {
+        $donation = Donation::where('id', $donation)
+            ->where('created_by', Auth::id())
+            ->where('status', 2)
+            ->firstOrFail();
+
+        $donation->forceFill([
+            'completed_by' => Auth::id(),
+            'completed_at' => now(),
+            'status' => 3,
+            'process_status' => 2,
+            'date_updated' => now(),
+        ])->save();
+
+        return redirect()
+            ->route('donations.show', $donation->id)
+            ->with('status', 'Donation completed successfully.');
     }
 }
