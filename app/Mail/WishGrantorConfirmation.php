@@ -2,39 +2,42 @@
 
 namespace App\Mail;
 
-use App\Models\Donation;
 use App\Models\User;
+use App\Models\Wish;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class DonationCreated extends Mailable
+class WishGrantorConfirmation extends Mailable
 {
     use Queueable, SerializesModels;
 
     public function __construct(
-        public Donation $donation,
-        public User $user
+        public Wish $wish,
+        public User $creator,
+        public User $grantor
     ) {
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'SimplyWishes: Your Donation Has Been Created Successfully'
+            subject: 'SimplyWishes: You Accepted a Wish'
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.donation-created',
+            view: 'emails.wish-grantor-confirmation',
             with: [
-                'donation' => $this->donation,
-                'user' => $this->user,
-                'donationUrl' => route('donations.show', $this->donation->id),
+                'wish' => $this->wish,
+                'creator' => $this->creator,
+                'grantor' => $this->grantor,
+                'wishUrl' => route('wishes.show', $this->wish->w_id),
+                'inboxUrl' => route('inbox'),
                 'loginUrl' => route('login'),
             ]
         );

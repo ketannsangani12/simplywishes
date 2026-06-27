@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Mail\WishCreated;
+use App\Mail\WishFulfilled;
+use App\Mail\WishGrantorConfirmation;
+use App\Mail\WishGrantorFulfilled;
+use App\Mail\WishGranted;
 use App\Models\Donation;
 use App\Models\User;
 use App\Models\Wish;
@@ -223,12 +227,17 @@ class WishController extends Controller
         $reportedCommentIds = DB::table('reports')
             ->where('reporter_id', $userId)
             ->where('reportable_type', 'comment')
+            ->where(function ($query) use ($userId) {
+                $query->whereNull('reported_user_id')
+                    ->orWhere('reported_user_id', '!=', $userId);
+            })
             ->pluck('reportable_id')
             ->all();
         $reportedCommentUserIds = DB::table('reports')
             ->where('reporter_id', $userId)
             ->where('reportable_type', 'comment')
             ->whereNotNull('reported_user_id')
+            ->where('reported_user_id', '!=', $userId)
             ->pluck('reported_user_id')
             ->unique()
             ->all();
@@ -439,6 +448,12 @@ class WishController extends Controller
             ->where('wish_id', $wish->w_id)
             ->firstOrFail();
 
+        if ((int) $comment->user_id === (int) Auth::id()) {
+            return redirect()
+                ->route('wishes.show', $wish->w_id)
+                ->with('status', 'You cannot report your own comment.');
+        }
+
         DB::table('reports')->updateOrInsert(
             [
                 'reporter_id' => Auth::id(),
@@ -595,6 +610,14 @@ class WishController extends Controller
             'date_updated' => now(),
         ])->save();
 
+        $creator = User::find($wish->wished_by);
+        $grantor = $request->user();
+
+        if ($creator && $grantor) {
+            Mail::to($creator->email)->send(new WishGranted($wish, $creator, $grantor));
+            Mail::to($grantor->email)->send(new WishGrantorConfirmation($wish, $creator, $grantor));
+        }
+
         return redirect()
             ->route('wishes.show', $wish->w_id)
             ->with('status', 'Wish granted successfully. It is now in progress.');
@@ -614,6 +637,16 @@ class WishController extends Controller
             'wish_progress_status' => 2,
             'date_updated' => now(),
         ])->save();
+
+        $creator = Auth::user();
+        if ($creator) {
+            Mail::to($creator->email)->send(new WishFulfilled($wish, $creator));
+        }
+
+        $grantor = $wish->granted_by ? User::find($wish->granted_by) : null;
+        if ($grantor) {
+            Mail::to($grantor->email)->send(new WishGrantorFulfilled($wish, $grantor));
+        }
 
         return redirect()
             ->route('wishes.show', $wish->w_id)

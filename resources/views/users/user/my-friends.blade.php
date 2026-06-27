@@ -3,209 +3,442 @@
 @section('title', 'My Friends - Simply Wishes')
 
 @section('content')
+@php
+  $friendTabs = $tabs;
+
+  $displayName = function ($user) {
+    if (! $user) {
+      return 'Unknown user';
+    }
+
+    $name = trim(implode(' ', array_filter([
+      $user->first_name ?? null,
+      $user->last_name ?? null,
+    ])));
+
+    if ($name !== '') {
+      return $name;
+    }
+
+    if (! empty($user->name)) {
+      return $user->name;
+    }
+
+    if (! empty($user->username)) {
+      return $user->username;
+    }
+
+    return $user->email ?: 'Unknown user';
+  };
+
+  $avatarFor = function ($user, $label) {
+    if ($user && ! empty($user->profile_image)) {
+      return asset($user->profile_image);
+    }
+
+    return 'https://ui-avatars.com/api/?name=' . urlencode($label) . '&background=E2E8F0&color=0F172A';
+  };
+
+  $buildWishItem = function ($wish, string $statusLabel, string $statusClass) use ($displayName, $avatarFor, $relatedUsers) {
+    $owner = $relatedUsers->get($wish->wished_by);
+    $ownerName = $displayName($owner);
+
+    return [
+      'type' => 'wish',
+      'id' => $wish->w_id,
+      'title' => $wish->wish_title ?: 'Untitled wish',
+      'description' => $wish->wish_description ?: 'No description yet.',
+      'image' => $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
+      'link' => route('wishes.show', $wish->w_id),
+      'status' => $statusLabel,
+      'statusClass' => $statusClass,
+      'ownerName' => $ownerName,
+      'ownerAvatar' => $avatarFor($owner, $ownerName),
+      'ownerLabel' => 'Friend wish',
+      'sort_id' => (int) $wish->w_id,
+    ];
+  };
+
+  $buildDonationItem = function ($donation, string $statusLabel, string $statusClass) use ($displayName, $avatarFor, $relatedUsers) {
+    $owner = $relatedUsers->get($donation->created_by);
+    $ownerName = $displayName($owner);
+
+    return [
+      'type' => 'donation',
+      'id' => $donation->id,
+      'title' => $donation->title ?: 'Untitled donation',
+      'description' => $donation->description ?: 'No description yet.',
+      'image' => $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
+      'link' => route('donations.show', $donation->id),
+      'status' => $statusLabel,
+      'statusClass' => $statusClass,
+      'ownerName' => $ownerName,
+      'ownerAvatar' => $avatarFor($owner, $ownerName),
+      'ownerLabel' => 'Friend donation',
+      'sort_id' => (int) $donation->id,
+    ];
+  };
+
+  $friendFeedItems = [
+    'active' => collect($friendItemsByTab['active']['wishes'])
+      ->map(fn ($wish) => $buildWishItem($wish, 'Active', 'bg-brand-blue-light/90 text-white'))
+      ->concat(collect($friendItemsByTab['active']['donations'])
+        ->map(fn ($donation) => $buildDonationItem($donation, 'Active', 'bg-brand-blue-light/90 text-white')))
+      ->sortByDesc('sort_id')
+      ->values(),
+    'granted' => collect($friendItemsByTab['granted']['wishes'])
+      ->map(fn ($wish) => $buildWishItem($wish, 'Granted', 'bg-emerald-600/90 text-white'))
+      ->concat(collect($friendItemsByTab['granted']['donations'])
+        ->map(fn ($donation) => $buildDonationItem($donation, 'Granted', 'bg-emerald-600/90 text-white')))
+      ->sortByDesc('sort_id')
+      ->values(),
+    'progress' => collect($friendItemsByTab['progress']['wishes'])
+      ->map(fn ($wish) => $buildWishItem($wish, 'In Progress', 'bg-amber-500/90 text-white'))
+      ->concat(collect($friendItemsByTab['progress']['donations'])
+        ->map(fn ($donation) => $buildDonationItem($donation, 'In Progress', 'bg-amber-500/90 text-white')))
+      ->sortByDesc('sort_id')
+      ->values(),
+  ];
+
+  $currentFeedItems = $tab === 'friends'
+    ? collect()
+    : ($friendFeedItems[$tab] ?? collect());
+
+@endphp
+
 <main class="flex-1 bg-gradient-to-b from-white via-slate-50 to-slate-100 dark:from-background-dark dark:via-[#0f172a] dark:to-background-dark">
-      <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="flex flex-col gap-6">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <p class="text-sm uppercase tracking-wide text-text-muted-light dark:text-text-muted-dark">Community</p>
-              <h1 class="text-3xl sm:text-4xl font-bold text-brand-blue-light dark:text-white">Friends</h1>
-              <p class="text-text-muted-light dark:text-text-muted-dark mt-2">Find, manage, and celebrate the people supporting wishes.</p>
+  <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+    <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-3">
+        <p class="text-sm uppercase tracking-[0.24em] text-text-muted-light dark:text-text-muted-dark">Community</p>
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+          <div class="max-w-2xl">
+            <h1 class="text-3xl sm:text-4xl font-bold text-brand-blue-light dark:text-white">My Friends</h1>
+            <p class="mt-2 text-text-muted-light dark:text-text-muted-dark">
+              Search users, send friend requests, and manage incoming requests from one place.
+            </p>
+          </div>
+          <form method="GET" action="{{ route('my.friends') }}" class="w-full lg:max-w-xl">
+            <div class="flex gap-3">
+              <div class="relative flex-1">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted-light">search</span>
+                <input
+                  type="search"
+                  name="q"
+                  value="{{ $searchTerm }}"
+                  placeholder="Search by name, username, or email"
+                  class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark pl-10 pr-4 py-3 text-text-light dark:text-text-dark focus:border-primary focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <button
+                type="submit"
+                class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-brand-blue-light text-white font-semibold shadow hover:shadow-lg transition"
+              >
+                <span class="material-symbols-outlined text-base">search</span>
+                Search
+              </button>
             </div>
-            <button class="inline-flex items-center gap-2 px-4 py-3 bg-brand-blue-light text-white rounded-xl shadow hover:shadow-lg transition">
-              <span class="material-symbols-outlined">group_add</span>
-              Add new friend
-            </button>
+          </form>
+        </div>
+      </div>
+
+      @if (session('status'))
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
+          {{ session('status') }}
+        </div>
+      @endif
+
+      <div class="space-y-6">
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-xl">
+          <div class="flex flex-col gap-4 border-b border-gray-200 dark:border-gray-800 px-5 py-4">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 class="text-lg font-semibold text-brand-blue-light dark:text-white">Friends Feed</h2>
+                <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Browse wishes and donations shared by your friends.</p>
+              </div>
+              @if ($searchTerm !== '')
+                <span class="rounded-full bg-brand-blue-light/10 px-3 py-1 text-xs font-semibold text-brand-blue-light dark:text-brand-blue-dark">
+                  Search: "{{ $searchTerm }}"
+                </span>
+              @endif
+            </div>
+
+            <div class="flex gap-2 overflow-x-auto pb-1">
+              @foreach ($friendTabs as $tabKey => $tabLabel)
+                <a
+                  href="{{ route('my.friends', ['tab' => $tabKey]) }}"
+                  class="whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition {{ $tab === $tabKey ? 'bg-brand-blue-light text-white shadow' : 'bg-slate-100 text-text-light hover:bg-slate-200 dark:bg-slate-900 dark:text-text-dark dark:hover:bg-slate-800' }}"
+                >
+                  {{ $tabLabel }}
+                </a>
+              @endforeach
+            </div>
           </div>
 
-          <div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800">
-            <div class="px-4 sm:px-6 pt-6">
-              <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 dark:border-gray-800 pb-4">
-                <button class="px-3 sm:px-4 py-2 rounded-full bg-brand-blue-light text-white text-sm font-semibold shadow">List</button>
-                <button class="px-3 sm:px-4 py-2 rounded-full text-sm font-semibold text-text-muted-light dark:text-text-muted-dark hover:text-brand-blue-light">Active Wishes &amp; Donations</button>
-                <button class="px-3 sm:px-4 py-2 rounded-full text-sm font-semibold text-text-muted-light dark:text-text-muted-dark hover:text-brand-blue-light">Granted Wishes &amp; Donations</button>
-                <button class="px-3 sm:px-4 py-2 rounded-full text-sm font-semibold text-text-muted-light dark:text-text-muted-dark hover:text-brand-blue-light">In Progress</button>
-              </div>
-              <div class="py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div class="relative w-full sm:w-1/2 lg:w-1/3">
-                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted-light">search</span>
-                  <input class="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-2 focus:ring-primary/60 focus:border-primary"
-                    placeholder="Search for your friends" type="search" />
+          <div class="p-5">
+            @if ($tab === 'friends')
+              @if ($friends->isEmpty())
+                <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-6 py-10 text-center">
+                  <p class="text-lg font-semibold text-brand-blue-light dark:text-white">You have no friends yet</p>
+                  <p class="mt-2 text-sm text-text-muted-light dark:text-text-muted-dark">
+                    Search for people above to send your first request.
+                  </p>
                 </div>
-                <div class="flex items-center gap-2 text-sm text-text-muted-light dark:text-text-muted-dark">
-                  <span class="material-symbols-outlined text-primary">info</span>
-                  Keep friends curated to stay connected with trusted wishmakers.
+              @else
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  @foreach ($friends as $friend)
+                    @php
+                      $friendName = $displayName($friend);
+                      $friendAvatar = $avatarFor($friend, $friendName);
+                    @endphp
+
+                    <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-4 shadow-sm">
+                      <div class="flex items-start gap-4">
+                        <img src="{{ $friendAvatar }}" alt="{{ $friendName }} avatar" class="h-14 w-14 rounded-xl object-cover" />
+                        <div class="min-w-0 flex-1">
+                          <h3 class="truncate text-base font-semibold text-brand-blue-light dark:text-white">{{ $friendName }}</h3>
+                          <p class="truncate text-sm text-text-muted-light dark:text-text-muted-dark">{{ $friend->email ?? '' }}</p>
+                          @if (! empty($friend->username))
+                            <p class="truncate text-xs text-text-muted-light/80 dark:text-text-muted-dark/80">@{{ $friend->username }}</p>
+                          @endif
+                        </div>
+                      </div>
+
+                      <div class="mt-4 flex items-center gap-2">
+                        <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                          Friends
+                        </span>
+                        <form method="POST" action="{{ route('friends.unfriend', $friend->id) }}">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-sm">person_remove</span>
+                            Unfriend
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  @endforeach
                 </div>
+              @endif
+            @elseif ($currentFeedItems->isEmpty())
+              <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-6 py-10 text-center">
+                <p class="text-lg font-semibold text-brand-blue-light dark:text-white">No items in this section</p>
+                <p class="mt-2 text-sm text-text-muted-light dark:text-text-muted-dark">
+                  Your friends have nothing here yet.
+                </p>
               </div>
+            @else
+              <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                @foreach ($currentFeedItems as $item)
+                  <article class="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] shadow-sm">
+                    <div class="relative">
+                      <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" class="h-52 w-full object-cover" />
+                      <div class="absolute left-3 top-3">
+                        <span class="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow">
+                          {{ $item['type'] === 'wish' ? 'Wish' : 'Donation' }}
+                        </span>
+                      </div>
+                      <div class="absolute right-3 top-3">
+                        <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shadow {{ $item['statusClass'] }}">
+                          {{ $item['status'] }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="p-4 space-y-3">
+                      <div class="flex items-center gap-3">
+                        <img src="{{ $item['ownerAvatar'] }}" alt="{{ $item['ownerName'] }} avatar" class="h-10 w-10 rounded-full object-cover" />
+                        <div class="min-w-0">
+                          <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white">{{ $item['ownerName'] }}</p>
+                          <p class="text-xs text-text-muted-light dark:text-text-muted-dark">{{ $item['ownerLabel'] }}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 class="font-semibold text-text-light dark:text-text-dark">{{ $item['title'] }}</h3>
+                        <p class="mt-1 line-clamp-2 text-sm text-subtle-light dark:text-subtle-dark">{{ $item['description'] }}</p>
+                      </div>
+                      <a class="inline-flex items-center text-emerald-600 font-semibold hover:underline" href="{{ $item['link'] }}">
+                        Read More
+                      </a>
+                    </div>
+                  </article>
+                @endforeach
+              </div>
+            @endif
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-xl">
+          <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 px-5 py-4">
+            <div>
+              <h2 class="text-lg font-semibold text-brand-blue-light dark:text-white">Search Users</h2>
+              <p class="text-sm text-text-muted-light dark:text-text-muted-dark">This search only looks up users, not wishes or donations.</p>
             </div>
+            @if ($searchTerm !== '')
+              <span class="rounded-full bg-brand-blue-light/10 px-3 py-1 text-xs font-semibold text-brand-blue-light dark:text-brand-blue-dark">
+                "{{ $searchTerm }}"
+              </span>
+            @endif
+          </div>
 
-            <div class="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 dark:divide-gray-800">
-              <div class="space-y-0">
-                <div class="px-4 sm:px-6 py-6">
-                  <div class="flex items-center gap-4">
-                    <img alt="Simply Wishes avatar" class="w-16 h-16 rounded-xl object-cover shadow" src="https://images.unsplash.com/photo-1493810329807-1d21b6c14d38?auto=format&fit=crop&w=200&q=80" />
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold text-brand-blue-light dark:text-brand-blue-dark">Simply Wishes</h3>
-                      <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Bringing joy one wish at a time.</p>
-                    </div>
-                    <details class="relative ml-auto">
-                      <summary aria-label="Friend options"
-                        class="list-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted-light dark:text-text-muted-dark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <span class="material-symbols-outlined text-2xl leading-none">more_horiz</span>
-                      </summary>
-                      <div class="absolute right-0 top-full mt-2 w-40 z-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg py-1">
-                        <button class="w-full text-left px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800">Unfriend</button>
-                        <button class="w-full text-left px-4 py-2 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-800/40">Report</button>
-                      </div>
-                    </details>
-                  </div>
-                </div>
-
-                <div class="px-4 sm:px-6 py-6 bg-slate-50 dark:bg-[#0f172a]">
-                  <div class="flex items-center gap-4">
-                    <img alt="Roshan avatar" class="w-16 h-16 rounded-xl object-cover shadow" src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=200&q=80" />
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold text-brand-blue-light dark:text-brand-blue-dark">Roshan D.</h3>
-                      <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Animal lover and long-time donor.</p>
-                    </div>
-                    <details class="relative ml-auto">
-                      <summary aria-label="Friend options"
-                        class="list-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted-light dark:text-text-muted-dark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <span class="material-symbols-outlined text-2xl leading-none">more_horiz</span>
-                      </summary>
-                      <div class="absolute right-0 top-full mt-2 w-40 z-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg py-1">
-                        <button class="w-full text-left px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800">Unfriend</button>
-                        <button class="w-full text-left px-4 py-2 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-800/40">Report</button>
-                      </div>
-                    </details>
-                  </div>
-                </div>
-
-                <div class="px-4 sm:px-6 py-6">
-                  <div class="flex items-center gap-4">
-                    <img alt="Brews avatar" class="w-16 h-16 rounded-xl object-cover shadow" src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=200&q=80" />
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold text-brand-blue-light dark:text-brand-blue-dark">Brews Hamilton</h3>
-                      <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Helps coordinate local drives.</p>
-                    </div>
-                    <details class="relative ml-auto">
-                      <summary aria-label="Friend options"
-                        class="list-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted-light dark:text-text-muted-dark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <span class="material-symbols-outlined text-2xl leading-none">more_horiz</span>
-                      </summary>
-                      <div class="absolute right-0 top-full mt-2 w-40 z-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg py-1">
-                        <button class="w-full text-left px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800">Unfriend</button>
-                        <button class="w-full text-left px-4 py-2 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-800/40">Report</button>
-                      </div>
-                    </details>
-                  </div>
-                </div>
-
-                <div class="px-4 sm:px-6 py-6 bg-slate-50 dark:bg-[#0f172a]">
-                  <div class="flex items-center gap-4">
-                    <img alt="Paeonies avatar" class="w-16 h-16 rounded-xl object-cover shadow" src="https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?auto=format&fit=crop&w=200&q=80" />
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold text-brand-blue-light dark:text-brand-blue-dark">Paeonies Pink</h3>
-                      <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Shares joy with heartfelt notes.</p>
-                    </div>
-                    <details class="relative ml-auto">
-                      <summary aria-label="Friend options"
-                        class="list-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted-light dark:text-text-muted-dark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <span class="material-symbols-outlined text-2xl leading-none">more_horiz</span>
-                      </summary>
-                      <div class="absolute right-0 top-full mt-2 w-40 z-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg py-1">
-                        <button class="w-full text-left px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800">Unfriend</button>
-                        <button class="w-full text-left px-4 py-2 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-800/40">Report</button>
-                      </div>
-                    </details>
-                  </div>
-                </div>
+          <div class="p-5">
+            @if ($searchTerm === '')
+              <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-6 py-10 text-center">
+                <p class="text-lg font-semibold text-brand-blue-light dark:text-white">Search for users</p>
+                <p class="mt-2 text-sm text-text-muted-light dark:text-text-muted-dark">
+                  Use the search box above to find users and send friend requests.
+                </p>
               </div>
-
-              <div class="space-y-0">
-                <div class="px-4 sm:px-6 py-6">
-                  <div class="flex items-center gap-4">
-                    <img alt="Simply Wishes avatar" class="w-16 h-16 rounded-xl object-cover shadow" src="https://images.unsplash.com/photo-1493810329807-1d21b6c14d38?auto=format&fit=crop&w=200&q=80" />
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold text-brand-blue-light dark:text-brand-blue-dark">Simply Wishes</h3>
-                      <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Bringing joy one wish at a time.</p>
-                    </div>
-                    <details class="relative ml-auto">
-                      <summary aria-label="Friend options"
-                        class="list-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted-light dark:text-text-muted-dark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <span class="material-symbols-outlined text-2xl leading-none">more_horiz</span>
-                      </summary>
-                      <div class="absolute right-0 top-full mt-2 w-40 z-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg py-1">
-                        <button class="w-full text-left px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800">Unfriend</button>
-                        <button class="w-full text-left px-4 py-2 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-800/40">Report</button>
-                      </div>
-                    </details>
-                  </div>
-                </div>
-
-                <div class="px-4 sm:px-6 py-6 bg-slate-50 dark:bg-[#0f172a]">
-                  <div class="flex items-center gap-4">
-                    <img alt="Roshan avatar" class="w-16 h-16 rounded-xl object-cover shadow" src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=200&q=80" />
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold text-brand-blue-light dark:text-brand-blue-dark">Roshan D.</h3>
-                      <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Animal lover and long-time donor.</p>
-                    </div>
-                    <details class="relative ml-auto">
-                      <summary aria-label="Friend options"
-                        class="list-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted-light dark:text-text-muted-dark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <span class="material-symbols-outlined text-2xl leading-none">more_horiz</span>
-                      </summary>
-                      <div class="absolute right-0 top-full mt-2 w-40 z-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg py-1">
-                        <button class="w-full text-left px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800">Unfriend</button>
-                        <button class="w-full text-left px-4 py-2 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-800/40">Report</button>
-                      </div>
-                    </details>
-                  </div>
-                </div>
-
-                <div class="px-4 sm:px-6 py-6">
-                  <div class="flex items-center gap-4">
-                    <img alt="Brews avatar" class="w-16 h-16 rounded-xl object-cover shadow" src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=200&q=80" />
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold text-brand-blue-light dark:text-brand-blue-dark">Brews Hamilton</h3>
-                      <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Helps coordinate local drives.</p>
-                    </div>
-                    <details class="relative ml-auto">
-                      <summary aria-label="Friend options"
-                        class="list-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted-light dark:text-text-muted-dark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <span class="material-symbols-outlined text-2xl leading-none">more_horiz</span>
-                      </summary>
-                      <div class="absolute right-0 top-full mt-2 w-40 z-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg py-1">
-                        <button class="w-full text-left px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800">Unfriend</button>
-                        <button class="w-full text-left px-4 py-2 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-800/40">Report</button>
-                      </div>
-                    </details>
-                  </div>
-                </div>
-
-                <div class="px-4 sm:px-6 py-6 bg-slate-50 dark:bg-[#0f172a]">
-                  <div class="flex items-center gap-4">
-                    <img alt="Paeonies avatar" class="w-16 h-16 rounded-xl object-cover shadow" src="https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?auto=format&fit=crop&w=200&q=80" />
-                    <div class="flex-1">
-                      <h3 class="text-lg font-semibold text-brand-blue-light dark:text-brand-blue-dark">Paeonies Pink</h3>
-                      <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Shares joy with heartfelt notes.</p>
-                    </div>
-                    <details class="relative ml-auto">
-                      <summary aria-label="Friend options"
-                        class="list-none p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted-light dark:text-text-muted-dark cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <span class="material-symbols-outlined text-2xl leading-none">more_horiz</span>
-                      </summary>
-                      <div class="absolute right-0 top-full mt-2 w-40 z-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg py-1">
-                        <button class="w-full text-left px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800">Unfriend</button>
-                        <button class="w-full text-left px-4 py-2 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-800/40">Report</button>
-                      </div>
-                    </details>
-                  </div>
-                </div>
+            @elseif ($searchResults->isEmpty())
+              <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-6 py-10 text-center">
+                <p class="text-lg font-semibold text-brand-blue-light dark:text-white">No users found</p>
+                <p class="mt-2 text-sm text-text-muted-light dark:text-text-muted-dark">
+                  Try another search term.
+                </p>
               </div>
+            @else
+              <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                @foreach ($searchResults as $user)
+                  @php
+                    $name = $displayName($user);
+                    $avatar = $avatarFor($user, $name);
+                    $isFriend = in_array((int) $user->id, array_map('intval', $friendIds), true);
+                    $incomingRequest = $incomingRequests->firstWhere('sender_id', $user->id);
+                    $outgoingRequest = $outgoingRequests->firstWhere('receiver_id', $user->id);
+                  @endphp
+
+                  <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-4 shadow-sm">
+                    <div class="flex items-start gap-4">
+                      <img src="{{ $avatar }}" alt="{{ $name }} avatar" class="h-14 w-14 rounded-xl object-cover" />
+                      <div class="min-w-0 flex-1">
+                        <h3 class="truncate text-base font-semibold text-brand-blue-light dark:text-white">{{ $name }}</h3>
+                        <p class="truncate text-sm text-text-muted-light dark:text-text-muted-dark">{{ $user->email }}</p>
+                        @if (! empty($user->username))
+                          <p class="truncate text-xs text-text-muted-light/80 dark:text-text-muted-dark/80">@{{ $user->username }}</p>
+                        @endif
+                      </div>
+                    </div>
+
+                    <div class="mt-4 flex flex-wrap items-center gap-2">
+                      @if ($isFriend)
+                        <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                          Friends
+                        </span>
+                        <form method="POST" action="{{ route('friends.unfriend', $user->id) }}">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-sm">person_remove</span>
+                            Unfriend
+                          </button>
+                        </form>
+                      @elseif ($incomingRequest)
+                        <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+                          Friend request received
+                        </span>
+                        <form method="POST" action="{{ route('friends.requests.accept', $incomingRequest->id) }}">
+                          @csrf
+                          <button type="submit" class="inline-flex items-center gap-2 rounded-full bg-brand-blue-light px-3 py-1.5 text-xs font-semibold text-white">
+                            <span class="material-symbols-outlined text-sm">check</span>
+                            Accept
+                          </button>
+                        </form>
+                        <form method="POST" action="{{ route('friends.requests.reject', $incomingRequest->id) }}">
+                          @csrf
+                          <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                            Reject
+                          </button>
+                        </form>
+                      @elseif ($outgoingRequest)
+                        <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                          Request pending
+                        </span>
+                      @else
+                        <form method="POST" action="{{ route('friends.requests.send', $user->id) }}">
+                          @csrf
+                          <button type="submit" class="inline-flex items-center gap-2 rounded-full bg-brand-blue-light px-3 py-1.5 text-xs font-semibold text-white">
+                            <span class="material-symbols-outlined text-sm">person_add</span>
+                            Send Request
+                          </button>
+                        </form>
+                      @endif
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+            @endif
+          </div>
+        </div>
+
+        <div class="grid gap-6 xl:grid-cols-2">
+          <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-xl">
+            <div class="border-b border-gray-200 dark:border-gray-800 px-5 py-4">
+              <h2 class="text-lg font-semibold text-brand-blue-light dark:text-white">Incoming Requests</h2>
+              <p class="text-sm text-text-muted-light dark:text-text-muted-dark">People waiting for your response.</p>
+            </div>
+            <div class="p-5 space-y-4">
+              @forelse ($incomingRequests as $friendRequest)
+                @php
+                  $sender = $relatedUsers->get($friendRequest->sender_id);
+                  $senderName = $displayName($sender);
+                  $senderAvatar = $avatarFor($sender, $senderName);
+                @endphp
+                <div class="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-3">
+                  <img src="{{ $senderAvatar }}" alt="{{ $senderName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white">{{ $senderName }}</p>
+                    <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark">{{ $sender->email ?? '' }}</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <form method="POST" action="{{ route('friends.requests.accept', $friendRequest->id) }}">
+                      @csrf
+                      <button type="submit" class="rounded-full bg-brand-blue-light px-3 py-1.5 text-xs font-semibold text-white">Accept</button>
+                    </form>
+                    <form method="POST" action="{{ route('friends.requests.reject', $friendRequest->id) }}">
+                      @csrf
+                      <button type="submit" class="rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark">Reject</button>
+                    </form>
+                  </div>
+                </div>
+              @empty
+                <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-4 py-8 text-center">
+                  <p class="text-sm text-text-muted-light dark:text-text-muted-dark">No incoming friend requests.</p>
+                </div>
+              @endforelse
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-xl">
+            <div class="border-b border-gray-200 dark:border-gray-800 px-5 py-4">
+              <h2 class="text-lg font-semibold text-brand-blue-light dark:text-white">Outgoing Requests</h2>
+              <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Requests you already sent.</p>
+            </div>
+            <div class="p-5 space-y-4">
+              @forelse ($outgoingRequests as $friendRequest)
+                @php
+                  $receiver = $relatedUsers->get($friendRequest->receiver_id);
+                  $receiverName = $displayName($receiver);
+                  $receiverAvatar = $avatarFor($receiver, $receiverName);
+                @endphp
+                <div class="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-3">
+                  <img src="{{ $receiverAvatar }}" alt="{{ $receiverName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white">{{ $receiverName }}</p>
+                    <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark">{{ $receiver->email ?? '' }}</p>
+                  </div>
+                  <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-300">Pending</span>
+                </div>
+              @empty
+                <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-4 py-8 text-center">
+                  <p class="text-sm text-text-muted-light dark:text-text-muted-dark">No outgoing friend requests.</p>
+                </div>
+              @endforelse
             </div>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
+  </section>
+</main>
 @endsection

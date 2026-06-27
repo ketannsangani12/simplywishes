@@ -23,7 +23,7 @@ class WishCreated extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Wish Has Been Created Successfully'
+            subject: 'SimplyWishes: Your Wish Has Been Created Successfully'
         );
     }
 
@@ -34,7 +34,8 @@ class WishCreated extends Mailable
             with: [
                 'wish' => $this->wish,
                 'user' => $this->user,
-                'appUrl' => config('app.url'),
+                'wishUrl' => route('wishes.show', $this->wish->w_id),
+                'loginUrl' => route('login'),
             ]
         );
     }

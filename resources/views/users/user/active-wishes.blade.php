@@ -15,12 +15,15 @@
 <div class="flex flex-wrap justify-end mt-2 gap-3">
 <label class="relative w-full md:w-72">
 <span class="absolute inset-y-0 left-3 flex items-center text-subtle-light dark:text-subtle-dark material-icons text-base">search</span>
-<input class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-sm text-text-light dark:text-text-dark placeholder:text-subtle-light dark:placeholder:text-subtle-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/70 focus:border-primary" placeholder="Search wishes or donations" type="search"/>
+<input id="active-wishes-search" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-sm text-text-light dark:text-text-dark placeholder:text-subtle-light dark:placeholder:text-subtle-dark shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/70 focus:border-primary" placeholder="Search wishes or donations" type="search"/>
 </label>
-<button class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-primary text-brand-blue-light font-semibold text-sm shadow-sm hover:brightness-95 transition focus:outline-none focus:ring-2 focus:ring-primary/70 focus:ring-offset-2 focus:ring-offset-surface-light dark:focus:ring-offset-surface-dark">
+<button id="active-wishes-search-btn" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-primary text-brand-blue-light font-semibold text-sm shadow-sm hover:brightness-95 transition focus:outline-none focus:ring-2 focus:ring-primary/70 focus:ring-offset-2 focus:ring-offset-surface-light dark:focus:ring-offset-surface-dark" type="button">
 <span class="material-icons text-base">search</span>
 <span class="ml-2">Search</span>
 </button>
+</div>
+<div class="hidden rounded-lg border border-dashed border-border-light bg-white px-4 py-3 text-sm text-text-muted-light" data-search-empty>
+No wishes or donations match your search.
 </div>
 <div class="space-y-12">
 <div class="hidden" data-panel="most-popular">
@@ -461,7 +464,50 @@ No current donations available yet.
   document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('[data-tabs] [data-tab]');
     const panels = document.querySelectorAll('[data-panel]');
+    const searchInput = document.getElementById('active-wishes-search');
+    const searchButton = document.getElementById('active-wishes-search-btn');
+    const emptyState = document.querySelector('[data-search-empty]');
     if (!tabs.length || !panels.length) return;
+
+    const getCardText = (card) => (card.textContent || '').toLowerCase();
+
+    const matchesTypeFilter = (card) => {
+      const panel = card.closest('[data-panel]')?.getAttribute('data-panel');
+      if (panel === 'current-wishes') {
+        const wishType = document.getElementById('wish-type-filter')?.value || 'all';
+        const type = card.getAttribute('data-wish-type');
+        return wishType === 'all' || type === wishType;
+      }
+
+      if (panel === 'current-donations') {
+        const donationType = document.getElementById('donation-type-filter')?.value || 'all';
+        const type = card.getAttribute('data-donation-type');
+        return donationType === 'all' || type === donationType;
+      }
+
+      return true;
+    };
+
+    const applySearchAndFilters = () => {
+      const term = searchInput?.value.trim().toLowerCase() || '';
+      const cards = document.querySelectorAll('[data-wish-type], [data-donation-type]');
+      let visibleCount = 0;
+
+      cards.forEach((card) => {
+        const matchesSearch = !term || getCardText(card).includes(term);
+        const matchesFilters = matchesTypeFilter(card);
+        const show = matchesSearch && matchesFilters;
+        card.classList.toggle('hidden', !show);
+
+        if (show) {
+          visibleCount += 1;
+        }
+      });
+
+      if (emptyState) {
+        emptyState.classList.toggle('hidden', visibleCount !== 0);
+      }
+    };
 
     const setActive = (tabKey) => {
       tabs.forEach((tab) => {
@@ -478,6 +524,8 @@ No current donations available yet.
       panels.forEach((panel) => {
         panel.classList.toggle('hidden', panel.getAttribute('data-panel') !== tabKey);
       });
+
+      applySearchAndFilters();
     };
 
     tabs.forEach((tab) => {
@@ -610,9 +658,11 @@ No current donations available yet.
 
     const wishFilter = document.getElementById('wish-type-filter');
     const donationFilter = document.getElementById('donation-type-filter');
-    if (wishFilter) wishFilter.addEventListener('change', applyTypeFilters);
-    if (donationFilter) donationFilter.addEventListener('change', applyTypeFilters);
-    applyTypeFilters();
+    if (wishFilter) wishFilter.addEventListener('change', applySearchAndFilters);
+    if (donationFilter) donationFilter.addEventListener('change', applySearchAndFilters);
+    if (searchInput) searchInput.addEventListener('input', applySearchAndFilters);
+    if (searchButton) searchButton.addEventListener('click', applySearchAndFilters);
+    applySearchAndFilters();
   });
 </script>
 @endsection

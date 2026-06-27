@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ForumController;
+use App\Http\Controllers\FriendController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\WishController;
@@ -17,11 +19,24 @@ Route::get('/wishers-granters-donors', [SiteController::class, 'wishersGrantersD
 Route::get('/privacy-policy', [SiteController::class, 'privacyPolicy'])->name('privacy.policy');
 Route::get('/terms-of-use', [SiteController::class, 'termsOfUse'])->name('terms.of.use');
 Route::get('/inbox', [SiteController::class, 'inbox'])->name('inbox')->middleware('auth');
-Route::get('/forum', [SiteController::class, 'forum'])->name('forum')->middleware('auth');
+Route::get('/forum', [ForumController::class, 'index'])->name('forum')->middleware('auth');
+Route::post('/forum', [ForumController::class, 'store'])->name('forum.store')->middleware('auth');
+Route::get('/forum/{forum}', [ForumController::class, 'show'])->name('forum.show')->middleware('auth');
+Route::post('/forum/{forum}/like', [ForumController::class, 'toggleLike'])->name('forum.like')->middleware('auth');
+Route::post('/forum/{forum}/comments', [ForumController::class, 'storeComment'])->name('forum.comments.store')->middleware('auth');
+Route::put('/forum/{forum}/comments/{comment}', [ForumController::class, 'updateComment'])->name('forum.comments.update')->middleware('auth');
+Route::delete('/forum/{forum}/comments/{comment}', [ForumController::class, 'destroyComment'])->name('forum.comments.destroy')->middleware('auth');
+Route::post('/forum/{forum}/comments/{comment}/like', [ForumController::class, 'toggleCommentLike'])->name('forum.comments.like')->middleware('auth');
 Route::get('/my-wishes', [SiteController::class, 'myWishes'])->name('my.wishes')->middleware('auth');
 Route::get('/happy-stories/create', [SiteController::class, 'addHappyStory'])->name('happy.stories.create')->middleware('auth');
 Route::get('/my-friends', [SiteController::class, 'myFriends'])->name('my.friends')->middleware('auth');
+Route::post('/friends/{user}/request', [FriendController::class, 'sendRequest'])->name('friends.requests.send')->middleware('auth');
+Route::post('/friends/requests/{request}/accept', [FriendController::class, 'accept'])->name('friends.requests.accept')->middleware('auth');
+Route::post('/friends/requests/{request}/reject', [FriendController::class, 'reject'])->name('friends.requests.reject')->middleware('auth');
+Route::delete('/friends/{user}', [FriendController::class, 'unfriend'])->name('friends.unfriend')->middleware('auth');
 Route::get('/my-profile', [SiteController::class, 'updateProfile'])->name('profile.edit')->middleware('auth');
+Route::put('/my-profile', [AuthController::class, 'updateProfile'])->name('profile.update')->middleware('auth');
+Route::put('/my-profile/password', [AuthController::class, 'updatePassword'])->name('profile.password.update')->middleware('auth');
 Route::get('/wishes/create', [WishController::class, 'create'])->name('wishes.create')->middleware('auth');
 Route::post('/wishes', [WishController::class, 'store'])->name('wishes.store')->middleware('auth');
 Route::get('/wishes/active', [WishController::class, 'active'])->name('wishes.active');

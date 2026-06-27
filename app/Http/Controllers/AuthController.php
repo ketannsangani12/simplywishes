@@ -131,6 +131,97 @@ class AuthController extends Controller
         return redirect()->route('verification.notice')->with('status', 'Verification link sent to your email.');
     }
 
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'first-name' => ['required', 'string', 'max:255'],
+            'last-name' => ['required', 'string', 'max:255'],
+            'about' => ['nullable', 'string'],
+            'country' => ['required', 'integer', 'exists:countries,id'],
+            'state' => ['required', 'integer', 'exists:states,id'],
+            'city' => ['required', 'integer', 'exists:cities,id'],
+            'avatar' => ['nullable', 'image', 'max:10240'],
+            'avatar-default' => ['nullable', 'string'],
+            'remove_avatar' => ['nullable', 'boolean'],
+        ]);
+
+        $country = Country::find($validated['country']);
+        $state = State::find($validated['state']);
+        $city = City::find($validated['city']);
+
+        $profileImage = $user->profile_image;
+
+        if ($request->boolean('remove_avatar')) {
+            $profileImage = null;
+        }
+
+        if ($request->hasFile('avatar')) {
+            $extension = strtolower($request->file('avatar')->getClientOriginalExtension() ?: $request->file('avatar')->extension() ?: 'jpg');
+            $fileName = Str::uuid()->toString() . '.' . $extension;
+
+            $candidateDirectories = [
+                public_path('uploads/users'),
+                base_path('../public_html/uploads/users'),
+            ];
+
+            $uploadDirectory = null;
+            foreach ($candidateDirectories as $directory) {
+                $parentDirectory = dirname($directory);
+                if (is_dir($directory) || is_dir($parentDirectory)) {
+                    $uploadDirectory = $directory;
+                    break;
+                }
+            }
+
+            $uploadDirectory ??= public_path('uploads/users');
+
+            File::ensureDirectoryExists($uploadDirectory);
+            $request->file('avatar')->move($uploadDirectory, $fileName);
+
+            $profileImage = 'uploads/users/' . $fileName;
+        } elseif ($request->filled('avatar-default')) {
+            $profileImage = 'images/users-default/' . $request->input('avatar-default');
+        }
+
+        $user->fill([
+            'name' => trim($validated['first-name'] . ' ' . $validated['last-name']),
+            'first_name' => $validated['first-name'],
+            'last_name' => $validated['last-name'],
+            'email' => $validated['email'],
+            'about' => $validated['about'] ?? null,
+            'country' => $country?->name,
+            'state' => $state?->name,
+            'city' => $city?->name,
+            'profile_image' => $profileImage,
+        ]);
+
+        if (! empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()->route('profile.edit')->with('status', 'Profile updated successfully.');
+    }
+
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:6'],
+            'confirm' => ['required', 'same:password'],
+        ]);
+
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        return redirect()->route('profile.edit')->with('status', 'Password updated successfully.');
+    }
+
     public function statesByCountry(int $country): JsonResponse
     {
         $states = State::query()

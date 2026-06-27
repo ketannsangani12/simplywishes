@@ -147,7 +147,7 @@
             @elseif($isCreator && $isInProgress)
               <form action="{{ route('wishes.fulfill', $wish->w_id) }}" method="POST">
                 @csrf
-                <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-brand-blue-light text-white font-semibold shadow hover:opacity-90 transition" type="submit" onclick="return confirm('Mark this wish as fulfilled?');">
+                <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-brand-blue-light text-white font-semibold shadow hover:opacity-90 transition" type="submit" onclick="return confirm('Are You Sure Your Wish Has been Fulfilled?');">
                   <span class="material-icons !text-base">task_alt</span>
                   Fulfilled
                 </button>

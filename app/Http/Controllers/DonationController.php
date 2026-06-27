@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\DonationAcceptedCompleted;
+use App\Mail\DonationAcceptedFinancial;
+use App\Mail\DonationAcceptedCreator;
+use App\Mail\DonationCreatorCompleted;
+use App\Mail\DonationAcceptedNonFinancial;
 use App\Mail\DonationCreated;
 use App\Models\Donation;
 use App\Models\DonationComment;
@@ -85,12 +90,17 @@ class DonationController extends Controller
         $reportedCommentIds = DB::table('reports')
             ->where('reporter_id', $userId)
             ->where('reportable_type', 'comment')
+            ->where(function ($query) use ($userId) {
+                $query->whereNull('reported_user_id')
+                    ->orWhere('reported_user_id', '!=', $userId);
+            })
             ->pluck('reportable_id')
             ->all();
         $reportedCommentUserIds = DB::table('reports')
             ->where('reporter_id', $userId)
             ->where('reportable_type', 'comment')
             ->whereNotNull('reported_user_id')
+            ->where('reported_user_id', '!=', $userId)
             ->pluck('reported_user_id')
             ->unique()
             ->all();
@@ -300,6 +310,12 @@ class DonationController extends Controller
             ->where('donation_id', $donation->id)
             ->firstOrFail();
 
+        if ((int) $comment->user_id === (int) Auth::id()) {
+            return redirect()
+                ->route('donations.show', $donation->id)
+                ->with('status', 'You cannot report your own comment.');
+        }
+
         DB::table('reports')->updateOrInsert(
             [
                 'reporter_id' => Auth::id(),
@@ -504,6 +520,19 @@ class DonationController extends Controller
             'date_updated' => now(),
         ])->save();
 
+        $acceptor = $request->user();
+        $donor = User::find($donation->created_by);
+
+        if ($acceptor && $donor) {
+            if ((int) $donation->non_pay_option !== 1) {
+                Mail::to($acceptor->email)->send(new DonationAcceptedFinancial($donation, $acceptor, $donor));
+            } else {
+                Mail::to($acceptor->email)->send(new DonationAcceptedNonFinancial($donation, $acceptor, $donor));
+            }
+
+            Mail::to($donor->email)->send(new DonationAcceptedCreator($donation, $donor, $acceptor));
+        }
+
         return redirect()
             ->route('donations.show', $donation->id)
             ->with('status', 'Donation accepted successfully. It is now in progress.');
@@ -523,6 +552,16 @@ class DonationController extends Controller
             'process_status' => 2,
             'date_updated' => now(),
         ])->save();
+
+        $acceptor = $donation->accepted_by ? User::find($donation->accepted_by) : null;
+        if ($acceptor) {
+            Mail::to($acceptor->email)->send(new DonationAcceptedCompleted($donation, $acceptor));
+        }
+
+        $donor = Auth::user();
+        if ($donor) {
+            Mail::to($donor->email)->send(new DonationCreatorCompleted($donation, $donor));
+        }
 
         return redirect()
             ->route('donations.show', $donation->id)

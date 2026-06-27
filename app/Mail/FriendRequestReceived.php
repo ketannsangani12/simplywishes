@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Donation;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -10,31 +9,30 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class DonationCreated extends Mailable
+class FriendRequestReceived extends Mailable
 {
     use Queueable, SerializesModels;
 
     public function __construct(
-        public Donation $donation,
-        public User $user
+        public User $sender,
+        public User $receiver
     ) {
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'SimplyWishes: Your Donation Has Been Created Successfully'
+            subject: 'You have a new Friend!'
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.donation-created',
+            view: 'emails.friend-request-received',
             with: [
-                'donation' => $this->donation,
-                'user' => $this->user,
-                'donationUrl' => route('donations.show', $this->donation->id),
+                'sender' => $this->sender,
+                'receiver' => $this->receiver,
                 'loginUrl' => route('login'),
             ]
         );

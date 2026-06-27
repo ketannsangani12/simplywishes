@@ -70,9 +70,29 @@
                       <textarea class="w-full h-48 p-3 bg-transparent border-0 focus:ring-0 resize-y dark:text-white" id="article-content"></textarea>
                     </div>
                   </div>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-image">Upload an Image for your Article <span class="text-red-500">*</span></label>
-                    <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="article-image" type="file" />
+                  <div class="space-y-5">
+                    <div>
+                      <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-1">Upload a Video for your Article <span class="text-slate-500 dark:text-slate-400 font-normal">(Optional)</span></h3>
+                    </div>
+                    <div class="grid gap-6 md:grid-cols-2">
+                      <div class="space-y-4">
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-video-url">Insert youtube video url in order to upload</label>
+                          <input class="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-slate-700 dark:border-slate-600 dark:text-white" id="article-video-url" placeholder="http:// or https://" type="url" />
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-video-file">Or, Upload from your Files</label>
+                          <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Choose a video that you own. Do not upload any copyright images such as images from movie characters or known company products or your post could be deleted without warning.</p>
+                          <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="article-video-file" type="file" />
+                        </div>
+                      </div>
+                      <div class="space-y-4">
+                        <div>
+                          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-video-thumbnail">Upload a Thumbnail Image for your Video related to the Article</label>
+                          <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="article-video-thumbnail" type="file" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div class="flex justify-end">
                     <button class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors" type="submit">Create</button>
