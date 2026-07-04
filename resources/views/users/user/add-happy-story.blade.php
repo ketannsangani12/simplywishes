@@ -11,28 +11,49 @@
             <p class="mt-2 text-text-muted-light dark:text-text-muted-dark">Share the story behind your wish and celebrate the moment.</p>
           </div>
 
-          <form class="space-y-6">
+          @if(session('status'))
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
+              {{ session('status') }}
+            </div>
+          @endif
+
+          @if($errors->any())
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/50 dark:text-red-200">
+              <ul class="list-disc pl-5 space-y-1">
+                @foreach($errors->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
+            </div>
+          @endif
+
+          <form class="space-y-6" method="POST" action="{{ route('happy.stories.store') }}" enctype="multipart/form-data" id="happy-story-form">
+            @csrf
             <div class="space-y-2">
               <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="wish">Wishes <span class="text-red-500">*</span></label>
               <select class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-2 focus:ring-primary focus:border-primary"
-                id="wish" name="wish">
-                <option>--Wishes List--</option>
-                <option>Flight to home</option>
-                <option>Hospital ride</option>
-                <option>Concert ticket</option>
+                id="wish" name="wish_id">
+                <option value="">--Wishes List--</option>
+                @foreach($wishes ?? [] as $wish)
+                  <option value="{{ $wish->w_id }}" @selected(old('wish_id') == $wish->w_id)>
+                    {{ $wish->wish_title ?: 'Untitled wish' }}
+                  </option>
+                @endforeach
               </select>
+              <p class="text-sm text-red-600 hidden" data-error-for="wish_id">Please select a wish.</p>
             </div>
 
             <div class="space-y-2">
               <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="story-text">Story Text <span class="text-red-500">*</span></label>
               <textarea class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-2 focus:ring-primary focus:border-primary"
-                id="story-text" name="story-text" rows="4" placeholder="Share your story..."></textarea>
+                id="story-text" name="story_text" rows="4" placeholder="Share your story...">{{ old('story_text') }}</textarea>
             </div>
 
             <div class="space-y-2">
-              <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="story-image">Story Image</label>
+              <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="story-image">Story Image <span class="text-red-500">*</span></label>
               <input class="w-full text-sm file:mr-4 file:px-4 file:py-2 file:rounded-md file:border-0 file:bg-primary/20 file:text-brand-blue-light file:font-semibold file:cursor-pointer border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-surface-dark text-text-light dark:text-text-dark"
-                id="story-image" name="story-image" type="file" accept="image/*" />
+                id="story-image" name="story_image_upload" type="file" accept="image/*" />
+              <p class="text-sm text-red-600 hidden" data-error-for="story_image_choice">Please upload an image or choose one from the list.</p>
             </div>
 
             <div class="space-y-3">
@@ -40,91 +61,91 @@
               <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                 <!-- default image picks -->
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80" alt="Default image 1" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=400&q=80" alt="Default image 2" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1415889455891-23bbf19ee5c7?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1415889455891-23bbf19ee5c7?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1415889455891-23bbf19ee5c7?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1415889455891-23bbf19ee5c7?auto=format&fit=crop&w=400&q=80" alt="Default image 3" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80" alt="Default image 4" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80" alt="Default image 5" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=-60" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=-60" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=-60') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=-60" alt="Default image 6" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1450858933126-9cc56275fc6a?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1450858933126-9cc56275fc6a?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1450858933126-9cc56275fc6a?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1450858933126-9cc56275fc6a?auto=format&fit=crop&w=400&q=80" alt="Default image 7" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80" alt="Default image 8" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1470137430626-983a37b8ea46?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1470137430626-983a37b8ea46?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1470137430626-983a37b8ea46?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1470137430626-983a37b8ea46?auto=format&fit=crop&w=400&q=80" alt="Default image 9" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=400&q=80" alt="Default image 10" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=400&q=80" alt="Default image 11" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=400&q=80" alt="Default image 12" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80" alt="Default image 13" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80&sat=-40" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80&sat=-40" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80&sat=-40') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80&sat=-40" alt="Default image 14" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                 </label>
                 <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="default-image" type="radio" value="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=20" />
+                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=20" @checked(old('story_image_default') === 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=20') />
                   <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
                     src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=20" alt="Default image 15" />
                   <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
@@ -133,8 +154,8 @@
             </div>
 
             <div class="pt-2">
-              <button class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-emerald-500 text-white font-semibold shadow hover:shadow-md transition"
-                type="button">
+                <button class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-emerald-500 text-white font-semibold shadow hover:shadow-md transition"
+                type="submit">
                 Create
               </button>
             </div>
@@ -142,4 +163,40 @@
         </div>
       </section>
     </main>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('happy-story-form');
+    if (!form) return;
+
+    const wishSelect = form.querySelector('[name="wish_id"]');
+    const imageInput = form.querySelector('[name="story_image_upload"]');
+    const errorWish = form.querySelector('[data-error-for="wish_id"]');
+    const errorImage = form.querySelector('[data-error-for="story_image_choice"]');
+
+    form.addEventListener('submit', function (event) {
+      let valid = true;
+      const selectedDefault = form.querySelector('[name="story_image_default"]:checked');
+      const hasUpload = !!(imageInput && imageInput.files && imageInput.files.length > 0);
+      const hasDefault = !!selectedDefault;
+
+      if (!wishSelect || !wishSelect.value) {
+        valid = false;
+        if (errorWish) errorWish.classList.remove('hidden');
+      } else if (errorWish) {
+        errorWish.classList.add('hidden');
+      }
+
+      if (hasUpload === hasDefault) {
+        valid = false;
+        if (errorImage) errorImage.classList.remove('hidden');
+      } else if (errorImage) {
+        errorImage.classList.add('hidden');
+      }
+
+      if (!valid) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
 @endsection

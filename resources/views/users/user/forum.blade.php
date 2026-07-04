@@ -236,12 +236,14 @@
 
             <article class="bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col overflow-hidden">
               <div class="relative">
-                <img alt="{{ $post->e_title }}" class="w-full h-52 object-cover" src="{{ $image }}" />
-                @if ((int) $post->is_video_only === 1)
-                  <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <span class="material-icons text-white text-6xl drop-shadow-lg">play_circle_filled</span>
-                  </div>
-                @endif
+                <a href="{{ route('forum.show', $post->e_id) }}" class="block group" aria-label="Open {{ $post->e_title }}">
+                  <img alt="{{ $post->e_title }}" class="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-[1.02]" src="{{ $image }}" />
+                  @if ((int) $post->is_video_only === 1)
+                    <div class="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
+                      <span class="material-icons text-white text-6xl drop-shadow-lg">play_circle_filled</span>
+                    </div>
+                  @endif
+                </a>
                 <div class="absolute left-3 top-3">
                   <span class="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow">
                     {{ (int) $post->is_video_only === 1 ? 'Video' : 'Article' }}

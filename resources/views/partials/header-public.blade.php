@@ -28,6 +28,10 @@
             <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
               href="{{ route('wishes.active') }}">Active Wishes & Donations</a>
             <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
+              href="{{ route('happy.stories') }}">Happy Stories</a>
+            <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
+              href="{{ route('wishers.granters.donors') }}">Wishers, Granters &amp; Donors</a>
+            <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
               href="{{ route('about') }}">About Us</a>
           </div>
           <div class="flex items-center gap-3 lg:gap-4 ml-auto">

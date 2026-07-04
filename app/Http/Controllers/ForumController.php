@@ -8,6 +8,7 @@ use App\Models\ForumLike;
 use App\Models\ForumPost;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -129,13 +130,43 @@ class ForumController extends Controller
 
         $post->loadCount('likes');
 
+        $userId = Auth::id();
+        $reportedCommentIds = DB::table('reports')
+            ->where('reporter_id', $userId)
+            ->where('reportable_type', 'comment')
+            ->where(function ($query) use ($userId) {
+                $query->whereNull('reported_user_id')
+                    ->orWhere('reported_user_id', '!=', $userId);
+            })
+            ->pluck('reportable_id');
+
+        $reportedCommentUserIds = DB::table('reports')
+            ->where('reporter_id', $userId)
+            ->where('reportable_type', 'comment')
+            ->whereNotNull('reported_user_id')
+            ->where('reported_user_id', '!=', $userId)
+            ->pluck('reported_user_id');
+
         $likedByCurrentUser = ForumLike::where('forum_id', $post->e_id)
             ->where('user_id', Auth::id())
             ->exists();
 
-        $commentIds = $post->comments
+        $hasReportedForum = DB::table('reports')
+            ->where('reporter_id', $userId)
+            ->where('reportable_type', 'forum')
+            ->where('reportable_id', $post->e_id)
+            ->exists();
+
+        $comments = $post->comments
+            ->whereNull('parent_id')
+            ->when($reportedCommentIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $reportedCommentIds))
+            ->when($reportedCommentUserIds->isNotEmpty(), fn ($query) => $query->whereNotIn('user_id', $reportedCommentUserIds))
+            ->sortByDesc('created_at')
+            ->values();
+
+        $commentIds = $comments
             ->pluck('id')
-            ->merge($post->comments->flatMap(fn ($comment) => $comment->replies->pluck('id')))
+            ->merge($comments->flatMap(fn ($comment) => $comment->replies->pluck('id')))
             ->unique()
             ->values();
 
@@ -144,12 +175,7 @@ class ForumController extends Controller
             ->pluck('comment_id')
             ->all();
 
-        $comments = $post->comments
-            ->whereNull('parent_id')
-            ->sortByDesc('created_at')
-            ->values();
-
-        return view('users.user.forum-details', compact('post', 'likedByCurrentUser', 'likedCommentIds', 'comments'));
+        return view('users.user.forum-details', compact('post', 'likedByCurrentUser', 'likedCommentIds', 'comments', 'hasReportedForum'));
     }
 
     public function toggleLike(int $forum): RedirectResponse
@@ -258,6 +284,71 @@ class ForumController extends Controller
         }
 
         return redirect()->route('forum.show', $post->e_id);
+    }
+
+    public function report(Request $request, int $forum): RedirectResponse
+    {
+        $post = ForumPost::where('status', 1)->findOrFail($forum);
+
+        if ((int) $post->created_by === (int) Auth::id()) {
+            return redirect()
+                ->route('forum.show', $post->e_id)
+                ->with('status', 'You cannot report your own forum post.');
+        }
+
+        DB::table('reports')->updateOrInsert(
+            [
+                'reporter_id' => Auth::id(),
+                'reportable_type' => 'forum',
+                'reportable_id' => $post->e_id,
+            ],
+            [
+                'reported_user_id' => $post->created_by,
+                'reason' => 'Forum',
+                'details' => $request->input('details', 'Forum reported from forum details page.'),
+                'status' => 0,
+                'created_at' => now(),
+            ]
+        );
+
+        return redirect()
+            ->route('forum.show', $post->e_id)
+            ->with('status', 'Forum reported successfully.');
+    }
+
+    public function reportComment(Request $request, int $forum, int $comment): RedirectResponse
+    {
+        $post = ForumPost::where('status', 1)->findOrFail($forum);
+
+        $comment = ForumComment::with('user')
+            ->where('id', $comment)
+            ->where('forum_id', $post->e_id)
+            ->firstOrFail();
+
+        if ((int) $comment->user_id === (int) Auth::id()) {
+            return redirect()
+                ->route('forum.show', $post->e_id)
+                ->with('status', 'You cannot report your own comment.');
+        }
+
+        DB::table('reports')->updateOrInsert(
+            [
+                'reporter_id' => Auth::id(),
+                'reportable_type' => 'comment',
+                'reportable_id' => $comment->id,
+            ],
+            [
+                'reported_user_id' => $comment->user_id,
+                'reason' => 'Comment',
+                'details' => $request->input('details', 'Comment reported from forum preview.'),
+                'status' => 0,
+                'created_at' => now(),
+            ]
+        );
+
+        return redirect()
+            ->route('forum.show', $post->e_id)
+            ->with('status', 'Comment reported successfully.');
     }
 
     private function storeForumUpload($file, string $folder): string

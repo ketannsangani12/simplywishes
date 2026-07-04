@@ -13,6 +13,7 @@ class Activity extends Model
         'user_id',
         'wish_id',
         'donation_id',
+        'happy_story_id',
         'type',
     ];
 }

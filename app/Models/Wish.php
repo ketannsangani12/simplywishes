@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Wish extends Model
 {
@@ -39,4 +40,9 @@ class Wish extends Model
         'created_at',
         'wish_email_status',
     ];
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'wished_by');
+    }
 }

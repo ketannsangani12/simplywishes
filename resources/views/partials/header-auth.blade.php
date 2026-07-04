@@ -113,6 +113,19 @@
                 </form>
               </div>
             </details>
+            <details class="relative hidden lg:block">
+              <summary aria-label="More menu"
+                class="list-none p-2 rounded-md text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
+                <span class="material-symbols-outlined">menu</span>
+              </summary>
+              <div
+                class="absolute right-0 mt-2 w-64 rounded-lg shadow-lg bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 py-2">
+                <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+                  href="{{ route('happy.stories') }}">Happy Stories</a>
+                <a class="block px-4 py-2 text-sm text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800"
+                  href="{{ route('wishers.granters.donors') }}">Wishers, Granters &amp; Donors</a>
+              </div>
+            </details>
             <details class="relative lg:hidden">
               <summary aria-label="Open menu"
                 class="list-none p-2 rounded-md text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
