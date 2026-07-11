@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\DonationController;
@@ -18,9 +19,19 @@ Route::get('/happy-stories', [SiteController::class, 'happyStories'])->name('hap
 Route::get('/happy-stories/{story}', [SiteController::class, 'happyStory'])->name('happy.stories.show')->middleware('auth')->whereNumber('story');
 Route::post('/happy-stories/{story}/report', [SiteController::class, 'reportHappyStory'])->name('happy.stories.report')->middleware('auth')->whereNumber('story');
 Route::get('/wishers-granters-donors', [SiteController::class, 'wishersGrantersDonors'])->name('wishers.granters.donors');
+Route::get('/members/{user}', [SiteController::class, 'memberProfile'])->name('members.show')->middleware('auth')->whereNumber('user');
 Route::get('/privacy-policy', [SiteController::class, 'privacyPolicy'])->name('privacy.policy');
 Route::get('/terms-of-use', [SiteController::class, 'termsOfUse'])->name('terms.of.use');
-Route::get('/inbox', [SiteController::class, 'inbox'])->name('inbox')->middleware('auth');
+Route::get('/inbox', [ChatController::class, 'index'])->name('inbox')->middleware('auth');
+Route::middleware('auth')->prefix('chat')->name('chat.')->group(function () {
+    Route::get('/threads', [ChatController::class, 'threads'])->name('threads');
+    Route::get('/users/search', [ChatController::class, 'searchUsers'])->name('users.search');
+    Route::post('/conversations', [ChatController::class, 'openConversation'])->name('conversations.open');
+    Route::get('/conversations/{conversation}/messages', [ChatController::class, 'messages'])->name('conversations.messages')->whereNumber('conversation');
+    Route::post('/conversations/{conversation}/messages', [ChatController::class, 'sendMessage'])->name('conversations.messages.send')->whereNumber('conversation');
+    Route::delete('/conversations/{conversation}/messages/{message}', [ChatController::class, 'deleteMessage'])->name('conversations.messages.delete')->whereNumber('conversation')->whereNumber('message');
+    Route::post('/heartbeat', [ChatController::class, 'heartbeat'])->name('heartbeat');
+});
 Route::get('/forum', [ForumController::class, 'index'])->name('forum')->middleware('auth');
 Route::post('/forum', [ForumController::class, 'store'])->name('forum.store')->middleware('auth');
 Route::get('/forum/{forum}', [ForumController::class, 'show'])->name('forum.show')->middleware('auth');

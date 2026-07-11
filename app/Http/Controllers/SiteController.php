@@ -160,6 +160,47 @@ class SiteController extends Controller
         return view('users.user.wishers-granters-donors', compact('searchTerm', 'tab', 'wishers', 'granters', 'donors'));
     }
 
+    public function memberProfile(int $user): View
+    {
+        $viewerId = (int) Auth::id();
+        $member = User::with('presence')->findOrFail($user);
+
+        $name = trim(implode(' ', array_filter([$member->first_name ?? null, $member->last_name ?? null])));
+        $name = $name !== '' ? $name : ($member->name ?: 'Member');
+
+        $avatar = $member->profile_image
+            ? (filter_var($member->profile_image, FILTER_VALIDATE_URL) ? $member->profile_image : asset($member->profile_image))
+            : 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=E2E8F0&color=0F172A';
+
+        $location = trim(implode(', ', array_filter([$member->city ?? null, $member->state ?? null, $member->country ?? null])));
+
+        $stats = [
+            'wishes' => Wish::where('wished_by', $member->id)->where('wish_status', 1)->count(),
+            'granted' => Wish::where('granted_by', $member->id)->whereNotNull('granted_by')->where('granted_by', '!=', '')->count(),
+            'donations' => Donation::where('created_by', $member->id)->where('status', 1)->count(),
+            'stories' => HappyStory::where('user_id', $member->id)->count(),
+            'friends' => Friend::where('user_id', $member->id)->count(),
+        ];
+
+        $isSelf = $viewerId === (int) $member->id;
+        $isFriend = ! $isSelf && Friend::where('user_id', $viewerId)->where('friend_id', $member->id)->exists();
+        $requestSent = ! $isSelf && FriendRequest::where('sender_id', $viewerId)->where('receiver_id', $member->id)->where('status', 0)->exists();
+        $requestReceived = ! $isSelf && FriendRequest::where('sender_id', $member->id)->where('receiver_id', $viewerId)->where('status', 0)->exists();
+
+        return view('users.user.member-profile', [
+            'member' => $member,
+            'name' => $name,
+            'avatar' => $avatar,
+            'location' => $location,
+            'isOnline' => $member->presence?->isOnline() ?? false,
+            'stats' => $stats,
+            'isSelf' => $isSelf,
+            'isFriend' => $isFriend,
+            'requestSent' => $requestSent,
+            'requestReceived' => $requestReceived,
+        ]);
+    }
+
     public function happyStories(): View
     {
         $searchTerm = trim((string) request()->query('q', ''));
