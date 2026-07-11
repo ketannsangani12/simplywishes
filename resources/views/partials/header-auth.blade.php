@@ -10,8 +10,8 @@
           : null;
       @endphp
       <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap items-center justify-between gap-4 py-4 lg:py-0 lg:h-20">
-          <a aria-label="Simply Wishes homepage" class="flex items-center gap-3 min-w-[200px]" href="{{ route('home') }}">
+        <div class="flex items-center justify-between gap-3 py-4 xl:py-0 xl:h-20">
+          <a aria-label="Simply Wishes homepage" class="flex items-center gap-3 shrink-0" href="{{ route('home') }}">
             <svg class="w-10 h-10 text-primary" fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
               <circle class="fill-current text-[#FBBF24]" cx="50" cy="50" r="5"></circle>
               <circle class="fill-current text-[#FBBF24] opacity-80" cx="50" cy="30" r="4"></circle>
@@ -28,26 +28,26 @@
             <span class="text-2xl font-bold font-display text-brand-blue-light dark:text-brand-blue-dark">Simply<span
                 class="text-primary">Wishes</span></span>
           </a>
-          <div class="hidden lg:flex items-center space-x-5 xl:space-x-8">
-            <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
+          <div class="hidden xl:flex items-center gap-x-4 2xl:gap-x-7">
+            <a class="text-sm 2xl:text-base font-medium whitespace-nowrap text-text-light dark:text-text-dark hover:text-primary transition-colors"
               href="{{ route('home') }}">Home</a>
-            <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
+            <a class="text-sm 2xl:text-base font-medium whitespace-nowrap text-text-light dark:text-text-dark hover:text-primary transition-colors"
               href="{{ route('wishes.create') }}">Make a Wish</a>
-            <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
+            <a class="text-sm 2xl:text-base font-medium whitespace-nowrap text-text-light dark:text-text-dark hover:text-primary transition-colors"
               href="{{ route('donations.create') }}">Donate an item</a>
-            <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
+            <a class="text-sm 2xl:text-base font-medium whitespace-nowrap text-text-light dark:text-text-dark hover:text-primary transition-colors"
               href="{{ route('wishes.active') }}">Active Wishes &amp; Donations</a>
-            <a class="text-base font-medium text-text-light dark:text-text-dark hover:text-primary transition-colors"
+            <a class="text-sm 2xl:text-base font-medium whitespace-nowrap text-text-light dark:text-text-dark hover:text-primary transition-colors"
               href="{{ route('about') }}">About Us</a>
           </div>
-          <div class="flex items-center gap-3 lg:gap-4 ml-auto">
-            <details class="relative">
+          <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+            <details class="relative min-w-0">
               <summary aria-label="User menu"
                 class="list-none flex items-center gap-3 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 max-w-[220px] xl:max-w-[260px]">
                 @if ($profileImageUrl)
-                  <img src="{{ $profileImageUrl }}" alt="{{ $userName }}" class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                  <img src="{{ $profileImageUrl }}" alt="{{ $userName }}" class="w-10 h-10 shrink-0 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
                 @else
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue-light to-primary flex items-center justify-center text-white font-semibold">
+                  <div class="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-brand-blue-light to-primary flex items-center justify-center text-white font-semibold">
                     {{ $userInitial }}
                   </div>
                 @endif
@@ -113,7 +113,7 @@
                 </form>
               </div>
             </details>
-            <details class="relative hidden lg:block">
+            <details class="relative hidden xl:block">
               <summary aria-label="More menu"
                 class="list-none p-2 rounded-md text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
                 <span class="material-symbols-outlined">menu</span>
@@ -126,7 +126,7 @@
                   href="{{ route('wishers.granters.donors') }}">Wishers, Granters &amp; Donors</a>
               </div>
             </details>
-            <details class="relative lg:hidden">
+            <details class="relative xl:hidden">
               <summary aria-label="Open menu"
                 class="list-none p-2 rounded-md text-text-light dark:text-text-dark hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
                 <span class="material-symbols-outlined">menu</span>
