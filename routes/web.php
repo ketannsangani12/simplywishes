@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\HappyStoryController as AdminHappyStoryController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\ChatController;
@@ -121,6 +124,29 @@ Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
 Route::post('/signup', [AuthController::class, 'signup'])->name('signup.submit');
 Route::get('/locations/states/{country}', [AuthController::class, 'statesByCountry'])->name('states.by.country');
 Route::get('/locations/cities/{state}', [AuthController::class, 'citiesByState'])->name('cities.by.state');
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', function () {
+        return auth()->check() && auth()->user()->role === 'Admin'
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('admin.login');
+    })->name('index');
+    Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout')->middleware('auth');
+    Route::middleware('admin')->group(function () {
+        Route::view('/dashboard', 'admin.dashboard')->name('dashboard');
+        Route::get('/happy-stories', [AdminHappyStoryController::class, 'index'])->name('happy-stories.index');
+        Route::get('/happy-stories/{story}/edit', [AdminHappyStoryController::class, 'edit'])->name('happy-stories.edit')->whereNumber('story');
+        Route::put('/happy-stories/{story}', [AdminHappyStoryController::class, 'update'])->name('happy-stories.update')->whereNumber('story');
+        Route::delete('/happy-stories/{story}', [AdminHappyStoryController::class, 'destroy'])->name('happy-stories.destroy')->whereNumber('story');
+        Route::put('/happy-stories/{story}/status', [AdminHappyStoryController::class, 'updateStatus'])->name('happy-stories.status')->whereNumber('story');
+        Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/{report}', [AdminReportController::class, 'show'])->name('reports.show')->whereNumber('report');
+        Route::delete('/reports/{report}/content', [AdminReportController::class, 'destroyContent'])->name('reports.content.destroy')->whereNumber('report');
+        Route::put('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss')->whereNumber('report');
+    });
+});
+
 Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.forgot');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.forgot.submit');
 Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');

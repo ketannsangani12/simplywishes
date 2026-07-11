@@ -457,7 +457,7 @@ class WishController extends Controller
         DB::table('reports')->updateOrInsert(
             [
                 'reporter_id' => Auth::id(),
-                'reportable_type' => 'comment',
+                'reportable_type' => 'wish_comment',
                 'reportable_id' => $comment->id,
             ],
             [

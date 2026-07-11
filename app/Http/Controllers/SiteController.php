@@ -617,7 +617,7 @@ class SiteController extends Controller
         DB::table('reports')->updateOrInsert(
             [
                 'reporter_id' => Auth::id(),
-                'reportable_type' => 'comment',
+                'reportable_type' => 'happy_story_comment',
                 'reportable_id' => $comment->id,
             ],
             [
