@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -47,6 +48,27 @@ class AuthController extends Controller
         }
 
         return redirect()->intended(route('admin.dashboard'))->with('status', 'Logged in successfully.');
+    }
+
+    public function showChangePassword(): View
+    {
+        return view('admin.change-password');
+    }
+
+    public function changePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'string', 'min:6', 'confirmed', 'different:current_password'],
+        ]);
+
+        $user = $request->user();
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        return redirect()
+            ->route('admin.password.edit')
+            ->with('status', 'Password changed successfully.');
     }
 
     public function logout(Request $request): RedirectResponse

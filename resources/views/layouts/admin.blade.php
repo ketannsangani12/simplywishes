@@ -69,6 +69,7 @@
             <a class="text-sm font-medium {{ request()->routeIs('admin.dashboard') ? 'text-[#1f70c1] dark:text-brand-blue-dark' : 'text-text-light dark:text-text-dark' }} hover:text-[#1f70c1] transition-colors" href="{{ route('admin.dashboard') }}">Dashboard</a>
             <a class="text-sm font-medium {{ request()->routeIs('admin.happy-stories.*') ? 'text-[#1f70c1] dark:text-brand-blue-dark' : 'text-text-light dark:text-text-dark' }} hover:text-[#1f70c1] transition-colors" href="{{ route('admin.happy-stories.index') }}">Happy Stories</a>
             <a class="text-sm font-medium {{ request()->routeIs('admin.reports.*') ? 'text-[#1f70c1] dark:text-brand-blue-dark' : 'text-text-light dark:text-text-dark' }} hover:text-[#1f70c1] transition-colors" href="{{ route('admin.reports.index') }}">Reports</a>
+            <a class="text-sm font-medium {{ request()->routeIs('admin.password.*') ? 'text-[#1f70c1] dark:text-brand-blue-dark' : 'text-text-light dark:text-text-dark' }} hover:text-[#1f70c1] transition-colors" href="{{ route('admin.password.edit') }}">Change Password</a>
             <span class="hidden sm:block text-sm text-text-muted-light dark:text-text-muted-dark border-l border-border-light dark:border-border-dark pl-5">{{ auth()->user()->name }}</span>
             <form method="post" action="{{ route('admin.logout') }}">
               @csrf

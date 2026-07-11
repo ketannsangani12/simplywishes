@@ -144,6 +144,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/reports/{report}', [AdminReportController::class, 'show'])->name('reports.show')->whereNumber('report');
         Route::delete('/reports/{report}/content', [AdminReportController::class, 'destroyContent'])->name('reports.content.destroy')->whereNumber('report');
         Route::put('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss')->whereNumber('report');
+        Route::get('/change-password', [AdminAuthController::class, 'showChangePassword'])->name('password.edit');
+        Route::put('/change-password', [AdminAuthController::class, 'changePassword'])->name('password.update');
     });
 });
 
