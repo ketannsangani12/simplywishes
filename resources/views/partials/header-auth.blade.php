@@ -8,6 +8,16 @@
         $profileImageUrl = $profileImage
           ? (filter_var($profileImage, FILTER_VALIDATE_URL) ? $profileImage : asset($profileImage))
           : null;
+        $unreadInboxCount = $authUser
+          ? \App\Models\ChatMessage::query()
+              ->whereHas('conversation', function ($query) use ($authUser) {
+                $query->forUser($authUser->id);
+              })
+              ->where('sender_id', '!=', $authUser->id)
+              ->whereNull('deleted_at')
+              ->whereNull('read_at')
+              ->count()
+          : 0;
       @endphp
       <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between gap-3 py-4 xl:py-0 xl:h-20">
@@ -62,7 +72,11 @@
                   href="{{ route('inbox') }}">
                   <span class="material-symbols-outlined text-brand-blue-light">inbox</span>
                   <span class="flex-1">Inbox</span>
-                  <span class="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold px-2">4</span>
+                  @if ($unreadInboxCount > 0)
+                    <span class="ml-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-bold text-white">
+                      {{ $unreadInboxCount > 99 ? '99+' : $unreadInboxCount }}
+                    </span>
+                  @endif
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-text-light dark:text-text-dark font-semibold"
                   href="{{ route('forum') }}">

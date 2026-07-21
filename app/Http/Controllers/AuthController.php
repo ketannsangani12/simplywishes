@@ -88,8 +88,8 @@ class AuthController extends Controller
             $fileName = Str::uuid()->toString() . '.' . $extension;
 
             $candidateDirectories = [
-                public_path('uploads/users'),
                 base_path('../public_html/uploads/users'),
+                public_path('uploads/users'),
             ];
 
             $uploadDirectory = null;
@@ -163,8 +163,8 @@ class AuthController extends Controller
             $fileName = Str::uuid()->toString() . '.' . $extension;
 
             $candidateDirectories = [
-                public_path('uploads/users'),
                 base_path('../public_html/uploads/users'),
+                public_path('uploads/users'),
             ];
 
             $uploadDirectory = null;

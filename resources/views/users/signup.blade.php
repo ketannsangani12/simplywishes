@@ -12,8 +12,14 @@
               donating, and sharing stories.</p>
           </div>
           <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 sm:p-8">
-            <form class="space-y-6" method="post" action="{{ route('signup.submit') }}" id="signup-form" novalidate enctype="multipart/form-data">
+            <form class="space-y-6" method="post" action="{{ route('signup.submit') }}" id="signup-form" novalidate enctype="multipart/form-data" autocomplete="off">
               @csrf
+              <div class="absolute -left-[9999px] top-auto h-px w-px overflow-hidden opacity-0 pointer-events-none" aria-hidden="true">
+                <label for="signup-username-decoy">Username</label>
+                <input id="signup-username-decoy" type="text" autocomplete="username" tabindex="-1" />
+                <label for="signup-password-decoy">Password</label>
+                <input id="signup-password-decoy" type="password" autocomplete="current-password" tabindex="-1" />
+              </div>
               @if ($errors->any())
                 <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                   <p class="font-semibold">Please fix the following:</p>
@@ -30,7 +36,7 @@
                     Address <span class="text-red-500">*</span></label>
                   <input id="email" name="email" required
                     class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary"
-                    placeholder="you@example.com" type="email" />
+                    placeholder="you@example.com" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" />
                   @error('email')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                   @enderror
@@ -105,7 +111,7 @@
                   <div class="relative">
                     <input id="password" name="password" required
                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 pr-12 focus:ring-2 focus:ring-primary focus:border-primary"
-                      type="password" />
+                      type="password" autocomplete="new-password" />
                     <button type="button" aria-label="Show password"
                       class="absolute inset-y-0 right-3 flex items-center text-text-muted-light dark:text-text-muted-dark hover:text-primary"
                       data-toggle-password="password">
@@ -122,7 +128,7 @@
                   <div class="relative">
                     <input id="confirm" name="confirm" required
                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 pr-12 focus:ring-2 focus:ring-primary focus:border-primary"
-                      type="password" />
+                      type="password" autocomplete="new-password" />
                     <button type="button" aria-label="Show password"
                       class="absolute inset-y-0 right-3 flex items-center text-text-muted-light dark:text-text-muted-dark hover:text-primary"
                       data-toggle-password="confirm">

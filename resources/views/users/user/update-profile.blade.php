@@ -7,6 +7,7 @@
   $profileImage = $user?->profile_image
     ? (filter_var($user->profile_image, FILTER_VALIDATE_URL) ? $user->profile_image : asset($user->profile_image))
     : null;
+  $hasProfileImage = filled($profileImage);
   $currentFullName = trim(($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')) ?: ($user?->name ?? 'Your profile');
   $defaultImages = [];
   $candidateDirectories = [
@@ -135,8 +136,20 @@
             <div class="space-y-4">
               <div class="space-y-2">
                 <p class="text-sm font-semibold text-text-light">Profile image</p>
-                <div class="w-52 h-52 rounded-2xl overflow-hidden border-2 border-primary/50 bg-gray-50 shadow-sm">
-                  <img id="profile-preview" class="w-full h-full object-cover" alt="Current profile" src="{{ $profileImage ?: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=80' }}" />
+                <div class="relative flex w-52 h-52 items-center justify-center rounded-2xl overflow-hidden border-2 border-primary/50 bg-gray-50 shadow-sm">
+                  <img
+                    id="profile-preview"
+                    class="w-full h-full object-cover {{ $hasProfileImage ? '' : 'hidden' }}"
+                    alt="Current profile"
+                    src="{{ $profileImage ?? '' }}"
+                  />
+                  <div
+                    id="profile-placeholder"
+                    class="flex h-full w-full items-center justify-center bg-slate-100 text-slate-400 {{ $hasProfileImage ? 'hidden' : '' }}"
+                    aria-hidden="true"
+                  >
+                    <span class="material-symbols-outlined text-[6rem]">account_circle</span>
+                  </div>
                 </div>
                 <div class="flex flex-wrap gap-3">
                   <label class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-blue-light text-white text-sm font-semibold hover:opacity-90 transition-colors cursor-pointer">
@@ -227,11 +240,30 @@
     const citySelect = document.getElementById('city');
     const avatarInput = document.getElementById('avatar-input');
     const profilePreview = document.getElementById('profile-preview');
+    const profilePlaceholder = document.getElementById('profile-placeholder');
     const removeAvatar = document.getElementById('remove-avatar');
+    const defaultAvatarInputs = document.querySelectorAll('input[name="avatar-default"]');
     const statesUrlTemplate = countrySelect.dataset.statesUrl;
     const citiesUrlTemplate = stateSelect.dataset.citiesUrl;
     let selectedStateId = @json((string) old('state', $selectedState?->id ?? ''));
     let selectedCityId = @json((string) old('city', $selectedCity?->id ?? ''));
+
+    const showProfilePlaceholder = () => {
+      profilePreview?.classList.add('hidden');
+      profilePreview?.removeAttribute('src');
+      profilePlaceholder?.classList.remove('hidden');
+    };
+
+    const showProfileImage = (src) => {
+      if (!src) {
+        showProfilePlaceholder();
+        return;
+      }
+
+      profilePreview.src = src;
+      profilePreview.classList.remove('hidden');
+      profilePlaceholder?.classList.add('hidden');
+    };
 
     const resetSelect = (select, placeholder) => {
       select.innerHTML = `<option value="">${placeholder}</option>`;
@@ -298,7 +330,7 @@
       if (avatarInput.files && avatarInput.files[0]) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          profilePreview.src = e.target.result;
+          showProfileImage(e.target.result);
         };
         reader.readAsDataURL(avatarInput.files[0]);
         removeAvatar.checked = false;
@@ -307,9 +339,22 @@
 
     removeAvatar?.addEventListener('change', () => {
       if (removeAvatar.checked) {
-        profilePreview.src = 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=80';
+        showProfilePlaceholder();
         avatarInput.value = '';
+        defaultAvatarInputs.forEach((input) => {
+          input.checked = false;
+        });
       }
+    });
+
+    defaultAvatarInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        if (input.checked) {
+          showProfileImage(input.closest('label')?.querySelector('img')?.src);
+          removeAvatar.checked = false;
+          avatarInput.value = '';
+        }
+      });
     });
 
     if (countrySelect.value) {
