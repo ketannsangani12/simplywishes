@@ -528,14 +528,23 @@ No current donations available yet.
       applySearchAndFilters();
     };
 
+    const validTabs = new Set(Array.from(tabs, (tab) => tab.getAttribute('data-tab')));
+
+    const getInitialTab = () => {
+      const hashTab = window.location.hash.replace('#', '');
+      return validTabs.has(hashTab) ? hashTab : 'current-wishes';
+    };
+
     tabs.forEach((tab) => {
       tab.addEventListener('click', (event) => {
         event.preventDefault();
-        setActive(tab.getAttribute('data-tab'));
+        const tabKey = tab.getAttribute('data-tab');
+        setActive(tabKey);
+        window.location.hash = tabKey;
       });
     });
 
-    setActive('current-wishes');
+    setActive(getInitialTab());
 
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     document.querySelectorAll('.js-activity').forEach((button) => {

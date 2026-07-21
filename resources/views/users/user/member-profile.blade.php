@@ -16,15 +16,15 @@
       <!-- Header card -->
       <div class="bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
         <div class="h-28 bg-gradient-to-r from-brand-blue-light to-brand-blue-light/70"></div>
-        <div class="px-6 pb-6 -mt-14">
-          <div class="flex flex-col sm:flex-row sm:items-end gap-4">
+        <div class="px-6 pb-6 pt-4">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div class="relative">
               <img src="{{ $avatar }}" alt="{{ $name }}"
-                class="w-28 h-28 rounded-2xl object-cover border-4 border-surface-light dark:border-surface-dark shadow-lg bg-gray-100" />
+                class="-mt-18 w-28 h-28 rounded-2xl object-cover border-4 border-surface-light dark:border-surface-dark shadow-lg bg-gray-100" />
               <span class="absolute bottom-2 right-2 inline-flex h-4 w-4 rounded-full border-2 border-white {{ $isOnline ? 'bg-emerald-500' : 'bg-gray-400' }}"></span>
             </div>
-            <div class="flex-1 min-w-0 sm:pb-2">
-              <h1 class="text-2xl font-semibold text-text-light dark:text-text-dark truncate">{{ $name }}</h1>
+            <div class="min-w-0 flex-1 sm:pb-2">
+              <h1 class="text-2xl font-semibold leading-tight text-text-light dark:text-text-dark break-words">{{ $name }}</h1>
               <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-text-muted-light dark:text-text-muted-dark">
                 <span class="inline-flex items-center gap-1.5">
                   <span class="inline-flex h-2 w-2 rounded-full {{ $isOnline ? 'bg-emerald-500' : 'bg-gray-400' }}"></span>

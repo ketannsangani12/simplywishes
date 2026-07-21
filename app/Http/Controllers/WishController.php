@@ -23,14 +23,16 @@ use Illuminate\View\View;
 
 class WishController extends Controller
 {
+    private const MAX_ACTIVE_LISTINGS = 3;
+
     private function storeUploadedWishImage(\Illuminate\Http\UploadedFile $file): string
     {
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $filename = Str::uuid()->toString() . '.' . $extension;
 
         $candidateDirectories = [
-            public_path('uploads/wishes'),
             base_path('../public_html/uploads/wishes'),
+            public_path('uploads/wishes'),
         ];
 
         $uploadDirectory = null;
@@ -58,6 +60,16 @@ class WishController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $isDraft = $request->input('action') === 'draft';
+        $user = $request->user();
+
+        if (! $isDraft && $this->hasReachedActiveListingLimit((int) $user->id)) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors([
+                    'listing_limit' => 'You can only have up to 3 active or in-progress wishes and donations combined at a time.',
+                ]);
+        }
 
         $rules = $isDraft ? [
             'wish_title' => ['nullable', 'string', 'max:100'],
@@ -87,8 +99,6 @@ class WishController extends Controller
         ];
 
         $validated = $request->validate($rules);
-
-        $user = $request->user();
 
         $primaryImage = null;
         if ($request->hasFile('wish_image_upload')) {
@@ -493,6 +503,15 @@ class WishController extends Controller
 
         $isDraft = $request->input('action') === 'draft';
 
+        if (! $isDraft && $this->hasReachedActiveListingLimit((int) Auth::id(), $wish->w_id)) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors([
+                    'listing_limit' => 'You can only have up to 3 active or in-progress wishes and donations combined at a time.',
+                ]);
+        }
+
         $rules = $isDraft ? [
             'wish_title' => ['nullable', 'string', 'max:100'],
             'wish_description' => ['nullable', 'string'],
@@ -651,5 +670,20 @@ class WishController extends Controller
         return redirect()
             ->route('wishes.show', $wish->w_id)
             ->with('status', 'Wish fulfilled successfully. It is now granted.');
+    }
+
+    private function hasReachedActiveListingLimit(int $userId, ?int $excludeWishId = null): bool
+    {
+        $activeWishCount = Wish::where('wished_by', $userId)
+            ->where('wish_status', 1)
+            ->whereIn('wish_progress_status', [0, 1])
+            ->when($excludeWishId, fn ($query) => $query->where('w_id', '!=', $excludeWishId))
+            ->count();
+
+        $activeDonationCount = Donation::where('created_by', $userId)
+            ->whereIn('status', [1, 2])
+            ->count();
+
+        return ($activeWishCount + $activeDonationCount) >= self::MAX_ACTIVE_LISTINGS;
     }
 }

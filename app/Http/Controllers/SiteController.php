@@ -456,8 +456,8 @@ class SiteController extends Controller
             $fileName = Str::uuid()->toString() . '.' . $extension;
 
             $candidateDirectories = [
-                public_path('uploads/happy-stories'),
                 base_path('../public_html/uploads/happy-stories'),
+                public_path('uploads/happy-stories'),
             ];
 
             $uploadDirectory = null;

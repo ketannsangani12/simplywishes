@@ -356,7 +356,21 @@ class ForumController extends Controller
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'bin');
         $fileName = Str::uuid()->toString() . '.' . $extension;
 
-        $uploadDirectory = public_path('uploads/forum/' . $folder);
+        $candidateDirectories = [
+            base_path('../public_html/uploads/forum/' . $folder),
+            public_path('uploads/forum/' . $folder),
+        ];
+
+        $uploadDirectory = null;
+        foreach ($candidateDirectories as $directory) {
+            $parentDirectory = dirname($directory);
+            if (is_dir($directory) || is_dir($parentDirectory)) {
+                $uploadDirectory = $directory;
+                break;
+            }
+        }
+
+        $uploadDirectory ??= public_path('uploads/forum/' . $folder);
         File::ensureDirectoryExists($uploadDirectory);
         $file->move($uploadDirectory, $fileName);
 

@@ -12,6 +12,7 @@ use App\Models\Donation;
 use App\Models\DonationComment;
 use App\Models\DonationCommentLike;
 use App\Models\User;
+use App\Models\Wish;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,14 +24,16 @@ use Illuminate\View\View;
 
 class DonationController extends Controller
 {
+    private const MAX_ACTIVE_LISTINGS = 3;
+
     private function storeUploadedDonationImage(\Illuminate\Http\UploadedFile $file): string
     {
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $filename = Str::uuid()->toString() . '.' . $extension;
 
         $candidateDirectories = [
-            public_path('uploads/donations'),
             base_path('../public_html/uploads/donations'),
+            public_path('uploads/donations'),
         ];
 
         $uploadDirectory = null;
@@ -339,6 +342,16 @@ class DonationController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $isDraft = $request->input('action') === 'draft';
+        $user = $request->user();
+
+        if (! $isDraft && $this->hasReachedActiveListingLimit((int) $user->id)) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors([
+                    'listing_limit' => 'You can only have up to 3 active or in-progress wishes and donations combined at a time.',
+                ]);
+        }
 
         $rules = $isDraft ? [
             'donation_title' => ['nullable', 'string', 'max:100'],
@@ -364,8 +377,6 @@ class DonationController extends Controller
         ];
 
         $validated = $request->validate($rules);
-
-        $user = $request->user();
 
         $image = null;
         if ($request->hasFile('donation_image_upload')) {
@@ -413,6 +424,15 @@ class DonationController extends Controller
             ->firstOrFail();
 
         $isDraft = $request->input('action') === 'draft';
+
+        if (! $isDraft && $this->hasReachedActiveListingLimit((int) Auth::id(), $donation->id)) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors([
+                    'listing_limit' => 'You can only have up to 3 active or in-progress wishes and donations combined at a time.',
+                ]);
+        }
 
         $rules = $isDraft ? [
             'donation_title' => ['nullable', 'string', 'max:100'],
@@ -566,5 +586,20 @@ class DonationController extends Controller
         return redirect()
             ->route('donations.show', $donation->id)
             ->with('status', 'Donation completed successfully.');
+    }
+
+    private function hasReachedActiveListingLimit(int $userId, ?int $excludeDonationId = null): bool
+    {
+        $activeWishCount = Wish::where('wished_by', $userId)
+            ->where('wish_status', 1)
+            ->whereIn('wish_progress_status', [0, 1])
+            ->count();
+
+        $activeDonationCount = Donation::where('created_by', $userId)
+            ->whereIn('status', [1, 2])
+            ->when($excludeDonationId, fn ($query) => $query->where('id', '!=', $excludeDonationId))
+            ->count();
+
+        return ($activeWishCount + $activeDonationCount) >= self::MAX_ACTIVE_LISTINGS;
     }
 }
