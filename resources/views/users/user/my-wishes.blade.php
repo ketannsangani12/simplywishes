@@ -131,11 +131,13 @@
                   {{ $item['subtitle'] }}
                 </span>
               </div>
-              <div class="absolute right-3 top-3">
-                <span class="inline-flex items-center rounded-full bg-brand-blue-light/90 px-3 py-1 text-xs font-semibold text-white shadow">
-                  {{ $item['status'] }}
-                </span>
-              </div>
+              @if($tab !== 'saved')
+                <div class="absolute right-3 top-3">
+                  <span class="inline-flex items-center rounded-full bg-brand-blue-light/90 px-3 py-1 text-xs font-semibold text-white shadow">
+                    {{ $item['status'] }}
+                  </span>
+                </div>
+              @endif
             </div>
             <div class="p-4 space-y-3">
               <div>
