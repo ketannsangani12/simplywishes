@@ -52,13 +52,28 @@
                   <span class="text-xs font-bold">{{ $postLikesCount }}</span>
                 </button>
               </form>
-              <form action="{{ route('forum.report', $post->e_id) }}" method="POST" class="js-content-report-form" data-report-label="forum" data-reported="{{ !empty($hasReportedForum) ? 'true' : 'false' }}">
-                @csrf
-                <button type="submit" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold bg-slate-100 shadow transition {{ !empty($hasReportedForum) ? 'text-red-500 ring-2 ring-red-400/70 cursor-default' : 'text-slate-700 hover:bg-slate-200 hover:text-amber-500' }}" aria-label="Report forum">
-                  <span class="material-icons text-base">flag</span>
-                  Report
-                </button>
-              </form>
+              @if ((int) ($post->created_by ?? 0) === (int) auth()->id())
+                <a href="{{ route('forum.edit', $post->e_id) }}" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">
+                  <span class="material-icons text-base">edit</span>
+                  Edit
+                </a>
+                <form action="{{ route('forum.destroy', $post->e_id) }}" method="POST" onsubmit="return confirm('Delete this forum post? This cannot be undone.')">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold bg-red-50 text-red-600 hover:bg-red-100" aria-label="Delete forum">
+                    <span class="material-icons text-base">delete</span>
+                    Delete
+                  </button>
+                </form>
+              @else
+                <form action="{{ route('forum.report', $post->e_id) }}" method="POST" class="js-content-report-form" data-report-label="forum" data-reported="{{ !empty($hasReportedForum) ? 'true' : 'false' }}">
+                  @csrf
+                  <button type="submit" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold bg-slate-100 shadow transition {{ !empty($hasReportedForum) ? 'text-red-500 ring-2 ring-red-400/70 cursor-default' : 'text-slate-700 hover:bg-slate-200 hover:text-amber-500' }}" aria-label="Report forum">
+                    <span class="material-icons text-base">flag</span>
+                    Report
+                  </button>
+                </form>
+              @endif
               <div class="relative">
                 <button class="w-10 h-10 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-sky-500 transition js-share-btn" data-forum-id="{{ $post->e_id }}" data-forum-title="{{ $post->e_title }}" aria-label="Share forum" type="button">
                   <span class="material-icons !text-base">share</span>

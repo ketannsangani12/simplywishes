@@ -80,6 +80,105 @@ class ForumController extends Controller
             ->with('active_contribute_tab', $validated['post_type']);
     }
 
+    public function edit(int $forum): View
+    {
+        $post = ForumPost::where('e_id', $forum)
+            ->where('created_by', Auth::id())
+            ->firstOrFail();
+
+        return view('users.user.edit-forum', compact('post'));
+    }
+
+    public function update(Request $request, int $forum): RedirectResponse
+    {
+        $post = ForumPost::where('e_id', $forum)
+            ->where('created_by', Auth::id())
+            ->firstOrFail();
+
+        $postType = (int) $post->is_video_only === 1 ? 'video' : 'article';
+        $titleField = $postType === 'video' ? 'video_title' : 'article_title';
+        $contentField = $postType === 'video' ? 'video_content' : 'article_content';
+        $videoUrlField = $postType === 'video' ? 'video_featured_video_url' : 'article_featured_video_url';
+        $videoFileField = $postType === 'video' ? 'video_featured_video_file' : 'article_featured_video_file';
+        $thumbnailField = $postType === 'video' ? 'video_thumbnail' : 'article_thumbnail';
+
+        $validator = Validator::make($request->all(), [
+            $titleField => ['required', 'string', 'max:250'],
+            $contentField => ['required', 'string'],
+            $videoUrlField => ['nullable', 'url', 'max:2048'],
+            $videoFileField => ['nullable', 'file', 'mimes:mp4,webm,ogg,mov,m4v,avi', 'max:51200'],
+            $thumbnailField => ['nullable', 'image', 'max:10240'],
+        ]);
+
+        $validator->after(function ($validator) use ($request, $postType, $videoUrlField, $videoFileField, $post) {
+            if ($postType === 'video'
+                && ! $request->filled($videoUrlField)
+                && ! $request->hasFile($videoFileField)
+                && empty($post->featured_video_url)) {
+                $validator->errors()->add($videoUrlField, 'Please provide a video URL or upload a video file.');
+            }
+        });
+
+        $validated = $validator->validate();
+
+        $videoUrl = trim((string) ($validated[$videoUrlField] ?? ''));
+        $currentVideoUrl = $post->featured_video_url;
+        if ($request->hasFile($videoFileField)) {
+            $videoUrl = $this->storeForumUpload($request->file($videoFileField), 'videos');
+        } elseif ($videoUrl === '') {
+            $videoUrl = $currentVideoUrl;
+        }
+
+        if ($videoUrl !== $currentVideoUrl) {
+            $this->deleteForumUpload($currentVideoUrl);
+        }
+
+        $thumbnailPath = $post->e_image;
+        if ($request->hasFile($thumbnailField)) {
+            $thumbnailPath = $this->storeForumUpload($request->file($thumbnailField), 'thumbnails');
+        }
+
+        if ($thumbnailPath !== $post->e_image) {
+            $this->deleteForumUpload($post->e_image);
+        }
+
+        $post->update([
+            'e_title' => trim($validated[$titleField]),
+            'e_text' => trim($validated[$contentField]),
+            'description' => trim($validated[$contentField]),
+            'e_image' => $thumbnailPath,
+            'featured_video_url' => $videoUrl !== '' ? $videoUrl : null,
+            'updated_by' => Auth::id(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()
+            ->route('forum.show', $post->e_id)
+            ->with('status', 'Your forum post has been updated successfully.');
+    }
+
+    public function destroy(int $forum): RedirectResponse
+    {
+        $post = ForumPost::where('e_id', $forum)
+            ->where('created_by', Auth::id())
+            ->firstOrFail();
+
+        $commentIds = ForumComment::where('forum_id', $post->e_id)->pluck('id');
+
+        ForumCommentLike::whereIn('comment_id', $commentIds)->delete();
+        ForumComment::whereIn('id', $commentIds)->delete();
+        ForumLike::where('forum_id', $post->e_id)->delete();
+
+        $this->deleteForumUpload($post->e_image);
+        $this->deleteForumUpload($post->featured_video_url);
+
+        $post->delete();
+
+        return redirect()
+            ->route('forum')
+            ->with('status', 'Your forum post has been deleted successfully.');
+    }
+
     public function index(Request $request): View
     {
         $tab = $request->query('tab', 'articles');
@@ -375,5 +474,18 @@ class ForumController extends Controller
         $file->move($uploadDirectory, $fileName);
 
         return 'uploads/forum/' . $folder . '/' . $fileName;
+    }
+
+    private function deleteForumUpload(?string $path): void
+    {
+        if (! $path || ! str_starts_with($path, 'uploads/forum/')) {
+            return;
+        }
+
+        foreach ([public_path($path), base_path('../public_html/' . $path)] as $filePath) {
+            if (is_file($filePath)) {
+                @unlink($filePath);
+            }
+        }
     }
 }

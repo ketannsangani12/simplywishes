@@ -7,6 +7,7 @@ use App\Mail\WishFulfilled;
 use App\Mail\WishGrantorConfirmation;
 use App\Mail\WishGrantorFulfilled;
 use App\Mail\WishGranted;
+use App\Models\Activity;
 use App\Models\Donation;
 use App\Models\User;
 use App\Models\Wish;
@@ -138,7 +139,7 @@ class WishController extends Controller
         }
 
         return redirect()
-            ->route('wishes.create')
+            ->route($isDraft ? 'wishes.drafts' : 'wishes.show', $isDraft ? [] : ['wish' => $wish->w_id])
             ->with('status', $isDraft ? 'Your wish draft has been saved.' : 'Your wish has been created successfully.');
     }
 
@@ -164,13 +165,70 @@ class WishController extends Controller
             ->orderByDesc('w_id')
             ->get();
 
-        $donations = Donation::whereIn('status', [1, 2])
+        $inProgressDonations = Donation::where('status', 2)
             ->orderByDesc('id')
             ->get();
+
+        $donations = Donation::where('status', 1)
+            ->orderByDesc('id')
+            ->get();
+
+        $wishLikeCounts = Activity::where('type', 'like')
+            ->whereNotNull('wish_id')
+            ->select('wish_id', DB::raw('COUNT(*) as like_count'))
+            ->groupBy('wish_id')
+            ->pluck('like_count', 'wish_id');
+
+        $donationLikeCounts = Activity::where('type', 'like')
+            ->whereNotNull('donation_id')
+            ->select('donation_id', DB::raw('COUNT(*) as like_count'))
+            ->groupBy('donation_id')
+            ->pluck('like_count', 'donation_id');
+
+        $popularWishItems = Wish::where('wish_status', 1)
+            ->get()
+            ->map(function (Wish $wish) use ($wishLikeCounts) {
+                return [
+                    'type' => 'wish',
+                    'id' => $wish->w_id,
+                    'title' => $wish->wish_title ?: 'Untitled wish',
+                    'image' => $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
+                    'link' => route('wishes.show', $wish->w_id),
+                    'creator_id' => $wish->wished_by,
+                    'like_count' => (int) ($wishLikeCounts[$wish->w_id] ?? 0),
+                    'wish_id' => $wish->w_id,
+                    'donation_id' => null,
+                ];
+            });
+
+        $popularDonationItems = Donation::whereIn('status', [1, 2, 3])
+            ->get()
+            ->map(function (Donation $donation) use ($donationLikeCounts) {
+                return [
+                    'type' => 'donation',
+                    'id' => $donation->id,
+                    'title' => $donation->title ?: 'Untitled donation',
+                    'image' => $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',
+                    'link' => route('donations.show', $donation->id),
+                    'creator_id' => $donation->created_by,
+                    'like_count' => (int) ($donationLikeCounts[$donation->id] ?? 0),
+                    'wish_id' => null,
+                    'donation_id' => $donation->id,
+                ];
+            });
+
+        $mostPopularItems = $popularWishItems
+            ->concat($popularDonationItems)
+            ->sortBy([
+                ['like_count', 'desc'],
+                ['id', 'desc'],
+            ])
+            ->values();
 
         $userIds = $wishes->pluck('wished_by')
             ->merge($donations->pluck('created_by'))
             ->merge($grantedDonations->pluck('created_by'))
+            ->merge($mostPopularItems->pluck('creator_id'))
             ->unique()
             ->filter()
             ->all();
@@ -203,7 +261,9 @@ class WishController extends Controller
             'grantedWishes',
             'grantedDonations',
             'inProgressWishes',
+            'inProgressDonations',
             'donations',
+            'mostPopularItems',
             'userMap',
             'favWishIds',
             'likeWishIds',
@@ -578,11 +638,11 @@ class WishController extends Controller
         }
 
         return redirect()
-            ->route('wishes.drafts')
-            ->with('status', $isDraft ? 'Your wish draft has been updated.' : 'Your wish has been published.');
+            ->route($isDraft ? 'wishes.drafts' : 'my.wishes')
+            ->with('status', $isDraft ? 'Your wish draft has been updated.' : 'Your wish has been updated.');
     }
 
-    public function destroy(int $wish): RedirectResponse
+    public function destroy(Request $request, int $wish): RedirectResponse
     {
         $wish = Wish::where('w_id', $wish)
             ->where('wished_by', Auth::id())
@@ -590,6 +650,30 @@ class WishController extends Controller
             ->firstOrFail();
 
         $wish->delete();
+
+        $source = (string) $request->input('source', '');
+        $sourceTab = (string) $request->input('source_tab', '');
+
+        if ($source === 'active') {
+            $redirect = redirect()->route('wishes.active');
+
+            if ($sourceTab !== '') {
+                $redirect->withFragment($sourceTab);
+            }
+
+            return $redirect->with('status', 'Wish deleted.');
+        }
+
+        if ($source === 'my-wishes') {
+            $parameters = [];
+            if ($sourceTab !== '') {
+                $parameters['tab'] = $sourceTab;
+            }
+
+            return redirect()
+                ->route('my.wishes', $parameters)
+                ->with('status', 'Wish deleted.');
+        }
 
         return redirect()
             ->route('wishes.drafts')

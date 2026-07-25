@@ -37,6 +37,9 @@ Route::middleware('auth')->prefix('chat')->name('chat.')->group(function () {
 });
 Route::get('/forum', [ForumController::class, 'index'])->name('forum')->middleware('auth');
 Route::post('/forum', [ForumController::class, 'store'])->name('forum.store')->middleware('auth');
+Route::get('/forum/{forum}/edit', [ForumController::class, 'edit'])->name('forum.edit')->middleware('auth')->whereNumber('forum');
+Route::put('/forum/{forum}', [ForumController::class, 'update'])->name('forum.update')->middleware('auth')->whereNumber('forum');
+Route::delete('/forum/{forum}', [ForumController::class, 'destroy'])->name('forum.destroy')->middleware('auth')->whereNumber('forum');
 Route::get('/forum/{forum}', [ForumController::class, 'show'])->name('forum.show')->middleware('auth');
 Route::post('/forum/{forum}/like', [ForumController::class, 'toggleLike'])->name('forum.like')->middleware('auth');
 Route::post('/forum/{forum}/report', [ForumController::class, 'report'])->name('forum.report')->middleware('auth');

@@ -10,12 +10,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ChatController extends Controller
 {
+    private static ?bool $chatMessagesHaveDeletedAt = null;
+
     public function index(Request $request): View
     {
         $userId = Auth::id();
@@ -156,12 +159,12 @@ class ChatController extends Controller
 
         $lastReadId = (int) ChatMessage::where('conversation_id', $conversation->id)
             ->where('sender_id', $userId)
-            ->whereNull('deleted_at')
+            ->when($this->chatMessagesHaveDeletedAt(), fn ($query) => $query->whereNull('deleted_at'))
             ->whereNotNull('read_at')
             ->max('id');
 
         $deletedIds = ChatMessage::where('conversation_id', $conversation->id)
-            ->whereNotNull('deleted_at')
+            ->when($this->chatMessagesHaveDeletedAt(), fn ($query) => $query->whereNotNull('deleted_at'))
             ->pluck('id')
             ->map(fn ($id) => (int) $id);
 
@@ -219,7 +222,9 @@ class ChatController extends Controller
             return response()->json(['message' => 'You can only delete your own messages.'], 403);
         }
 
-        if ($message->deleted_at === null) {
+        if (! $this->chatMessagesHaveDeletedAt()) {
+            $message->delete();
+        } elseif ($message->deleted_at === null) {
             $message->update(['deleted_at' => now()]);
         }
 
@@ -291,10 +296,19 @@ class ChatController extends Controller
             'last_message_at' => optional($latestMessage?->created_at ?? $conversation->last_message_at)->format('M d'),
             'unread_count' => ChatMessage::where('conversation_id', $conversation->id)
                 ->where('sender_id', '!=', $userId)
-                ->whereNull('deleted_at')
+                ->when($this->chatMessagesHaveDeletedAt(), fn ($query) => $query->whereNull('deleted_at'))
                 ->whereNull('read_at')
                 ->count(),
         ];
+    }
+
+    private function chatMessagesHaveDeletedAt(): bool
+    {
+        if (self::$chatMessagesHaveDeletedAt === null) {
+            self::$chatMessagesHaveDeletedAt = Schema::hasColumn('chat_messages', 'deleted_at');
+        }
+
+        return self::$chatMessagesHaveDeletedAt;
     }
 
     private function participantPayload(?User $user): array

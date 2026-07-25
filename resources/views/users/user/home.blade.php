@@ -33,7 +33,17 @@
       ? (filter_var($story->story_image, FILTER_VALIDATE_URL) ? $story->story_image : asset($story->story_image))
       : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=900&q=80';
 
-  $forumImage = fn ($post) => $post->is_video_only ? ($post->e_image ?: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80') : ($post->e_image ?: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80');
+  $forumImage = function ($post) {
+      $image = $post->e_image ?: $post->article_image;
+
+      if (! $image) {
+          return $post->is_video_only
+              ? 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80'
+              : 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80';
+      }
+
+      return filter_var($image, FILTER_VALIDATE_URL) ? $image : asset($image);
+  };
 @endphp
 
 @section('content')

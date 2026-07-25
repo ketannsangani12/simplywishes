@@ -27,30 +27,35 @@ No wishes or donations match your search.
 </div>
 <div class="space-y-12">
 <div class="hidden" data-panel="most-popular">
-@if($wishes->isEmpty())
+@if(($mostPopularItems ?? collect())->isEmpty())
 <div class="rounded-xl border border-dashed border-border-light bg-white p-10 text-center text-text-muted-light">
-No wishes available yet.
+No popular wishes or donations yet.
 </div>
 @else
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-@foreach($wishes as $wish)
+@foreach(($mostPopularItems ?? collect()) as $item)
 @php
-  $image = $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
+  $isWish = $item['type'] === 'wish';
+  $image = $item['image'];
+  $creator = $userMap[$item['creator_id']] ?? null;
+  $creatorName = $creator ? trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? '')) : '';
+  $creatorName = $creatorName !== '' ? $creatorName : ($creator->name ?? ($isWish ? 'Wish Creator' : 'Donation Creator'));
+  $creatorImage = $creator && $creator->profile_image ? asset($creator->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($creatorName) . '&background=E2E8F0&color=0F172A';
 @endphp
-<div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-wish-type="{{ (int) $wish->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
+<div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300">
 <div class="relative">
-<a href="{{ route('wishes.show', $wish->w_id) }}" class="block">
-<img alt="Wish image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
+<a href="{{ $item['link'] }}" class="block">
+<img alt="{{ $isWish ? 'Wish image' : 'Donation image' }}" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
 </a>
 <div class="absolute top-3 right-3 flex items-center gap-2">
-<button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-wish-id="{{ $wish->w_id }}" aria-label="Save wish" type="button">
-<span class="material-icons !text-base {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
+<button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ $isWish ? (in_array($item['wish_id'], $favWishIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '') : (in_array($item['donation_id'], $favDonationIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '') }}" data-activity="fav" @if($isWish) data-wish-id="{{ $item['wish_id'] }}" aria-label="Save wish" @else data-donation-id="{{ $item['donation_id'] }}" aria-label="Save donation" @endif type="button">
+<span class="material-icons !text-base {{ $isWish ? (in_array($item['wish_id'], $favWishIds ?? [], true) ? 'text-yellow-400' : '') : (in_array($item['donation_id'], $favDonationIds ?? [], true) ? 'text-yellow-400' : '') }}">{{ $isWish ? (in_array($item['wish_id'], $favWishIds ?? [], true) ? 'bookmark' : 'bookmark_border') : (in_array($item['donation_id'], $favDonationIds ?? [], true) ? 'bookmark' : 'bookmark_border') }}</span>
 </button>
-<button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-rose-500 transition js-activity {{ in_array($wish->w_id, $likeWishIds ?? [], true) ? 'ring-2 ring-rose-400/70 text-rose-500 is-active' : '' }}" data-activity="like" data-wish-id="{{ $wish->w_id }}" aria-label="Like wish" type="button">
-<span class="material-icons !text-base {{ in_array($wish->w_id, $likeWishIds ?? [], true) ? 'text-rose-500' : '' }}">{{ in_array($wish->w_id, $likeWishIds ?? [], true) ? 'favorite' : 'favorite_border' }}</span>
+<button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-rose-500 transition js-activity {{ $isWish ? (in_array($item['wish_id'], $likeWishIds ?? [], true) ? 'ring-2 ring-rose-400/70 text-rose-500 is-active' : '') : (in_array($item['donation_id'], $likeDonationIds ?? [], true) ? 'ring-2 ring-rose-400/70 text-rose-500 is-active' : '') }}" data-activity="like" @if($isWish) data-wish-id="{{ $item['wish_id'] }}" aria-label="Like wish" @else data-donation-id="{{ $item['donation_id'] }}" aria-label="Like donation" @endif type="button">
+<span class="material-icons !text-base {{ $isWish ? (in_array($item['wish_id'], $likeWishIds ?? [], true) ? 'text-rose-500' : '') : (in_array($item['donation_id'], $likeDonationIds ?? [], true) ? 'text-rose-500' : '') }}">{{ $isWish ? (in_array($item['wish_id'], $likeWishIds ?? [], true) ? 'favorite' : 'favorite_border') : (in_array($item['donation_id'], $likeDonationIds ?? [], true) ? 'favorite' : 'favorite_border') }}</span>
 </button>
 <div class="relative">
-<button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-sky-500 transition js-share-btn" data-wish-id="{{ $wish->w_id }}" data-wish-title="{{ $wish->wish_title ?: 'Wish' }}" aria-label="Share wish" type="button">
+<button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-sky-500 transition js-share-btn" @if($isWish) data-wish-id="{{ $item['wish_id'] }}" data-wish-title="{{ $item['title'] }}" aria-label="Share wish" @else data-donation-id="{{ $item['donation_id'] }}" data-donation-title="{{ $item['title'] }}" aria-label="Share donation" @endif type="button">
 <span class="material-icons !text-base">share</span>
 </button>
 <div class="share-menu hidden absolute right-0 top-11 z-10 rounded-lg border border-border-light bg-white shadow-lg p-2">
@@ -74,18 +79,20 @@ No wishes available yet.
 </div>
 </div>
 <div class="p-4 space-y-3">
-<a href="{{ route('wishes.show', $wish->w_id) }}" class="block hover:underline">
-<h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $wish->wish_title ?: 'Untitled wish' }}</h3>
+<div class="flex items-center justify-between gap-3">
+<a href="{{ $item['link'] }}" class="block hover:underline">
+<h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $item['title'] }}</h3>
 </a>
-@php
-  $creator = $userMap[$wish->wished_by] ?? null;
-  $creatorName = $creator ? trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? '')) : '';
-  $creatorName = $creatorName !== '' ? $creatorName : ($creator->name ?? 'Wish Creator');
-  $creatorImage = $creator && $creator->profile_image ? asset($creator->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($creatorName) . '&background=E2E8F0&color=0F172A';
-@endphp
+<span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600">
+{{ $item['like_count'] }} {{ \Illuminate\Support\Str::plural('Like', $item['like_count']) }}
+</span>
+</div>
 <div class="flex items-center gap-2">
 <img alt="{{ $creatorName }}" class="w-7 h-7 rounded-full object-cover" src="{{ $creatorImage }}"/>
 <span class="text-sm text-text-muted-light">{{ $creatorName }}</span>
+</div>
+<div class="text-xs font-medium text-text-muted-light">
+  {{ $isWish ? 'Wish' : 'Donation' }}
 </div>
 </div>
 </div>
@@ -224,9 +231,9 @@ No granted wishes or donations yet.
 @endif
 </div>
 <div class="hidden" data-panel="in-progress">
-@if($inProgressWishes->isEmpty())
+@if($inProgressWishes->isEmpty() && ($inProgressDonations ?? collect())->isEmpty())
 <div class="rounded-xl border border-dashed border-border-light bg-white p-10 text-center text-text-muted-light">
-No in-progress wishes yet.
+No in-progress wishes or donations yet.
 </div>
 @else
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -281,6 +288,66 @@ No in-progress wishes yet.
   $creator = $userMap[$wish->wished_by] ?? null;
   $creatorName = $creator ? trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? '')) : '';
   $creatorName = $creatorName !== '' ? $creatorName : ($creator->name ?? 'Wish Creator');
+  $creatorImage = $creator && $creator->profile_image ? asset($creator->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($creatorName) . '&background=E2E8F0&color=0F172A';
+@endphp
+<div class="flex items-center gap-2">
+<img alt="{{ $creatorName }}" class="w-7 h-7 rounded-full object-cover" src="{{ $creatorImage }}"/>
+<span class="text-sm text-text-muted-light">{{ $creatorName }}</span>
+</div>
+</div>
+</div>
+@endforeach
+@foreach(($inProgressDonations ?? collect()) as $donation)
+@php
+  $image = $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
+@endphp
+<div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-donation-type="{{ (int) $donation->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
+<div class="relative">
+<a href="{{ route('donations.show', $donation->id) }}" class="block">
+<img alt="Donation image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
+</a>
+<div class="absolute top-3 right-3 flex items-center gap-2">
+<button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-donation-id="{{ $donation->id }}" aria-label="Save donation" type="button">
+<span class="material-icons !text-base {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($donation->id, $favDonationIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
+</button>
+<button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-rose-500 transition js-activity {{ in_array($donation->id, $likeDonationIds ?? [], true) ? 'ring-2 ring-rose-400/70 text-rose-500 is-active' : '' }}" data-activity="like" data-donation-id="{{ $donation->id }}" aria-label="Like donation" type="button">
+<span class="material-icons !text-base {{ in_array($donation->id, $likeDonationIds ?? [], true) ? 'text-rose-500' : '' }}">{{ in_array($donation->id, $likeDonationIds ?? [], true) ? 'favorite' : 'favorite_border' }}</span>
+</button>
+<div class="relative">
+<button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-sky-500 transition js-share-btn" data-donation-id="{{ $donation->id }}" data-donation-title="{{ $donation->title ?: 'Donation' }}" aria-label="Share donation" type="button">
+<span class="material-icons !text-base">share</span>
+</button>
+<div class="share-menu hidden absolute right-0 top-11 z-10 rounded-lg border border-border-light bg-white shadow-lg p-2">
+<div class="flex items-center gap-2">
+<button class="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center" type="button" data-share-channel="facebook" aria-label="Share on Facebook" title="Facebook">
+<svg viewBox="0 0 24 24" class="w-4 h-4 fill-[#1877F2]" aria-hidden="true"><path d="M22 12.06C22 6.57 17.52 2 12 2S2 6.57 2 12.06c0 4.96 3.66 9.06 8.44 9.94v-7.03H7.9v-2.91h2.54V9.84c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.44 2.91h-2.34V22c4.78-.88 8.44-4.98 8.44-9.94z"/></svg>
+</button>
+<button class="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center" type="button" data-share-channel="twitter" aria-label="Share on Twitter" title="Twitter">
+<svg viewBox="0 0 24 24" class="w-4 h-4 fill-[#1DA1F2]" aria-hidden="true"><path d="M22.46 6c-.77.35-1.6.58-2.46.69a4.27 4.27 0 0 0 1.88-2.36 8.6 8.6 0 0 1-2.72 1.04 4.26 4.26 0 0 0-7.3 3.89A12.1 12.1 0 0 1 3.15 4.6a4.26 4.26 0 0 0 1.32 5.68 4.2 4.2 0 0 1-1.93-.53v.05a4.26 4.26 0 0 0 3.42 4.18 4.28 4.28 0 0 1-1.92.07 4.26 4.26 0 0 0 3.98 2.96A8.55 8.55 0 0 1 2 19.54 12.07 12.07 0 0 0 8.29 21c7.55 0 11.68-6.26 11.68-11.68 0-.18 0-.35-.01-.53A8.36 8.36 0 0 0 22.46 6z"/></svg>
+</button>
+<button class="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center" type="button" data-share-channel="instagram" aria-label="Copy link for Instagram" title="Instagram">
+<svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true">
+<path fill="#E1306C" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3z"/>
+<path fill="#E1306C" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6z"/>
+<circle cx="17.5" cy="6.5" r="1.2" fill="#E1306C"/>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 space-y-3">
+<div class="flex items-center justify-between mb-2">
+<a href="{{ route('donations.show', $donation->id) }}" class="block hover:underline">
+<h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $donation->title ?: 'Untitled donation' }}</h3>
+</a>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">In Progress</span>
+</div>
+@php
+  $creator = $userMap[$donation->created_by] ?? null;
+  $creatorName = $creator ? trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? '')) : '';
+  $creatorName = $creatorName !== '' ? $creatorName : ($creator->name ?? 'Donation Creator');
   $creatorImage = $creator && $creator->profile_image ? asset($creator->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($creatorName) . '&background=E2E8F0&color=0F172A';
 @endphp
 <div class="flex items-center gap-2">
@@ -422,6 +489,7 @@ No current donations available yet.
 <circle cx="17.5" cy="6.5" r="1.2" fill="#E1306C"/>
 </svg>
 </button>
+</div>
 </div>
 </div>
 </div>

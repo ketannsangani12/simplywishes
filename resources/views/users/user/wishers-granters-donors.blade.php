@@ -38,9 +38,10 @@
           <h1 class="text-3xl font-semibold text-brand-blue-light dark:text-brand-blue-dark">Wishers, Granters &amp; Donors</h1>
           <p class="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">Browse community members ranked by their activity on SimplyWishes.</p>
         </div>
-        <form class="flex items-center w-full sm:w-96" method="GET" action="{{ route('wishers.granters.donors') }}">
+        <form class="flex items-center w-full sm:w-96" method="GET" action="{{ route('wishers.granters.donors') }}" id="wishers-search-form" data-reset-url="{{ route('wishers.granters.donors', ['tab' => 'wishers']) }}">
           <input type="hidden" name="tab" value="{{ $tab ?? 'wishers' }}" />
           <input
+            id="wishers-search-input"
             class="flex-1 rounded-l-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-surface-dark text-sm px-3 py-2 focus:ring-2 focus:ring-primary/60 focus:border-primary"
             name="q"
             value="{{ $searchTerm ?? '' }}"
@@ -98,4 +99,20 @@
     </div>
   </section>
 </main>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('wishers-search-form');
+    const input = document.getElementById('wishers-search-input');
+
+    if (!form || !input) {
+      return;
+    }
+
+    input.addEventListener('search', () => {
+      if (input.value.trim() === '') {
+        window.location.href = form.dataset.resetUrl;
+      }
+    });
+  });
+</script>
 @endsection

@@ -55,12 +55,14 @@
               <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-rose-500 transition js-activity {{ in_array($wish->w_id, $likeWishIds ?? [], true) ? 'ring-2 ring-rose-400/70 text-rose-500 is-active' : '' }}" data-activity="like" data-wish-id="{{ $wish->w_id }}" aria-label="Like wish" type="button">
                 <span class="material-icons !text-base {{ in_array($wish->w_id, $likeWishIds ?? [], true) ? 'text-rose-500' : '' }}">{{ in_array($wish->w_id, $likeWishIds ?? [], true) ? 'favorite' : 'favorite_border' }}</span>
               </button>
-              <form action="{{ route('wishes.report', $wish->w_id) }}" method="POST" class="js-content-report-form" data-report-label="wish" data-reported="{{ !empty($hasReportedWish) ? 'true' : 'false' }}">
-                @csrf
-                <button class="w-9 h-9 rounded-full bg-white/90 shadow transition {{ !empty($hasReportedWish) ? 'text-red-500 ring-2 ring-red-400/70 cursor-default' : 'text-slate-700 hover:bg-white hover:text-amber-500' }}" aria-label="Report wish" type="submit">
-                  <span class="material-icons !text-base">flag</span>
-                </button>
-              </form>
+              @if((int) ($wish->wished_by ?? 0) !== (int) auth()->id())
+                <form action="{{ route('wishes.report', $wish->w_id) }}" method="POST" class="js-content-report-form" data-report-label="wish" data-reported="{{ !empty($hasReportedWish) ? 'true' : 'false' }}">
+                  @csrf
+                  <button class="w-9 h-9 rounded-full bg-white/90 shadow transition {{ !empty($hasReportedWish) ? 'text-red-500 ring-2 ring-red-400/70 cursor-default' : 'text-slate-700 hover:bg-white hover:text-amber-500' }}" aria-label="Report wish" type="submit">
+                    <span class="material-icons !text-base">flag</span>
+                  </button>
+                </form>
+              @endif
               <div class="relative">
                 <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-sky-500 transition js-share-btn" data-wish-id="{{ $wish->w_id }}" data-wish-title="{{ $wish->wish_title ?: 'Wish' }}" aria-label="Share wish" type="button">
                   <span class="material-icons !text-base">share</span>

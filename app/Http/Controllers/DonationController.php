@@ -412,7 +412,7 @@ class DonationController extends Controller
         }
 
         return redirect()
-            ->route('donations.create')
+            ->route($isDraft ? 'donations.drafts' : 'donations.show', $isDraft ? [] : ['donation' => $donation->id])
             ->with('status', $isDraft ? 'Your donation draft has been saved.' : 'Your donation has been created successfully.');
     }
 
@@ -494,8 +494,8 @@ class DonationController extends Controller
         }
 
         return redirect()
-            ->route('donations.drafts')
-            ->with('status', $isDraft ? 'Your donation draft has been updated.' : 'Your donation has been published.');
+            ->route($isDraft ? 'donations.drafts' : 'my.wishes')
+            ->with('status', $isDraft ? 'Your donation draft has been updated.' : 'Your donation has been updated.');
     }
 
     public function destroy(int $donation): RedirectResponse

@@ -98,7 +98,8 @@ class SiteController extends Controller
     public function wishersGrantersDonors(Request $request): View
     {
         $searchTerm = trim((string) $request->query('q', ''));
-        $tab = (string) $request->query('tab', 'wishers');
+        $requestedTab = (string) $request->query('tab', 'wishers');
+        $tab = $requestedTab;
 
         if (! in_array($tab, ['wishers', 'granters', 'donors'], true)) {
             $tab = 'wishers';
@@ -156,6 +157,21 @@ class SiteController extends Controller
             ->orderByDesc('donor_counts.items_count')
             ->orderByRaw('COALESCE(NULLIF(first_name, ""), NULLIF(name, ""), last_name) ASC')
             ->get();
+
+        if ($searchTerm !== '') {
+            foreach (['wishers', 'granters', 'donors'] as $candidateTab) {
+                $users = match ($candidateTab) {
+                    'granters' => $granters,
+                    'donors' => $donors,
+                    default => $wishers,
+                };
+
+                if ($users->isNotEmpty()) {
+                    $tab = $candidateTab;
+                    break;
+                }
+            }
+        }
 
         return view('users.user.wishers-granters-donors', compact('searchTerm', 'tab', 'wishers', 'granters', 'donors'));
     }
