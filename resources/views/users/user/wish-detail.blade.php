@@ -17,10 +17,6 @@
                   <span class="material-icons !text-base">share</span>
                   Share
                 </button>
-                <button class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                  <span class="material-icons !text-base text-red-500">flag</span>
-                  Report
-                </button>
               </div>
             </div>
           </div>
@@ -148,10 +144,6 @@
                         <span class="material-icons !text-base">reply</span>
                         Reply
                       </button>
-                      <button class="inline-flex items-center gap-1 hover:text-amber-500">
-                        <span class="material-icons !text-base">flag</span>
-                        Report
-                      </button>
                       <div class="inline-flex items-center gap-1">
                         <span class="material-icons !text-base text-red-500">favorite</span>
                         <span class="text-red-500 font-semibold">0</span>
@@ -184,10 +176,6 @@
                       <button class="inline-flex items-center gap-1 hover:text-primary">
                         <span class="material-icons !text-base">reply</span>
                         Reply
-                      </button>
-                      <button class="inline-flex items-center gap-1 hover:text-amber-500">
-                        <span class="material-icons !text-base">flag</span>
-                        Report
                       </button>
                       <div class="inline-flex items-center gap-1">
                         <span class="material-icons !text-base text-red-500">favorite</span>

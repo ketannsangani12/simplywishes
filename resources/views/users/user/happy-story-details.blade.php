@@ -234,13 +234,15 @@
                               <span class="material-icons !text-base">reply</span>
                               Reply
                             </button>
-                            <form action="{{ route('happy.stories.comments.report', [$story->hs_id, $comment->id]) }}" method="POST" class="js-comment-report-form">
-                              @csrf
-                              <button class="inline-flex items-center gap-1 hover:text-amber-500" type="submit">
-                                <span class="material-icons !text-base">flag</span>
-                                Report
-                              </button>
-                            </form>
+                            @if((int) $comment->user_id !== (int) auth()->id())
+                              <form action="{{ route('happy.stories.comments.report', [$story->hs_id, $comment->id]) }}" method="POST" class="js-comment-report-form">
+                                @csrf
+                                <button class="inline-flex items-center gap-1 hover:text-amber-500" type="submit">
+                                  <span class="material-icons !text-base">flag</span>
+                                  Report
+                                </button>
+                              </form>
+                            @endif
                             <div class="ml-auto inline-flex items-center gap-1 text-rose-500">
                               <span class="material-icons !text-base">favorite</span>
                               <span class="font-semibold">{{ $comment->likes_count }}</span>
@@ -319,13 +321,15 @@
                                             Love
                                           </button>
                                         </form>
-                                        <form action="{{ route('happy.stories.comments.report', [$story->hs_id, $reply->id]) }}" method="POST" class="js-comment-report-form">
-                                          @csrf
-                                          <button class="inline-flex items-center gap-1 hover:text-amber-500" type="submit">
-                                            <span class="material-icons !text-base">flag</span>
-                                            Report
-                                          </button>
-                                        </form>
+                                        @if((int) $reply->user_id !== (int) auth()->id())
+                                          <form action="{{ route('happy.stories.comments.report', [$story->hs_id, $reply->id]) }}" method="POST" class="js-comment-report-form">
+                                            @csrf
+                                            <button class="inline-flex items-center gap-1 hover:text-amber-500" type="submit">
+                                              <span class="material-icons !text-base">flag</span>
+                                              Report
+                                            </button>
+                                          </form>
+                                        @endif
                                         <div class="ml-auto inline-flex items-center gap-1 text-rose-500">
                                           <span class="material-icons !text-base">favorite</span>
                                           <span class="font-semibold">{{ $reply->likes_count }}</span>

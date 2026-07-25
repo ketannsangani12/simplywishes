@@ -125,10 +125,6 @@
                         <span class="material-icons !text-base">reply</span>
                         Reply
                       </button>
-                      <button class="inline-flex items-center gap-1 hover:text-amber-500">
-                        <span class="material-icons !text-base">flag</span>
-                        Report
-                      </button>
                       <div class="inline-flex items-center gap-1">
                         <span class="material-icons !text-base text-red-500">favorite</span>
                         <span class="text-red-500 font-semibold">0</span>
@@ -161,10 +157,6 @@
                       <button class="inline-flex items-center gap-1 hover:text-primary">
                         <span class="material-icons !text-base">reply</span>
                         Reply
-                      </button>
-                      <button class="inline-flex items-center gap-1 hover:text-amber-500">
-                        <span class="material-icons !text-base">flag</span>
-                        Report
                       </button>
                       <div class="inline-flex items-center gap-1">
                         <span class="material-icons !text-base text-red-500">favorite</span>

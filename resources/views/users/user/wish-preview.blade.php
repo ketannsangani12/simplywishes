@@ -293,12 +293,14 @@
                       <button class="inline-flex items-center gap-1 hover:text-primary js-reply-toggle" type="button" data-reply-target="wish-reply-{{ $comment->id }}">
                         <span>Reply</span>
                       </button>
-                      <form action="{{ route('wishes.comments.report', [$wish->w_id, $comment->id]) }}" method="POST" class="js-comment-report-form">
-                        @csrf
-                        <button class="inline-flex items-center gap-1 hover:text-amber-500" type="submit">
-                          <span>Report</span>
-                        </button>
-                      </form>
+                      @if((int) $comment->user_id !== (int) auth()->id())
+                        <form action="{{ route('wishes.comments.report', [$wish->w_id, $comment->id]) }}" method="POST" class="js-comment-report-form">
+                          @csrf
+                          <button class="inline-flex items-center gap-1 hover:text-amber-500" type="submit">
+                            <span>Report</span>
+                          </button>
+                        </form>
+                      @endif
                       <div class="inline-flex items-center gap-1 text-red-500">
                         <span class="material-icons !text-base">favorite</span>
                         <span class="font-semibold">{{ $comment->likes_count }}</span>
@@ -369,10 +371,12 @@
                                   @csrf
                                   <button class="{{ in_array($reply->id, $likedCommentIds ?? [], true) ? 'text-red-500' : 'hover:text-red-500' }}" type="submit">Love</button>
                                 </form>
-                                <form action="{{ route('wishes.comments.report', [$wish->w_id, $reply->id]) }}" method="POST" class="js-comment-report-form">
-                                  @csrf
-                                  <button class="hover:text-amber-500" type="submit">Report</button>
-                                </form>
+                                @if((int) $reply->user_id !== (int) auth()->id())
+                                  <form action="{{ route('wishes.comments.report', [$wish->w_id, $reply->id]) }}" method="POST" class="js-comment-report-form">
+                                    @csrf
+                                    <button class="hover:text-amber-500" type="submit">Report</button>
+                                  </form>
+                                @endif
                                 <div class="inline-flex items-center gap-1 text-red-500">
                                   <span class="material-icons !text-base">favorite</span>
                                   <span class="font-semibold">{{ $reply->likes_count }}</span>
