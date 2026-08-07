@@ -92,7 +92,20 @@
                 </div>
               </div>
             </div>
-            @if((int) $story->user_id !== (int) auth()->id())
+            @if((int) $story->user_id === (int) auth()->id())
+              <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/15 text-brand-blue-light text-sm font-semibold hover:bg-primary/25 transition" href="{{ route('happy.stories.edit', $story->hs_id) }}">
+                <span class="material-icons !text-base">edit</span>
+                Edit
+              </a>
+              <form action="{{ route('happy.stories.destroy', $story->hs_id) }}" method="POST" onsubmit="return confirm('Delete this happy story? This cannot be undone.')">
+                @csrf
+                @method('DELETE')
+                <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition" type="submit">
+                  <span class="material-icons !text-base">delete</span>
+                  Delete
+                </button>
+              </form>
+            @else
               <form action="{{ route('happy.stories.report', $story->hs_id) }}" method="POST" class="js-content-report-form" data-report-label="happy story" data-reported="{{ !empty($hasReportedStory) ? 'true' : 'false' }}">
                 @csrf
                 <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg {{ !empty($hasReportedStory) ? 'bg-red-50 text-red-500 ring-2 ring-red-400/70 cursor-default pointer-events-none' : 'bg-amber-50 text-amber-600 hover:bg-amber-100' }} text-sm font-semibold transition" type="submit" {{ !empty($hasReportedStory) ? 'disabled' : '' }}>

@@ -89,6 +89,22 @@
                 </div>
                 <span class="text-emerald-600 font-semibold whitespace-nowrap">{{ optional($story->created_at)->format('M d, Y') }}</span>
               </div>
+              @if((int) $story->user_id === (int) auth()->id())
+                <div class="flex items-center gap-2">
+                  <a class="inline-flex items-center gap-1 rounded-lg bg-primary/15 px-3 py-2 text-sm font-semibold text-brand-blue-light hover:bg-primary/25 transition" href="{{ route('happy.stories.edit', $story->hs_id) }}">
+                    <span class="material-symbols-outlined text-base">edit</span>
+                    Edit
+                  </a>
+                  <form action="{{ route('happy.stories.destroy', $story->hs_id) }}" method="POST" onsubmit="return confirm('Delete this happy story? This cannot be undone.')">
+                    @csrf
+                    @method('DELETE')
+                    <button class="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition" type="submit">
+                      <span class="material-symbols-outlined text-base">delete</span>
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              @endif
               <a class="inline-flex items-center gap-1 text-sm font-semibold text-brand-blue-light hover:underline" href="{{ route('happy.stories.show', $story->hs_id) }}">
                 View story
                 <span class="material-symbols-outlined !text-[18px]">arrow_forward</span>

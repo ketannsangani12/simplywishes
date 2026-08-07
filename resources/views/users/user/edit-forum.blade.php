@@ -5,8 +5,8 @@
   $titleValue = old($isVideo ? 'video_title' : 'article_title', $post->e_title);
   $contentValue = old($isVideo ? 'video_content' : 'article_content', $post->description ?: $post->e_text);
   $videoUrlValue = old($isVideo ? 'video_featured_video_url' : 'article_featured_video_url', filter_var($post->featured_video_url, FILTER_VALIDATE_URL) ? $post->featured_video_url : '');
-  $thumbnailUrl = $post->e_image ? (filter_var($post->e_image, FILTER_VALIDATE_URL) ? $post->e_image : asset($post->e_image)) : null;
-  $uploadedVideoUrl = $post->featured_video_url && ! filter_var($post->featured_video_url, FILTER_VALIDATE_URL) ? asset($post->featured_video_url) : null;
+  $thumbnailUrl = $post->imageUrl();
+  $uploadedVideoUrl = $post->featured_video_url && ! filter_var($post->featured_video_url, FILTER_VALIDATE_URL) ? $post->videoUrl() : null;
 @endphp
 
 @section('title', $isVideo ? 'Edit Forum Video' : 'Edit Forum Article')

@@ -8,9 +8,8 @@
   $creatorAvatar = $creator?->profile_image
     ? (filter_var($creator->profile_image, FILTER_VALIDATE_URL) ? $creator->profile_image : asset($creator->profile_image))
     : 'https://ui-avatars.com/api/?name=' . urlencode($creatorName) . '&background=E2E8F0&color=0F172A';
-  $postImage = $post->e_image ?: $post->article_image;
-  $postImage = $postImage ? (filter_var($postImage, FILTER_VALIDATE_URL) ? $postImage : asset($postImage)) : null;
-  $postVideoUrl = $post->featured_video_url ? (filter_var($post->featured_video_url, FILTER_VALIDATE_URL) ? $post->featured_video_url : asset($post->featured_video_url)) : null;
+  $postImage = $post->imageUrl();
+  $postVideoUrl = $post->videoUrl();
   $postLikesCount = $post->likes_count ?? $post->likes->count();
 @endphp
 

@@ -15,12 +15,12 @@
             <a class="hover:text-primary transition-colors" href="#">Contact Us</a>
           </div>
           <div class="flex items-center gap-4">
-            <a aria-label="App Store" class="flex h-12 w-40 items-center justify-center" href="#">
+            <a aria-label="App Store" class="flex h-12 w-40 items-center justify-center overflow-visible" href="#">
               <img alt="Download on the App Store" class="max-h-full max-w-full object-contain"
                 src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" />
             </a>
-            <a aria-label="Google Play" class="flex h-12 w-40 items-center justify-center" href="#">
-              <img alt="Get it on Google Play" class="max-h-full max-w-full object-contain"
+            <a aria-label="Google Play" class="flex h-12 w-40 items-center justify-center overflow-visible" href="#">
+              <img alt="Get it on Google Play" class="h-16 w-auto max-w-none object-contain"
                 src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" />
             </a>
           </div>

@@ -440,6 +440,21 @@ class SiteController extends Controller
         return view('users.user.add-happy-story', compact('wishes'));
     }
 
+    public function editHappyStory(int $story): View
+    {
+        $story = HappyStory::where('hs_id', $story)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $wishes = Wish::where('wished_by', Auth::id())
+            ->whereNotNull('granted_by')
+            ->where('granted_by', '!=', '')
+            ->orderByDesc('w_id')
+            ->get();
+
+        return view('users.user.add-happy-story', compact('story', 'wishes'));
+    }
+
     public function storeHappyStory(Request $request)
     {
         $validated = Validator::make($request->all(), [
@@ -467,30 +482,7 @@ class SiteController extends Controller
 
         $storyImage = null;
         if ($request->hasFile('story_image_upload')) {
-            $file = $request->file('story_image_upload');
-            $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
-            $fileName = Str::uuid()->toString() . '.' . $extension;
-
-            $candidateDirectories = [
-                base_path('../public_html/uploads/happy-stories'),
-                public_path('uploads/happy-stories'),
-            ];
-
-            $uploadDirectory = null;
-            foreach ($candidateDirectories as $directory) {
-                $parentDirectory = dirname($directory);
-                if (is_dir($directory) || is_dir($parentDirectory)) {
-                    $uploadDirectory = $directory;
-                    break;
-                }
-            }
-
-            $uploadDirectory ??= public_path('uploads/happy-stories');
-
-            File::ensureDirectoryExists($uploadDirectory);
-            $file->move($uploadDirectory, $fileName);
-
-            $storyImage = 'uploads/happy-stories/' . $fileName;
+            $storyImage = $this->storeHappyStoryImage($request->file('story_image_upload'));
         } elseif ($request->filled('story_image_default')) {
             $storyImage = $request->input('story_image_default');
         }
@@ -507,6 +499,103 @@ class SiteController extends Controller
         return redirect()
             ->route('happy.stories')
             ->with('status', 'Your happy story has been created successfully.');
+    }
+
+    public function updateHappyStory(Request $request, int $story): RedirectResponse
+    {
+        $story = HappyStory::where('hs_id', $story)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $validated = Validator::make($request->all(), [
+            'wish_id' => ['required', 'integer', 'exists:wishes,w_id'],
+            'story_text' => ['required', 'string', 'max:5000'],
+            'story_image_upload' => ['nullable', 'image', 'max:5120'],
+            'story_image_default' => ['nullable', 'string', 'max:500'],
+            'remove_image' => ['nullable', 'boolean'],
+        ])->after(function ($validator) use ($request, $story) {
+            $hasUpload = $request->hasFile('story_image_upload');
+            $hasDefault = $request->filled('story_image_default');
+
+            if ($hasUpload && $hasDefault) {
+                $validator->errors()->add(
+                    'story_image_choice',
+                    'Please upload an image or choose one from the list, not both.'
+                );
+            }
+
+            if ($request->boolean('remove_image') && ! $hasUpload && ! $hasDefault) {
+                $validator->errors()->add(
+                    'story_image_choice',
+                    'Please upload an image or choose one from the list after removing the current image.'
+                );
+            }
+
+            if (! $story->story_image && ! $hasUpload && ! $hasDefault) {
+                $validator->errors()->add(
+                    'story_image_choice',
+                    'Please upload an image or choose one from the list.'
+                );
+            }
+        })->validate();
+
+        $wish = Wish::where('w_id', $validated['wish_id'])
+            ->where('wished_by', Auth::id())
+            ->whereNotNull('granted_by')
+            ->where('granted_by', '!=', '')
+            ->firstOrFail();
+
+        $storyImage = $story->story_image;
+        if ($request->boolean('remove_image')) {
+            $this->deleteHappyStoryImage($storyImage);
+            $storyImage = null;
+        }
+
+        if ($request->hasFile('story_image_upload')) {
+            $newImage = $this->storeHappyStoryImage($request->file('story_image_upload'));
+            if ($storyImage && $storyImage !== $newImage) {
+                $this->deleteHappyStoryImage($storyImage);
+            }
+            $storyImage = $newImage;
+        } elseif ($request->filled('story_image_default')) {
+            if ($storyImage !== $request->input('story_image_default')) {
+                $this->deleteHappyStoryImage($storyImage);
+            }
+            $storyImage = $request->input('story_image_default');
+        }
+
+        $story->update([
+            'wish_id' => $wish->w_id,
+            'story_text' => trim($validated['story_text']),
+            'story_image' => $storyImage,
+        ]);
+
+        return redirect()
+            ->route('happy.stories.show', $story->hs_id)
+            ->with('status', 'Your happy story has been updated successfully.');
+    }
+
+    public function destroyHappyStory(int $story): RedirectResponse
+    {
+        $story = HappyStory::where('hs_id', $story)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        DB::transaction(function () use ($story) {
+            $commentIds = HappyStoryComment::where('happy_story_id', $story->hs_id)->pluck('id');
+
+            HappyStoryCommentLike::whereIn('comment_id', $commentIds)->delete();
+            HappyStoryComment::whereIn('id', $commentIds)->delete();
+            Activity::where('happy_story_id', $story->hs_id)->delete();
+
+            $story->delete();
+        });
+
+        $this->deleteHappyStoryImage($story->story_image);
+
+        return redirect()
+            ->route('happy.stories')
+            ->with('status', 'Your happy story has been deleted successfully.');
     }
 
     public function storeHappyStoryComment(Request $request, int $story): RedirectResponse
@@ -561,6 +650,46 @@ class SiteController extends Controller
         return redirect()
             ->route('happy.stories.show', $story->hs_id)
             ->with('status', 'Comment updated successfully.');
+    }
+
+    private function storeHappyStoryImage(\Illuminate\Http\UploadedFile $file): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
+        $fileName = Str::uuid()->toString() . '.' . $extension;
+
+        $candidateDirectories = [
+            base_path('../public_html/uploads/happy-stories'),
+            public_path('uploads/happy-stories'),
+        ];
+
+        $uploadDirectory = null;
+        foreach ($candidateDirectories as $directory) {
+            $parentDirectory = dirname($directory);
+            if (is_dir($directory) || is_dir($parentDirectory)) {
+                $uploadDirectory = $directory;
+                break;
+            }
+        }
+
+        $uploadDirectory ??= public_path('uploads/happy-stories');
+
+        File::ensureDirectoryExists($uploadDirectory);
+        $file->move($uploadDirectory, $fileName);
+
+        return 'uploads/happy-stories/' . $fileName;
+    }
+
+    private function deleteHappyStoryImage(?string $path): void
+    {
+        if (! $path || ! str_starts_with($path, 'uploads/happy-stories/')) {
+            return;
+        }
+
+        foreach ([public_path($path), base_path('../public_html/' . $path)] as $filePath) {
+            if (is_file($filePath)) {
+                @unlink($filePath);
+            }
+        }
     }
 
     public function destroyHappyStoryComment(int $story, int $comment): RedirectResponse

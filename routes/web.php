@@ -51,6 +51,9 @@ Route::post('/forum/{forum}/comments/{comment}/report', [ForumController::class,
 Route::get('/my-wishes', [SiteController::class, 'myWishes'])->name('my.wishes')->middleware('auth');
 Route::get('/happy-stories/create', [SiteController::class, 'addHappyStory'])->name('happy.stories.create')->middleware('auth');
 Route::post('/happy-stories', [SiteController::class, 'storeHappyStory'])->name('happy.stories.store')->middleware('auth');
+Route::get('/happy-stories/{story}/edit', [SiteController::class, 'editHappyStory'])->name('happy.stories.edit')->middleware('auth')->whereNumber('story');
+Route::put('/happy-stories/{story}', [SiteController::class, 'updateHappyStory'])->name('happy.stories.update')->middleware('auth')->whereNumber('story');
+Route::delete('/happy-stories/{story}', [SiteController::class, 'destroyHappyStory'])->name('happy.stories.destroy')->middleware('auth')->whereNumber('story');
 Route::post('/happy-stories/{story}/comments', [SiteController::class, 'storeHappyStoryComment'])->name('happy.stories.comments.store')->middleware('auth')->whereNumber('story');
 Route::put('/happy-stories/{story}/comments/{comment}', [SiteController::class, 'updateHappyStoryComment'])->name('happy.stories.comments.update')->middleware('auth')->whereNumber('story')->whereNumber('comment');
 Route::delete('/happy-stories/{story}/comments/{comment}', [SiteController::class, 'destroyHappyStoryComment'])->name('happy.stories.comments.destroy')->middleware('auth')->whereNumber('story')->whereNumber('comment');

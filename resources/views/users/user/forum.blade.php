@@ -10,7 +10,7 @@
   ];
 
   $forumImage = function ($post) {
-    $image = $post->e_image ?: $post->article_image;
+    $image = $post->imageUrl();
 
     if (! $image) {
       return $post->is_video_only
@@ -18,7 +18,7 @@
         : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1200&q=80';
     }
 
-    return filter_var($image, FILTER_VALIDATE_URL) ? $image : asset($image);
+    return $image;
   };
 
   $authorName = function ($user) {

@@ -349,7 +349,7 @@ class DonationController extends Controller
                 ->back()
                 ->withInput()
                 ->withErrors([
-                    'listing_limit' => 'You can only have up to 3 active or in-progress wishes and donations combined at a time.',
+                    'listing_limit' => 'You can only have up to 3 active or in-progress donations at a time.',
                 ]);
         }
 
@@ -430,7 +430,7 @@ class DonationController extends Controller
                 ->back()
                 ->withInput()
                 ->withErrors([
-                    'listing_limit' => 'You can only have up to 3 active or in-progress wishes and donations combined at a time.',
+                    'listing_limit' => 'You can only have up to 3 active or in-progress donations at a time.',
                 ]);
         }
 
@@ -590,16 +590,10 @@ class DonationController extends Controller
 
     private function hasReachedActiveListingLimit(int $userId, ?int $excludeDonationId = null): bool
     {
-        $activeWishCount = Wish::where('wished_by', $userId)
-            ->where('wish_status', 1)
-            ->whereIn('wish_progress_status', [0, 1])
-            ->count();
-
-        $activeDonationCount = Donation::where('created_by', $userId)
+        return Donation::where('created_by', $userId)
             ->whereIn('status', [1, 2])
             ->when($excludeDonationId, fn ($query) => $query->where('id', '!=', $excludeDonationId))
-            ->count();
-
-        return ($activeWishCount + $activeDonationCount) >= self::MAX_ACTIVE_LISTINGS;
+            ->count()
+            >= self::MAX_ACTIVE_LISTINGS;
     }
 }
