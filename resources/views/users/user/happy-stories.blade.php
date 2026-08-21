@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Simply Wishes - Happy Stories')
+@php
+  $isMine = request()->routeIs('my.happy.stories');
+@endphp
+
+@section('title', $isMine ? 'Simply Wishes - My Happy Stories' : 'Simply Wishes - Happy Stories')
 
 @php
   $storyImage = function ($story) {
@@ -31,11 +35,13 @@
   <section class="border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-brand-blue-light dark:text-white">Happy Stories</h1>
-        <p class="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">Stories from our community whose wishes have been granted.</p>
+        <h1 class="text-3xl font-bold text-brand-blue-light dark:text-white">{{ $isMine ? 'My Happy Stories' : 'Happy Stories' }}</h1>
+        <p class="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">
+          {{ $isMine ? 'Happy stories you have shared with the community.' : 'Stories from our community whose wishes have been granted.' }}
+        </p>
       </div>
       <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
-        <form class="flex items-center w-full sm:w-72" method="GET" action="{{ route('happy.stories') }}">
+        <form class="flex items-center w-full sm:w-72" method="GET" action="{{ $isMine ? route('my.happy.stories') : route('happy.stories') }}">
           <input class="flex-1 rounded-l-lg border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-sm px-3 py-2 focus:ring-2 focus:ring-primary/60 focus:border-primary"
             name="q" value="{{ $searchTerm ?? '' }}" placeholder="Search stories..." type="search" />
           <button class="px-3 py-2 rounded-r-lg bg-brand-blue-light text-white hover:opacity-90 transition" type="submit">
@@ -58,9 +64,17 @@
 
     @if(($stories ?? collect())->isEmpty())
       <div class="rounded-2xl border border-dashed border-border-light dark:border-border-dark bg-white/70 dark:bg-surface-dark/70 px-6 py-16 text-center">
-        <h2 class="text-xl font-semibold text-text-light dark:text-text-dark">No happy stories yet</h2>
+        <h2 class="text-xl font-semibold text-text-light dark:text-text-dark">
+          {{ $isMine ? 'You haven\'t shared a happy story yet' : 'No happy stories yet' }}
+        </h2>
         <p class="mt-2 text-sm text-subtle-light dark:text-subtle-dark">
-          {{ !empty($searchTerm) ? 'No stories match your search.' : 'Be the first to share a granted wish story.' }}
+          @if(!empty($searchTerm))
+            No stories match your search.
+          @elseif($isMine)
+            Once your wish is granted, come back here and tell your happy story.
+          @else
+            Be the first to share a granted wish story.
+          @endif
         </p>
       </div>
     @else
@@ -85,7 +99,17 @@
               <p class="text-sm text-text-light dark:text-text-dark line-clamp-2">{{ $story->story_text }}</p>
               <div class="flex items-center justify-between gap-4 text-sm text-text-muted-light dark:text-text-muted-dark mt-auto pt-1">
                 <div class="flex items-center gap-4">
-                  <div class="flex items-center gap-1 text-emerald-600"><span class="material-symbols-outlined text-base">favorite</span><span>Story</span></div>
+                  @auth
+                    <button class="inline-flex items-center gap-1 js-story-like {{ in_array($story->hs_id, $likedStoryIds ?? [], true) ? 'text-rose-500 is-active' : 'hover:text-rose-500' }}" data-activity="like" data-happy-story-id="{{ $story->hs_id }}" aria-label="Like story" type="button">
+                      <span class="material-symbols-outlined text-base">{{ in_array($story->hs_id, $likedStoryIds ?? [], true) ? 'favorite' : 'favorite_border' }}</span>
+                      <span data-like-count>{{ $storyLikeCounts[$story->hs_id] ?? 0 }}</span>
+                    </button>
+                  @else
+                    <div class="flex items-center gap-1 text-text-muted-light dark:text-text-muted-dark">
+                      <span class="material-symbols-outlined text-base">favorite_border</span>
+                      <span>{{ $storyLikeCounts[$story->hs_id] ?? 0 }}</span>
+                    </div>
+                  @endauth
                 </div>
                 <span class="text-emerald-600 font-semibold whitespace-nowrap">{{ optional($story->created_at)->format('M d, Y') }}</span>
               </div>
@@ -116,4 +140,50 @@
     @endif
   </section>
 </main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    document.querySelectorAll('.js-story-like').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const happyStoryId = button.getAttribute('data-happy-story-id');
+        if (!happyStoryId) return;
+
+        try {
+          const isActive = button.classList.contains('is-active');
+          const endpoint = isActive ? '{{ route('activities.destroy') }}' : '{{ route('activities.store') }}';
+          const method = isActive ? 'DELETE' : 'POST';
+          const res = await fetch(endpoint, {
+            method,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': token || '',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({ happy_story_id: happyStoryId, type: 'like' }),
+          });
+
+          if (res.ok) {
+            const icon = button.querySelector('.material-symbols-outlined');
+            const count = button.querySelector('[data-like-count]');
+            const currentCount = Number.parseInt(count?.textContent || '0', 10);
+
+            button.classList.toggle('is-active', !isActive);
+            button.classList.toggle('text-rose-500', !isActive);
+            button.classList.toggle('hover:text-rose-500', isActive);
+            if (icon) {
+              icon.textContent = isActive ? 'favorite_border' : 'favorite';
+            }
+            if (count) {
+              count.textContent = String(isActive ? Math.max(0, currentCount - 1) : currentCount + 1);
+            }
+          }
+        } catch (e) {
+          // ignore client-side errors
+        }
+      });
+    });
+  });
+</script>
 @endsection

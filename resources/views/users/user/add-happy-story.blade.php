@@ -82,100 +82,45 @@
               <p class="text-sm text-red-600 hidden" data-error-for="story_image_choice">Please upload an image or choose one from the list.</p>
             </div>
 
+            @php
+              $defaultStoryImages = [];
+              $candidateStoryImageDirectories = [
+                  public_path('images/happy-stories-default'),
+                  base_path('../public_html/images/happy-stories-default'),
+              ];
+
+              foreach ($candidateStoryImageDirectories as $defaultStoryDir) {
+                  if (!is_dir($defaultStoryDir)) {
+                      continue;
+                  }
+
+                  foreach (\Illuminate\Support\Facades\File::files($defaultStoryDir) as $file) {
+                      $ext = strtolower($file->getExtension());
+                      if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
+                          $defaultStoryImages[] = 'images/happy-stories-default/' . $file->getFilename();
+                      }
+                  }
+
+                  if ($defaultStoryImages !== []) {
+                      break;
+                  }
+              }
+            @endphp
             <div class="space-y-3">
               <p class="text-sm font-semibold text-text-light dark:text-text-dark">Or, choose one from the default images below</p>
               <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                <!-- default image picks -->
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80" alt="Default image 1" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=400&q=80" alt="Default image 2" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1415889455891-23bbf19ee5c7?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1415889455891-23bbf19ee5c7?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1415889455891-23bbf19ee5c7?auto=format&fit=crop&w=400&q=80" alt="Default image 3" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80" alt="Default image 4" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80" alt="Default image 5" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=-60" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=-60') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=-60" alt="Default image 6" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1450858933126-9cc56275fc6a?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1450858933126-9cc56275fc6a?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1450858933126-9cc56275fc6a?auto=format&fit=crop&w=400&q=80" alt="Default image 7" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80" alt="Default image 8" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1470137430626-983a37b8ea46?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1470137430626-983a37b8ea46?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1470137430626-983a37b8ea46?auto=format&fit=crop&w=400&q=80" alt="Default image 9" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1504198458649-3128b932f49b?auto=format&fit=crop&w=400&q=80" alt="Default image 10" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=400&q=80" alt="Default image 11" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=400&q=80" alt="Default image 12" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80" alt="Default image 13" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80&sat=-40" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80&sat=-40') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80&sat=-40" alt="Default image 14" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
-                <label class="relative block cursor-pointer group">
-                  <input class="peer sr-only" name="story_image_default" type="radio" value="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=20" @checked($selectedDefaultImage === 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=20') />
-                  <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                    src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80&sat=20" alt="Default image 15" />
-                  <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
-                </label>
+                @forelse ($defaultStoryImages as $index => $imagePath)
+                  <label class="relative block cursor-pointer group">
+                    <input class="peer sr-only" name="story_image_default" type="radio" value="{{ $imagePath }}" @checked($selectedDefaultImage === $imagePath) />
+                    <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
+                      src="{{ asset($imagePath) }}" alt="Default image {{ $index + 1 }}" />
+                    <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
+                  </label>
+                @empty
+                  <div class="col-span-full text-sm text-text-muted-light dark:text-text-muted-dark px-2 py-3">
+                    No default images found in the happy stories default image directory.
+                  </div>
+                @endforelse
               </div>
             </div>
 

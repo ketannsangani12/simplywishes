@@ -26,7 +26,7 @@
       </div>
 
       <article class="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl shadow-sm overflow-hidden">
-        @if ($postImage && empty($post->featured_video_url))
+        @if ($postImage)
           <div class="relative">
             <img alt="{{ $post->e_title }}" class="w-full max-h-[520px] object-cover" src="{{ $postImage }}" />
           </div>
@@ -120,7 +120,7 @@
                   @endphp
                   <iframe class="w-full h-full" src="{{ $embedUrl }}" title="{{ $post->e_title }}" allowfullscreen></iframe>
                 @else
-                  <video class="w-full h-full bg-black" controls>
+                  <video class="w-full h-full bg-black" controls @if ($postImage) poster="{{ $postImage }}" @endif>
                     <source src="{{ $postVideoUrl }}" />
                   </video>
                 @endif

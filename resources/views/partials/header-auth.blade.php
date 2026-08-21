@@ -104,7 +104,7 @@
                   <span class="flex-1">Tell your story</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-text-light dark:text-text-dark font-semibold"
-                  href="{{ route('happy.stories') }}">
+                  href="{{ route('my.happy.stories') }}">
                   <span class="material-symbols-outlined text-brand-blue-light">auto_stories</span>
                   <span class="flex-1">My happy stories</span>
                 </a>

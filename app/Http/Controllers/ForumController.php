@@ -74,10 +74,11 @@ class ForumController extends Controller
             'updated_at' => now(),
         ]);
 
+        $redirectTab = $validated['post_type'] === 'video' ? 'videos' : 'articles';
+
         return redirect()
-            ->route('forum', ['tab' => 'contribute'])
-            ->with('status', 'Your forum post has been created successfully.')
-            ->with('active_contribute_tab', $validated['post_type']);
+            ->route('forum', ['tab' => $redirectTab])
+            ->with('status', 'Your forum post has been created successfully.');
     }
 
     public function edit(int $forum): View

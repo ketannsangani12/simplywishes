@@ -75,7 +75,7 @@ class WishController extends Controller
         $rules = $isDraft ? [
             'wish_title' => ['nullable', 'string', 'max:100'],
             'wish_description' => ['nullable', 'string'],
-            'wish_date' => ['nullable', 'date_format:Y-m-d'],
+            'wish_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
             'funding' => ['nullable', 'in:yes,no'],
             'payment' => ['nullable', 'string', 'max:255'],
             'contact' => ['nullable', 'string', 'max:255'],
@@ -87,7 +87,7 @@ class WishController extends Controller
         ] : [
             'wish_title' => ['required', 'string', 'max:100'],
             'wish_description' => ['nullable', 'string'],
-            'wish_date' => ['required', 'date_format:Y-m-d'],
+            'wish_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
             'funding' => ['required', 'in:yes,no'],
             'payment' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],
             'contact' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],
@@ -186,6 +186,7 @@ class WishController extends Controller
             ->pluck('like_count', 'donation_id');
 
         $popularWishItems = Wish::where('wish_status', 1)
+            ->whereIn('w_id', $wishLikeCounts->keys())
             ->get()
             ->map(function (Wish $wish) use ($wishLikeCounts) {
                 return [
@@ -193,7 +194,7 @@ class WishController extends Controller
                     'id' => $wish->w_id,
                     'title' => $wish->wish_title ?: 'Untitled wish',
                     'image' => $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
-                    'link' => route('wishes.show', $wish->w_id),
+                    'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'most-popular']),
                     'creator_id' => $wish->wished_by,
                     'like_count' => (int) ($wishLikeCounts[$wish->w_id] ?? 0),
                     'wish_id' => $wish->w_id,
@@ -202,6 +203,7 @@ class WishController extends Controller
             });
 
         $popularDonationItems = Donation::whereIn('status', [1, 2, 3])
+            ->whereIn('id', $donationLikeCounts->keys())
             ->get()
             ->map(function (Donation $donation) use ($donationLikeCounts) {
                 return [
@@ -209,7 +211,7 @@ class WishController extends Controller
                     'id' => $donation->id,
                     'title' => $donation->title ?: 'Untitled donation',
                     'image' => $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',
-                    'link' => route('donations.show', $donation->id),
+                    'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'most-popular']),
                     'creator_id' => $donation->created_by,
                     'like_count' => (int) ($donationLikeCounts[$donation->id] ?? 0),
                     'wish_id' => null,
@@ -575,7 +577,7 @@ class WishController extends Controller
         $rules = $isDraft ? [
             'wish_title' => ['nullable', 'string', 'max:100'],
             'wish_description' => ['nullable', 'string'],
-            'wish_date' => ['nullable', 'date_format:Y-m-d'],
+            'wish_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
             'funding' => ['nullable', 'in:yes,no'],
             'payment' => ['nullable', 'string', 'max:255'],
             'contact' => ['nullable', 'string', 'max:255'],
@@ -587,7 +589,7 @@ class WishController extends Controller
         ] : [
             'wish_title' => ['required', 'string', 'max:100'],
             'wish_description' => ['nullable', 'string'],
-            'wish_date' => ['required', 'date_format:Y-m-d'],
+            'wish_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
             'funding' => ['required', 'in:yes,no'],
             'payment' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],
             'contact' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],

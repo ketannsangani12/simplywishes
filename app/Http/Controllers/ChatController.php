@@ -203,8 +203,12 @@ class ChatController extends Controller
             'body' => trim($validated['body']),
         ]);
 
+        // A fresh message means the conversation is live again for both
+        // sides, even if either of them had previously removed it.
         $conversation->update([
             'last_message_at' => now(),
+            'user_one_hidden_at' => null,
+            'user_two_hidden_at' => null,
         ]);
 
         return response()->json([
@@ -231,6 +235,22 @@ class ChatController extends Controller
         return response()->json(['ok' => true, 'id' => (int) $message->id]);
     }
 
+    public function destroyConversation(int $conversation): JsonResponse
+    {
+        $userId = Auth::id();
+        $conversation = ChatConversation::forUser($userId)->findOrFail($conversation);
+
+        // This only removes the conversation from the current user's own
+        // inbox; the other participant keeps their copy and full history
+        // until they choose to remove it too. It reappears for this user
+        // if either side sends a new message into it.
+        $conversation->update([
+            $conversation->hiddenColumnFor((int) $userId) => now(),
+        ]);
+
+        return response()->json(['ok' => true, 'id' => (int) $conversation->id]);
+    }
+
     public function heartbeat(): JsonResponse
     {
         UserPresence::updateOrCreate(
@@ -244,6 +264,10 @@ class ChatController extends Controller
     private function conversationQuery(int $userId)
     {
         return ChatConversation::forUser($userId)
+            ->where(function ($query) use ($userId) {
+                $query->where(fn ($q) => $q->where('user_one_id', $userId)->whereNull('user_one_hidden_at'))
+                    ->orWhere(fn ($q) => $q->where('user_two_id', $userId)->whereNull('user_two_hidden_at'));
+            })
             ->orderByDesc('last_message_at')
             ->orderByDesc('updated_at');
     }
@@ -259,12 +283,12 @@ class ChatController extends Controller
         return ChatMessage::where('conversation_id', $conversationId);
     }
 
-    private function findOrCreateConversation(int $userOneId, int $userTwoId): ChatConversation
+    private function findOrCreateConversation(int $initiatingUserId, int $otherUserId): ChatConversation
     {
-        $firstId = min($userOneId, $userTwoId);
-        $secondId = max($userOneId, $userTwoId);
+        $firstId = min($initiatingUserId, $otherUserId);
+        $secondId = max($initiatingUserId, $otherUserId);
 
-        return ChatConversation::firstOrCreate(
+        $conversation = ChatConversation::firstOrCreate(
             [
                 'user_one_id' => $firstId,
                 'user_two_id' => $secondId,
@@ -273,6 +297,15 @@ class ChatController extends Controller
                 'last_message_at' => now(),
             ]
         );
+
+        // Re-opening a conversation (e.g. from the "New Message" modal, or a
+        // member profile's "Message" button) should bring it back into the
+        // initiating user's inbox even if they had previously removed it.
+        if ($conversation->isHiddenFor($initiatingUserId)) {
+            $conversation->update([$conversation->hiddenColumnFor($initiatingUserId) => null]);
+        }
+
+        return $conversation;
     }
 
     private function conversationPayload(ChatConversation $conversation, int $userId): array

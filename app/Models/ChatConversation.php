@@ -15,10 +15,14 @@ class ChatConversation extends Model
         'user_one_id',
         'user_two_id',
         'last_message_at',
+        'user_one_hidden_at',
+        'user_two_hidden_at',
     ];
 
     protected $casts = [
         'last_message_at' => 'datetime',
+        'user_one_hidden_at' => 'datetime',
+        'user_two_hidden_at' => 'datetime',
     ];
 
     public function userOne(): BelongsTo
@@ -49,5 +53,15 @@ class ChatConversation extends Model
     public function otherParticipantId(int $userId): int
     {
         return (int) ((int) $this->user_one_id === $userId ? $this->user_two_id : $this->user_one_id);
+    }
+
+    public function hiddenColumnFor(int $userId): string
+    {
+        return (int) $this->user_one_id === $userId ? 'user_one_hidden_at' : 'user_two_hidden_at';
+    }
+
+    public function isHiddenFor(int $userId): bool
+    {
+        return $this->{$this->hiddenColumnFor($userId)} !== null;
     }
 }

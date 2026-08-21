@@ -64,6 +64,16 @@
               </div>
               <p class="text-xs text-text-muted-light mt-1" id="chat-status-label">Offline</p>
             </div>
+            <div class="relative">
+              <button id="chat-options-trigger" type="button" class="p-2 rounded-md hover:bg-gray-100 text-text-muted-light" aria-label="Conversation options">
+                <span class="material-symbols-outlined">more_vert</span>
+              </button>
+              <div id="chat-options-menu" class="hidden absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg py-2 text-left z-40">
+                <button id="chat-delete-conversation" type="button" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-base">delete</span> Delete conversation
+                </button>
+              </div>
+            </div>
           </div>
 
           <div id="messages-container" class="flex-1 overflow-y-auto px-6 py-6 space-y-4 bg-gradient-to-b from-white to-gray-50"></div>
@@ -219,6 +229,9 @@
     const sendBtn = document.getElementById('send-button');
     const profilePanel = document.getElementById('profile-panel');
     const profileEmpty = document.getElementById('profile-empty');
+    const chatOptionsTrigger = document.getElementById('chat-options-trigger');
+    const chatOptionsMenu = document.getElementById('chat-options-menu');
+    const chatDeleteConversationBtn = document.getElementById('chat-delete-conversation');
 
     const modal = document.getElementById('new-message-modal');
     const userSearchInput = document.getElementById('user-search-input');
@@ -630,6 +643,54 @@
       inputEl.disabled = !enabled;
       sendBtn.disabled = !enabled;
     }
+
+    // ---- Conversation options (delete conversation) ----
+    chatOptionsTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      chatOptionsMenu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', (e) => {
+      if (!chatOptionsMenu.contains(e.target) && e.target !== chatOptionsTrigger) {
+        chatOptionsMenu.classList.add('hidden');
+      }
+    });
+
+    function resetChatView() {
+      activeConversationId = 0;
+      messagesEl.innerHTML = '';
+      messagesEl.classList.add('hidden');
+      chatHeaderEl.classList.add('hidden');
+      chatEmptyEl.classList.remove('hidden');
+      setComposerEnabled(false);
+      profilePanel.classList.add('hidden');
+      profilePanel.classList.remove('flex');
+      profileEmpty.classList.remove('hidden');
+
+      if (window.history) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('conversation');
+        window.history.replaceState({}, '', url);
+      }
+    }
+
+    chatDeleteConversationBtn.addEventListener('click', async () => {
+      chatOptionsMenu.classList.add('hidden');
+      if (!activeConversationId) return;
+      if (!window.confirm('Delete this conversation? It will be removed from your inbox.')) return;
+
+      const idToDelete = activeConversationId;
+      try {
+        const res = await fetch(`${ROUTES.conversationsBase}/${idToDelete}`, {
+          method: 'DELETE',
+          headers: jsonHeaders(),
+        });
+        if (!res.ok) return;
+
+        conversations = conversations.filter((c) => c.id !== idToDelete);
+        resetChatView();
+        renderConversations();
+      } catch (e) { /* ignore */ }
+    });
 
     // ---- Open a conversation ----
     async function openConversation(id, pushHistory) {

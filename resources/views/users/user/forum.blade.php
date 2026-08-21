@@ -89,7 +89,7 @@
       @endif
 
       @if ($tab === 'contribute')
-        <div class="mb-10" data-contribute-tabs data-initial-tab="{{ session('active_contribute_tab', old('post_type', 'article')) }}">
+        <div class="mb-10" data-contribute-tabs data-initial-tab="{{ old('post_type', 'article') }}">
           <div class="max-w-4xl mx-auto">
             <div class="flex justify-center mb-8">
               <div class="flex rounded-full p-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-x-1">

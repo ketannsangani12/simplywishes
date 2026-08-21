@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 Route::get('/', [SiteController::class, 'home'])->name('home');
 Route::get('/about-us', [SiteController::class, 'aboutUs'])->name('about');
 Route::get('/happy-stories', [SiteController::class, 'happyStories'])->name('happy.stories');
+Route::get('/my-happy-stories', [SiteController::class, 'myHappyStories'])->name('my.happy.stories')->middleware('auth');
 Route::get('/happy-stories/{story}', [SiteController::class, 'happyStory'])->name('happy.stories.show')->middleware('auth')->whereNumber('story');
 Route::post('/happy-stories/{story}/report', [SiteController::class, 'reportHappyStory'])->name('happy.stories.report')->middleware('auth')->whereNumber('story');
 Route::get('/wishers-granters-donors', [SiteController::class, 'wishersGrantersDonors'])->name('wishers.granters.donors');
@@ -33,6 +34,7 @@ Route::middleware('auth')->prefix('chat')->name('chat.')->group(function () {
     Route::get('/conversations/{conversation}/messages', [ChatController::class, 'messages'])->name('conversations.messages')->whereNumber('conversation');
     Route::post('/conversations/{conversation}/messages', [ChatController::class, 'sendMessage'])->name('conversations.messages.send')->whereNumber('conversation');
     Route::delete('/conversations/{conversation}/messages/{message}', [ChatController::class, 'deleteMessage'])->name('conversations.messages.delete')->whereNumber('conversation')->whereNumber('message');
+    Route::delete('/conversations/{conversation}', [ChatController::class, 'destroyConversation'])->name('conversations.destroy')->whereNumber('conversation');
     Route::post('/heartbeat', [ChatController::class, 'heartbeat'])->name('heartbeat');
 });
 Route::get('/forum', [ForumController::class, 'index'])->name('forum')->middleware('auth');

@@ -113,7 +113,7 @@ No granted wishes or donations yet.
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-wish-type="{{ (int) $wish->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
-<a href="{{ route('wishes.show', $wish->w_id) }}" class="block">
+<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="block">
 <img alt="Wish image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
 </a>
 <div class="absolute top-3 right-3 flex items-center gap-2">
@@ -149,7 +149,7 @@ No granted wishes or donations yet.
 </div>
 <div class="p-4 space-y-3">
 <div class="flex items-center justify-between mb-2">
-<a href="{{ route('wishes.show', $wish->w_id) }}" class="block hover:underline">
+<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $wish->wish_title ?: 'Untitled wish' }}</h3>
 </a>
 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Granted</span>
@@ -173,7 +173,7 @@ No granted wishes or donations yet.
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-donation-type="{{ (int) $donation->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
-<a href="{{ route('donations.show', $donation->id) }}" class="block">
+<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="block">
 <img alt="Donation image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
 </a>
 <div class="absolute top-3 right-3 flex items-center gap-2">
@@ -209,7 +209,7 @@ No granted wishes or donations yet.
 </div>
 <div class="p-4 space-y-3">
 <div class="flex items-center justify-between mb-2">
-<a href="{{ route('donations.show', $donation->id) }}" class="block hover:underline">
+<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $donation->title ?: 'Untitled donation' }}</h3>
 </a>
 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Granted</span>
@@ -243,7 +243,7 @@ No in-progress wishes or donations yet.
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-wish-type="{{ (int) $wish->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
-<a href="{{ route('wishes.show', $wish->w_id) }}" class="block">
+<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="block">
 <img alt="Wish image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
 </a>
 <div class="absolute top-3 right-3 flex items-center gap-2">
@@ -279,7 +279,7 @@ No in-progress wishes or donations yet.
 </div>
 <div class="p-4 space-y-3">
 <div class="flex items-center justify-between mb-2">
-<a href="{{ route('wishes.show', $wish->w_id) }}" class="block hover:underline">
+<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $wish->wish_title ?: 'Untitled wish' }}</h3>
 </a>
 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">In Progress</span>
@@ -303,7 +303,7 @@ No in-progress wishes or donations yet.
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-donation-type="{{ (int) $donation->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
-<a href="{{ route('donations.show', $donation->id) }}" class="block">
+<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="block">
 <img alt="Donation image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
 </a>
 <div class="absolute top-3 right-3 flex items-center gap-2">
@@ -339,7 +339,7 @@ No in-progress wishes or donations yet.
 </div>
 <div class="p-4 space-y-3">
 <div class="flex items-center justify-between mb-2">
-<a href="{{ route('donations.show', $donation->id) }}" class="block hover:underline">
+<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $donation->title ?: 'Untitled donation' }}</h3>
 </a>
 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">In Progress</span>
@@ -383,7 +383,7 @@ No current wishes available yet.
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-wish-type="{{ (int) $wish->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
-<a href="{{ route('wishes.show', $wish->w_id) }}" class="block">
+<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'current-wishes']) }}" class="block">
 <img alt="Wish image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
 </a>
 <div class="absolute top-3 right-3 flex items-center gap-2">
@@ -418,7 +418,7 @@ No current wishes available yet.
 </div>
 </div>
 <div class="p-4 space-y-3">
-<a href="{{ route('wishes.show', $wish->w_id) }}" class="block hover:underline">
+<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'current-wishes']) }}" class="block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $wish->wish_title ?: 'Untitled wish' }}</h3>
 </a>
 @php
@@ -460,7 +460,7 @@ No current donations available yet.
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-donation-type="{{ (int) $donation->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
-<a href="{{ route('donations.show', $donation->id) }}" class="block">
+<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'current-donations']) }}" class="block">
 <img alt="Donation image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
 </a>
 <div class="absolute top-3 right-3 flex items-center gap-2">
@@ -495,7 +495,7 @@ No current donations available yet.
 </div>
 </div>
 <div class="p-4 space-y-3">
-<a href="{{ route('donations.show', $donation->id) }}" class="block hover:underline">
+<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'current-donations']) }}" class="block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $donation->title ?: 'Untitled donation' }}</h3>
 </a>
 @php

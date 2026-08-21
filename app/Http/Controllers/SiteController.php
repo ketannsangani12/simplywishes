@@ -242,7 +242,61 @@ class SiteController extends Controller
             ->orderByDesc('hs_id')
             ->get();
 
-        return view('users.user.happy-stories', compact('stories', 'searchTerm'));
+        $storyIds = $stories->pluck('hs_id');
+
+        $likedStoryIds = Auth::id()
+            ? Activity::where('user_id', Auth::id())
+                ->where('type', 'like')
+                ->whereIn('happy_story_id', $storyIds)
+                ->pluck('happy_story_id')
+                ->all()
+            : [];
+
+        $storyLikeCounts = Activity::where('type', 'like')
+            ->whereIn('happy_story_id', $storyIds)
+            ->selectRaw('happy_story_id, COUNT(*) as aggregate')
+            ->groupBy('happy_story_id')
+            ->pluck('aggregate', 'happy_story_id');
+
+        return view('users.user.happy-stories', compact('stories', 'searchTerm', 'likedStoryIds', 'storyLikeCounts'));
+    }
+
+    public function myHappyStories(): View
+    {
+        $userId = Auth::id();
+        $searchTerm = trim((string) request()->query('q', ''));
+
+        $storiesQuery = HappyStory::with(['user', 'wish'])
+            ->where('user_id', $userId);
+
+        if ($searchTerm !== '') {
+            $storiesQuery->where(function ($query) use ($searchTerm) {
+                $query->where('story_text', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('wish', function ($wishQuery) use ($searchTerm) {
+                        $wishQuery->where('wish_title', 'like', "%{$searchTerm}%");
+                    });
+            });
+        }
+
+        $stories = $storiesQuery
+            ->orderByDesc('hs_id')
+            ->get();
+
+        $storyIds = $stories->pluck('hs_id');
+
+        $likedStoryIds = Activity::where('user_id', $userId)
+            ->where('type', 'like')
+            ->whereIn('happy_story_id', $storyIds)
+            ->pluck('happy_story_id')
+            ->all();
+
+        $storyLikeCounts = Activity::where('type', 'like')
+            ->whereIn('happy_story_id', $storyIds)
+            ->selectRaw('happy_story_id, COUNT(*) as aggregate')
+            ->groupBy('happy_story_id')
+            ->pluck('aggregate', 'happy_story_id');
+
+        return view('users.user.happy-stories', compact('stories', 'searchTerm', 'likedStoryIds', 'storyLikeCounts'));
     }
 
     public function happyStory(int $story): View

@@ -3,6 +3,16 @@
 @section('title', 'Simply Wishes - Donation Detail')
 
 @section('content')
+@php
+  $source = (string) request()->query('source', '');
+  $sourceTab = (string) request()->query('source_tab', '');
+
+  $backUrl = match ($source) {
+      'active' => $sourceTab !== '' ? route('wishes.active') . '#' . $sourceTab : route('wishes.active'),
+      'my-wishes' => route('my.wishes', $sourceTab !== '' ? ['tab' => $sourceTab] : []),
+      default => route('wishes.active'),
+  };
+@endphp
 <main class="flex-1 bg-gradient-to-b from-white via-white to-slate-50 dark:from-background-dark dark:via-background-dark dark:to-background-dark">
   <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
     @if (session('status'))
@@ -27,13 +37,15 @@
               <form action="{{ route('donations.destroy', $donation->id) }}" method="POST">
                 @csrf
                 @method('DELETE')
+                <input type="hidden" name="source" value="{{ $source }}">
+                <input type="hidden" name="source_tab" value="{{ $sourceTab }}">
                 <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors" type="submit" onclick="return confirm('Delete this donation?');">
                   <span class="material-icons !text-base">delete</span>
                   Delete
                 </button>
               </form>
             @endif
-            <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition" href="{{ route('wishes.active') }}">
+            <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition" href="{{ $backUrl }}">
               <span class="material-icons !text-base">arrow_back</span>
               Back
             </a>

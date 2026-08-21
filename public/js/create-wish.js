@@ -215,13 +215,26 @@ document.addEventListener('DOMContentLoaded', () => {
     window.flatpickr(dateInput, {
       dateFormat: 'Y-m-d',
       allowInput: true,
+      minDate: 'today',
     });
   }
 
-  const showError = (key, show) => {
+  const showError = (key, show, message) => {
     const el = document.querySelector(`[data-error-for="${key}"]`);
     if (!el) return;
+    if (message) {
+      el.textContent = message;
+    }
     el.classList.toggle('hidden', !show);
+  };
+
+  const isPastDate = (value) => {
+    if (!value) return false;
+    const entered = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(entered.getTime())) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return entered.getTime() < today.getTime();
   };
 
   const validateWishForm = () => {
@@ -240,8 +253,11 @@ document.addEventListener('DOMContentLoaded', () => {
     showError('wish-title', !titleOk);
     valid = valid && titleOk;
 
-    const dateOk = !!(date && date.value.trim());
-    showError('wish-date', !dateOk);
+    const dateValue = date ? date.value.trim() : '';
+    const dateFilled = !!dateValue;
+    const dateInPast = dateFilled && isPastDate(dateValue);
+    const dateOk = dateFilled && !dateInPast;
+    showError('wish-date', !dateOk, dateInPast ? 'Please choose today or a future date.' : 'Date is required.');
     valid = valid && dateOk;
 
     const fundingOk = !!funding;
@@ -306,7 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (date) {
       date.addEventListener('input', () => {
-        if (date.value.trim()) showError('wish-date', false);
+        const value = date.value.trim();
+        if (value && !isPastDate(value)) showError('wish-date', false);
       });
     }
     if (contact) {

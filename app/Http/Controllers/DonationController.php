@@ -498,7 +498,7 @@ class DonationController extends Controller
             ->with('status', $isDraft ? 'Your donation draft has been updated.' : 'Your donation has been updated.');
     }
 
-    public function destroy(int $donation): RedirectResponse
+    public function destroy(Request $request, int $donation): RedirectResponse
     {
         $donation = Donation::where('id', $donation)
             ->where('created_by', Auth::id())
@@ -506,6 +506,30 @@ class DonationController extends Controller
             ->firstOrFail();
 
         $donation->delete();
+
+        $source = (string) $request->input('source', '');
+        $sourceTab = (string) $request->input('source_tab', '');
+
+        if ($source === 'active') {
+            $redirect = redirect()->route('wishes.active');
+
+            if ($sourceTab !== '') {
+                $redirect->withFragment($sourceTab);
+            }
+
+            return $redirect->with('status', 'Donation deleted.');
+        }
+
+        if ($source === 'my-wishes') {
+            $parameters = [];
+            if ($sourceTab !== '') {
+                $parameters['tab'] = $sourceTab;
+            }
+
+            return redirect()
+                ->route('my.wishes', $parameters)
+                ->with('status', 'Donation deleted.');
+        }
 
         return redirect()
             ->route('donations.drafts')
