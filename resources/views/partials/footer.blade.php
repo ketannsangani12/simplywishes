@@ -10,9 +10,9 @@
             <span class="hidden md:inline">•</span>
             <a class="hover:text-primary transition-colors" href="{{ route('terms.of.use') }}">Terms Of Use</a>
             <span class="hidden md:inline">•</span>
-            <a class="hover:text-primary transition-colors" href="#">Community Guidelines</a>
+            <a class="hover:text-primary transition-colors" href="{{ route('community.guidelines') }}">Community Guidelines</a>
             <span class="hidden md:inline">•</span>
-            <a class="hover:text-primary transition-colors" href="#">Contact Us</a>
+            <a class="hover:text-primary transition-colors" href="{{ route('contact.us') }}">Contact Us</a>
           </div>
           <div class="flex items-center gap-4">
             <a aria-label="App Store" class="flex h-12 items-center" href="#">

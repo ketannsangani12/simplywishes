@@ -343,6 +343,7 @@ class WishController extends Controller
             ->where('reporter_id', $userId)
             ->where('reportable_type', 'wish')
             ->where('reportable_id', $wish->w_id)
+            ->where('status', 0)
             ->exists();
 
         $commentIds = $comments->pluck('id')

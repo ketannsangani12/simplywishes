@@ -280,6 +280,22 @@
   </section>
 </main>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.querySelector('input[name="q"]');
+    if (!searchInput || !searchInput.form) return;
+
+    // The native "x" clear button on a `type="search"` input fires a `search`
+    // event (it also fires on Enter). Only act when it left the field empty,
+    // so clearing it re-submits the form and the server drops the stale results.
+    searchInput.addEventListener('search', function () {
+      if (searchInput.value.trim() === '') {
+        searchInput.form.submit();
+      }
+    });
+  });
+</script>
+
 @if ($tab === 'contribute')
   <script>
     document.addEventListener('DOMContentLoaded', function () {

@@ -195,7 +195,7 @@
 
               <div class="flex items-start gap-3">
                 <input class="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary" id="terms" type="checkbox" required />
-                <label class="text-sm text-text-light dark:text-text-dark" for="terms">I agree to the <a class="text-brand-blue-light hover:underline" href="{{ route('terms.of.use') }}">Terms Of Use</a>, <a class="text-brand-blue-light hover:underline" href="#">Community Guidelines</a> and <a class="text-brand-blue-light hover:underline" href="{{ route('privacy.policy') }}">Privacy Policy</a> <span class="text-red-500">*</span></label>
+                <label class="text-sm text-text-light dark:text-text-dark" for="terms">I agree to the <a class="text-brand-blue-light hover:underline" href="{{ route('terms.of.use') }}">Terms Of Use</a>, <a class="text-brand-blue-light hover:underline" href="{{ route('community.guidelines') }}">Community Guidelines</a> and <a class="text-brand-blue-light hover:underline" href="{{ route('privacy.policy') }}">Privacy Policy</a> <span class="text-red-500">*</span></label>
               </div>
 
               <div class="pt-2">

@@ -18,7 +18,7 @@
         <div class="h-28 bg-gradient-to-r from-brand-blue-light to-brand-blue-light/70"></div>
         <div class="px-6 pb-6 pt-4">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div class="relative">
+            <div class="relative self-start sm:self-auto">
               <img src="{{ $avatar }}" alt="{{ $name }}"
                 class="-mt-18 w-28 h-28 rounded-2xl object-cover border-4 border-surface-light dark:border-surface-dark shadow-lg bg-gray-100" />
               <span class="absolute bottom-2 right-2 inline-flex h-4 w-4 rounded-full border-2 border-white {{ $isOnline ? 'bg-emerald-500' : 'bg-gray-400' }}"></span>
@@ -51,34 +51,56 @@
                 class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-blue-light text-white text-sm font-semibold shadow hover:shadow-md">
                 <span class="material-symbols-outlined text-base">edit</span> Edit Profile
               </a>
-            @else
-              <a href="{{ route('inbox', ['user' => $member->id]) }}"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-blue-light text-white text-sm font-semibold shadow hover:shadow-md">
-                <span class="material-symbols-outlined text-base">chat</span> Message
-              </a>
-
-              @if($isFriend)
-                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-semibold">
-                  <span class="material-symbols-outlined text-base">how_to_reg</span> Friends
-                </span>
-              @elseif($requestSent)
-                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-text-muted-light dark:text-text-muted-dark text-sm font-semibold">
-                  <span class="material-symbols-outlined text-base">schedule</span> Request sent
-                </span>
-              @elseif($requestReceived)
-                <a href="{{ route('my.friends') }}"
+            @elseif($isBlockedByMe)
+              <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-text-muted-light dark:text-text-muted-dark text-sm font-semibold">
+                <span class="material-symbols-outlined text-base">block</span> You blocked this user
+              </span>
+              <form method="POST" action="{{ route('friends.unblock', $member->id) }}">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <span class="material-symbols-outlined text-base">group_add</span> Respond to request
+                  Unblock
+                </button>
+              </form>
+            @else
+              @unless($isBlockingMe)
+                <a href="{{ route('inbox', ['user' => $member->id]) }}"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-blue-light text-white text-sm font-semibold shadow hover:shadow-md">
+                  <span class="material-symbols-outlined text-base">chat</span> Message
                 </a>
-              @else
-                <form method="POST" action="{{ route('friends.requests.send', $member->id) }}">
-                  @csrf
-                  <button type="submit"
+
+                @if($isFriend)
+                  <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-semibold">
+                    <span class="material-symbols-outlined text-base">how_to_reg</span> Friends
+                  </span>
+                @elseif($requestSent)
+                  <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-text-muted-light dark:text-text-muted-dark text-sm font-semibold">
+                    <span class="material-symbols-outlined text-base">schedule</span> Request sent
+                  </span>
+                @elseif($requestReceived)
+                  <a href="{{ route('my.friends') }}"
                     class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <span class="material-symbols-outlined text-base">person_add</span> Add Friend
-                  </button>
-                </form>
-              @endif
+                    <span class="material-symbols-outlined text-base">group_add</span> Respond to request
+                  </a>
+                @else
+                  <form method="POST" action="{{ route('friends.requests.send', $member->id) }}">
+                    @csrf
+                    <button type="submit"
+                      class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <span class="material-symbols-outlined text-base">person_add</span> Add Friend
+                    </button>
+                  </form>
+                @endif
+              @endunless
+
+              <form method="POST" action="{{ route('friends.block', $member->id) }}" onsubmit="return confirm('Block {{ $name }}? They will be removed as a friend and won\'t be able to message you or send friend requests.');">
+                @csrf
+                <button type="submit"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50">
+                  <span class="material-symbols-outlined text-base">block</span> Block
+                </button>
+              </form>
             @endif
           </div>
         </div>

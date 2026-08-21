@@ -255,6 +255,7 @@ class ForumController extends Controller
             ->where('reporter_id', $userId)
             ->where('reportable_type', 'forum')
             ->where('reportable_id', $post->e_id)
+            ->where('status', 0)
             ->exists();
 
         $comments = $post->comments

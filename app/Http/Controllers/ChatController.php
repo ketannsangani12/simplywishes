@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
+use App\Models\FriendBlock;
 use App\Models\User;
 use App\Models\UserPresence;
 use Illuminate\Http\JsonResponse;
@@ -53,12 +54,17 @@ class ChatController extends Controller
         $participant = [];
 
         if ($selectedConversation) {
-            $selectedMessages = $this->messageQuery($selectedConversation->id, $userId)
+            $messages = $this->messageQuery($selectedConversation->id, $userId)
                 ->with(['sender', 'replyTo.sender'])
                 ->orderBy('id')
                 ->limit(50)
-                ->get()
-                ->map(fn (ChatMessage $message) => $this->messagePayload($message, $userId));
+                ->get();
+
+            $reportedMessageIds = $this->reportedMessageIds($userId, $messages->pluck('id'));
+
+            $selectedMessages = $messages->map(
+                fn (ChatMessage $message) => $this->messagePayload($message, $userId, $reportedMessageIds)
+            );
 
             $participant = $this->participantPayload(
                 User::with('presence')->find($selectedConversation->otherParticipantId($userId))
@@ -135,6 +141,10 @@ class ChatController extends Controller
             return response()->json(['message' => 'You cannot message yourself.'], 422);
         }
 
+        if (FriendBlock::existsBetween($authId, $otherId)) {
+            return response()->json(['message' => 'You cannot message this user.'], 403);
+        }
+
         $conversation = $this->findOrCreateConversation($authId, $otherId);
         $conversation->load(['userOne.presence', 'userTwo.presence', 'latestMessage.sender']);
 
@@ -154,8 +164,13 @@ class ChatController extends Controller
             ->with(['sender', 'replyTo.sender'])
             ->when($after > 0, fn ($query) => $query->where('id', '>', $after))
             ->orderBy('id')
-            ->get()
-            ->map(fn (ChatMessage $message) => $this->messagePayload($message, $userId));
+            ->get();
+
+        $reportedMessageIds = $this->reportedMessageIds($userId, $messages->pluck('id'));
+
+        $messages = $messages->map(
+            fn (ChatMessage $message) => $this->messagePayload($message, $userId, $reportedMessageIds)
+        );
 
         $lastReadId = (int) ChatMessage::where('conversation_id', $conversation->id)
             ->where('sender_id', $userId)
@@ -186,6 +201,10 @@ class ChatController extends Controller
     {
         $userId = Auth::id();
         $conversation = ChatConversation::forUser($userId)->findOrFail($conversation);
+
+        if (FriendBlock::existsBetween((int) $userId, $conversation->otherParticipantId((int) $userId))) {
+            return response()->json(['message' => 'You cannot message this user.'], 403);
+        }
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:2000'],
@@ -235,6 +254,34 @@ class ChatController extends Controller
         return response()->json(['ok' => true, 'id' => (int) $message->id]);
     }
 
+    public function reportMessage(int $conversation, int $message): JsonResponse
+    {
+        $userId = Auth::id();
+        $conversation = ChatConversation::forUser($userId)->findOrFail($conversation);
+        $message = ChatMessage::where('conversation_id', $conversation->id)->findOrFail($message);
+
+        if ((int) $message->sender_id === (int) $userId) {
+            return response()->json(['message' => 'You cannot report your own message.'], 403);
+        }
+
+        DB::table('reports')->updateOrInsert(
+            [
+                'reporter_id' => $userId,
+                'reportable_type' => 'chat_message',
+                'reportable_id' => $message->id,
+            ],
+            [
+                'reported_user_id' => $message->sender_id,
+                'reason' => 'Chat message',
+                'details' => 'Chat message reported from inbox.',
+                'status' => 0,
+                'created_at' => now(),
+            ]
+        );
+
+        return response()->json(['ok' => true, 'id' => (int) $message->id]);
+    }
+
     public function destroyConversation(int $conversation): JsonResponse
     {
         $userId = Auth::id();
@@ -268,6 +315,10 @@ class ChatController extends Controller
                 $query->where(fn ($q) => $q->where('user_one_id', $userId)->whereNull('user_one_hidden_at'))
                     ->orWhere(fn ($q) => $q->where('user_two_id', $userId)->whereNull('user_two_hidden_at'));
             })
+            // Starting a new chat creates the conversation row right away so a
+            // message can be sent into it, but until an actual message exists
+            // it's just a draft — it shouldn't clutter the inbox list.
+            ->whereHas('messages')
             ->orderByDesc('last_message_at')
             ->orderByDesc('updated_at');
     }
@@ -344,6 +395,24 @@ class ChatController extends Controller
         return self::$chatMessagesHaveDeletedAt;
     }
 
+    private function reportedMessageIds(int $userId, $messageIds): array
+    {
+        $messageIds = collect($messageIds)->filter()->values();
+
+        if ($messageIds->isEmpty()) {
+            return [];
+        }
+
+        return DB::table('reports')
+            ->where('reporter_id', $userId)
+            ->where('reportable_type', 'chat_message')
+            ->whereIn('reportable_id', $messageIds)
+            ->where('status', 0)
+            ->pluck('reportable_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
     private function participantPayload(?User $user): array
     {
         if (! $user) {
@@ -365,7 +434,7 @@ class ChatController extends Controller
         ];
     }
 
-    private function messagePayload(ChatMessage $message, int $userId): array
+    private function messagePayload(ChatMessage $message, int $userId, array $reportedMessageIds = []): array
     {
         $sender = $message->sender;
         $name = trim(implode(' ', array_filter([$sender?->first_name ?? null, $sender?->last_name ?? null])));
@@ -377,6 +446,7 @@ class ChatController extends Controller
             'body' => $deleted ? '' : $message->body,
             'is_deleted' => $deleted,
             'is_mine' => (int) $message->sender_id === (int) $userId,
+            'is_reported_by_me' => in_array((int) $message->id, $reportedMessageIds, true),
             'sender_name' => $name,
             'sender_avatar' => $this->avatarForUser($sender, $name),
             'created_at' => $message->created_at?->format('M d, g:i A'),

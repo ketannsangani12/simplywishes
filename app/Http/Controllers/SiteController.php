@@ -10,6 +10,7 @@ use App\Models\HappyStory;
 use App\Models\HappyStoryComment;
 use App\Models\HappyStoryCommentLike;
 use App\Models\Friend;
+use App\Models\FriendBlock;
 use App\Models\FriendRequest;
 use App\Models\Wish;
 use App\Models\State;
@@ -202,6 +203,8 @@ class SiteController extends Controller
         $isFriend = ! $isSelf && Friend::where('user_id', $viewerId)->where('friend_id', $member->id)->exists();
         $requestSent = ! $isSelf && FriendRequest::where('sender_id', $viewerId)->where('receiver_id', $member->id)->where('status', 0)->exists();
         $requestReceived = ! $isSelf && FriendRequest::where('sender_id', $member->id)->where('receiver_id', $viewerId)->where('status', 0)->exists();
+        $isBlockedByMe = ! $isSelf && FriendBlock::where('blocker_id', $viewerId)->where('blocked_id', $member->id)->exists();
+        $isBlockingMe = ! $isSelf && FriendBlock::where('blocker_id', $member->id)->where('blocked_id', $viewerId)->exists();
 
         return view('users.user.member-profile', [
             'member' => $member,
@@ -214,6 +217,8 @@ class SiteController extends Controller
             'isFriend' => $isFriend,
             'requestSent' => $requestSent,
             'requestReceived' => $requestReceived,
+            'isBlockedByMe' => $isBlockedByMe,
+            'isBlockingMe' => $isBlockingMe,
         ]);
     }
 
@@ -347,6 +352,7 @@ class SiteController extends Controller
             ->where('reporter_id', $userId)
             ->where('reportable_type', 'happy_story')
             ->where('reportable_id', $story->hs_id)
+            ->where('status', 0)
             ->exists();
 
         $likedStoryIds = Activity::where('user_id', $userId)
@@ -849,6 +855,11 @@ class SiteController extends Controller
             ->orderByRaw('COALESCE(NULLIF(first_name, ""), NULLIF(name, ""), email) ASC')
             ->get();
 
+        $blockedUserIds = FriendBlock::where('blocker_id', $userId)->pluck('blocked_id');
+        $blockedUsers = User::whereIn('id', $blockedUserIds)
+            ->orderByRaw('COALESCE(NULLIF(first_name, ""), NULLIF(name, ""), email) ASC')
+            ->get();
+
         $incomingRequests = FriendRequest::where('receiver_id', $userId)
             ->where('status', 0)
             ->orderByDesc('created_at')
@@ -948,6 +959,7 @@ class SiteController extends Controller
             'searchTerm',
             'searchResults',
             'friends',
+            'blockedUsers',
             'incomingRequests',
             'outgoingRequests',
             'friendIds',
@@ -994,5 +1006,15 @@ class SiteController extends Controller
     public function termsOfUse(): View
     {
         return view('users.user.terms-of-use');
+    }
+
+    public function communityGuidelines(): View
+    {
+        return view('users.user.community-guidelines');
+    }
+
+    public function contactUs(): View
+    {
+        return view('users.user.contact-us');
     }
 }

@@ -10,6 +10,7 @@
   $backUrl = match ($source) {
       'active' => $sourceTab !== '' ? route('wishes.active') . '#' . $sourceTab : route('wishes.active'),
       'my-wishes' => route('my.wishes', $sourceTab !== '' ? ['tab' => $sourceTab] : []),
+      'drafts' => route('wishes.drafts'),
       default => route('wishes.active'),
   };
 @endphp
@@ -24,11 +25,11 @@
     @endif
     <div class="max-w-5xl mx-auto bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60 overflow-hidden">
       <div class="p-6 sm:p-8 border-b border-border-light dark:border-border-dark bg-slate-50/60 dark:bg-background-dark/60">
-        <div class="flex items-center justify-between gap-4">
-          <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue-light dark:text-brand-blue-dark">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue-light dark:text-brand-blue-dark break-words">
             {{ $wish->wish_title ?: 'Untitled wish' }}
           </h1>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             @if((int) ($wish->wished_by ?? 0) === (int) auth()->id() && (int) ($wish->wish_progress_status ?? 0) === 0)
               <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('wishes.edit', $wish->w_id) }}">
                 <span class="material-icons !text-base">edit</span>
@@ -111,7 +112,8 @@
             $creatorName = $creator ? trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? '')) : '';
             $creatorName = $creatorName !== '' ? $creatorName : ($creator->name ?? 'Wish Creator');
             $isCreator = (int) ($wish->wished_by ?? 0) === (int) auth()->id();
-            $isCurrent = (int) ($wish->wish_progress_status ?? 0) === 0;
+            $isPublished = (int) ($wish->wish_status ?? 0) === 1;
+            $isCurrent = $isPublished && (int) ($wish->wish_progress_status ?? 0) === 0;
             $isInProgress = (int) ($wish->wish_progress_status ?? 0) === 1;
             $isGranted = (int) ($wish->wish_progress_status ?? 0) === 2;
             $grantedByName = $grantedBy ? trim(($grantedBy->first_name ?? '') . ' ' . ($grantedBy->last_name ?? '')) : '';

@@ -10,6 +10,7 @@
   $backUrl = match ($source) {
       'active' => $sourceTab !== '' ? route('wishes.active') . '#' . $sourceTab : route('wishes.active'),
       'my-wishes' => route('my.wishes', $sourceTab !== '' ? ['tab' => $sourceTab] : []),
+      'drafts' => route('donations.drafts'),
       default => route('wishes.active'),
   };
 @endphp
@@ -24,11 +25,11 @@
     @endif
     <div class="max-w-5xl mx-auto bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60 overflow-hidden">
       <div class="p-6 sm:p-8 border-b border-border-light dark:border-border-dark bg-slate-50/60 dark:bg-background-dark/60">
-        <div class="flex items-center justify-between gap-4">
-          <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue-light dark:text-brand-blue-dark">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue-light dark:text-brand-blue-dark break-words">
             {{ $donation->title ?: 'Untitled donation' }}
           </h1>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             @if((int) ($donation->created_by ?? 0) === (int) auth()->id() && in_array((int) $donation->status, [0, 1], true))
               <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('donations.edit', $donation->id) }}">
                 <span class="material-icons !text-base">edit</span>

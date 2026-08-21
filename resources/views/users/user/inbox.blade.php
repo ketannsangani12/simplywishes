@@ -175,6 +175,9 @@
     <button data-action="delete" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
       <span class="material-symbols-outlined text-base">delete</span> Delete
     </button>
+    <button data-action="report" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent">
+      <span class="material-symbols-outlined text-base">flag</span> <span data-report-label>Report</span>
+    </button>
   </div>
 </main>
 
@@ -357,6 +360,7 @@
       wrap.dataset.messageId = msg.id;
       wrap.dataset.mine = msg.is_mine ? '1' : '0';
       wrap.dataset.deleted = msg.is_deleted ? '1' : '0';
+      wrap.dataset.reported = msg.is_reported_by_me ? '1' : '0';
       wrap.dataset.sender = msg.sender_name || '';
 
       const avatar = buildAvatar(msg.sender_avatar, msg.sender_name, 'w-10 h-10');
@@ -508,6 +512,12 @@
       const isMine = row.dataset.mine === '1';
       msgMenu.querySelector('[data-action="delete"]').classList.toggle('hidden', !isMine);
 
+      const reportBtn = msgMenu.querySelector('[data-action="report"]');
+      const isReported = row.dataset.reported === '1';
+      reportBtn.classList.toggle('hidden', isMine);
+      reportBtn.disabled = isReported;
+      reportBtn.querySelector('[data-report-label]').textContent = isReported ? 'Reported' : 'Report';
+
       msgMenu.classList.remove('hidden');
       const rect = trigger.getBoundingClientRect();
       const menuW = 160;
@@ -542,6 +552,7 @@
       if (action === 'reply') setReply(id);
       else if (action === 'copy') copyMessage(id);
       else if (action === 'delete') deleteMessage(id);
+      else if (action === 'report') reportMessage(id);
     });
 
     document.addEventListener('click', (e) => {
@@ -585,6 +596,21 @@
         if (res.ok) {
           markMessageDeleted(id);
           pollThreads();
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    async function reportMessage(id) {
+      const row = getRow(id);
+      if (!row || row.dataset.reported === '1') return;
+      if (!window.confirm('Report this message to SimplyWishes for review?')) return;
+      try {
+        const res = await fetch(`${ROUTES.conversationsBase}/${activeConversationId}/messages/${id}/report`, {
+          method: 'POST',
+          headers: jsonHeaders(),
+        });
+        if (res.ok) {
+          row.dataset.reported = '1';
         }
       } catch (e) { /* ignore */ }
     }
@@ -794,7 +820,19 @@
         const res = await fetch(ROUTES.threads, { headers: jsonHeaders() });
         if (!res.ok) return;
         const data = await res.json();
-        conversations = data.conversations || [];
+        const nextConversations = data.conversations || [];
+
+        // A brand-new conversation isn't returned by the server until it has
+        // an actual message, so it would otherwise vanish from the list the
+        // moment this poll runs. Keep it visible only while it's still the
+        // one open — if the user moves on without sending anything, it drops
+        // off on the next poll instead of lingering in the list forever.
+        if (activeConversationId && !nextConversations.some((c) => c.id === activeConversationId)) {
+          const draft = conversations.find((c) => c.id === activeConversationId);
+          if (draft) nextConversations.unshift(draft);
+        }
+
+        conversations = nextConversations;
         // Active conversation is being read; keep its badge clear.
         const active = conversations.find((c) => c.id === activeConversationId);
         if (active) active.unread_count = 0;

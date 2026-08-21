@@ -26,6 +26,8 @@ Route::get('/wishers-granters-donors', [SiteController::class, 'wishersGrantersD
 Route::get('/members/{user}', [SiteController::class, 'memberProfile'])->name('members.show')->middleware('auth')->whereNumber('user');
 Route::get('/privacy-policy', [SiteController::class, 'privacyPolicy'])->name('privacy.policy');
 Route::get('/terms-of-use', [SiteController::class, 'termsOfUse'])->name('terms.of.use');
+Route::get('/community-guidelines', [SiteController::class, 'communityGuidelines'])->name('community.guidelines');
+Route::get('/contact-us', [SiteController::class, 'contactUs'])->name('contact.us');
 Route::get('/inbox', [ChatController::class, 'index'])->name('inbox')->middleware('auth');
 Route::middleware('auth')->prefix('chat')->name('chat.')->group(function () {
     Route::get('/threads', [ChatController::class, 'threads'])->name('threads');
@@ -34,6 +36,7 @@ Route::middleware('auth')->prefix('chat')->name('chat.')->group(function () {
     Route::get('/conversations/{conversation}/messages', [ChatController::class, 'messages'])->name('conversations.messages')->whereNumber('conversation');
     Route::post('/conversations/{conversation}/messages', [ChatController::class, 'sendMessage'])->name('conversations.messages.send')->whereNumber('conversation');
     Route::delete('/conversations/{conversation}/messages/{message}', [ChatController::class, 'deleteMessage'])->name('conversations.messages.delete')->whereNumber('conversation')->whereNumber('message');
+    Route::post('/conversations/{conversation}/messages/{message}/report', [ChatController::class, 'reportMessage'])->name('conversations.messages.report')->whereNumber('conversation')->whereNumber('message');
     Route::delete('/conversations/{conversation}', [ChatController::class, 'destroyConversation'])->name('conversations.destroy')->whereNumber('conversation');
     Route::post('/heartbeat', [ChatController::class, 'heartbeat'])->name('heartbeat');
 });
@@ -66,6 +69,8 @@ Route::post('/friends/{user}/request', [FriendController::class, 'sendRequest'])
 Route::post('/friends/requests/{request}/accept', [FriendController::class, 'accept'])->name('friends.requests.accept')->middleware('auth');
 Route::post('/friends/requests/{request}/reject', [FriendController::class, 'reject'])->name('friends.requests.reject')->middleware('auth');
 Route::delete('/friends/{user}', [FriendController::class, 'unfriend'])->name('friends.unfriend')->middleware('auth');
+Route::post('/friends/{user}/block', [FriendController::class, 'block'])->name('friends.block')->middleware('auth');
+Route::delete('/friends/{user}/block', [FriendController::class, 'unblock'])->name('friends.unblock')->middleware('auth');
 Route::get('/my-profile', [SiteController::class, 'updateProfile'])->name('profile.edit')->middleware('auth');
 Route::put('/my-profile', [AuthController::class, 'updateProfile'])->name('profile.update')->middleware('auth');
 Route::put('/my-profile/password', [AuthController::class, 'updatePassword'])->name('profile.password.update')->middleware('auth');

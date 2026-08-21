@@ -35,7 +35,7 @@
               <circle class="fill-current text-[#38BDF8] opacity-80" cx="35" cy="70" r="2.5"></circle>
               <circle class="fill-current text-[#38BDF8] opacity-70" cx="50" cy="80" r="2"></circle>
             </svg>
-            <span class="text-2xl font-bold font-display text-brand-blue-light dark:text-brand-blue-dark">Simply<span
+            <span class="hidden sm:inline text-2xl font-bold font-display text-brand-blue-light dark:text-brand-blue-dark">Simply<span
                 class="text-primary">Wishes</span></span>
           </a>
           <div class="hidden xl:flex items-center gap-x-4 2xl:gap-x-7">

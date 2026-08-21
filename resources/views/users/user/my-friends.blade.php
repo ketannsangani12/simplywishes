@@ -436,6 +436,37 @@
               @endforelse
             </div>
           </div>
+
+          <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark shadow-xl">
+            <div class="border-b border-gray-200 dark:border-gray-800 px-5 py-4">
+              <h2 class="text-lg font-semibold text-brand-blue-light dark:text-white">Blocked Users</h2>
+              <p class="text-sm text-text-muted-light dark:text-text-muted-dark">People you've blocked. They can't message you or send friend requests.</p>
+            </div>
+            <div class="p-5 space-y-4">
+              @forelse (($blockedUsers ?? collect()) as $blockedUser)
+                @php
+                  $blockedName = $displayName($blockedUser);
+                  $blockedAvatar = $avatarFor($blockedUser, $blockedName);
+                @endphp
+                <div class="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-3">
+                  <img src="{{ $blockedAvatar }}" alt="{{ $blockedName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white">{{ $blockedName }}</p>
+                    <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark">{{ $blockedUser->email ?? '' }}</p>
+                  </div>
+                  <form method="POST" action="{{ route('friends.unblock', $blockedUser->id) }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark">Unblock</button>
+                  </form>
+                </div>
+              @empty
+                <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-4 py-8 text-center">
+                  <p class="text-sm text-text-muted-light dark:text-text-muted-dark">You haven't blocked anyone.</p>
+                </div>
+              @endforelse
+            </div>
+          </div>
         </div>
       </div>
     </div>

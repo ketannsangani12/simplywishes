@@ -43,7 +43,7 @@
                       <span>Updated {{ $updated }}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                      <a class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-brand-blue-light hover:border-primary hover:text-primary transition-colors" href="{{ route('wishes.show', $wish->w_id) }}">
+                      <a class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-brand-blue-light hover:border-primary hover:text-primary transition-colors" href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'drafts']) }}">
                         <span class="material-symbols-outlined text-base">visibility</span>
                         Preview
                       </a>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\FriendRequestReceived;
 use App\Models\Friend;
+use App\Models\FriendBlock;
 use App\Models\FriendRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,10 @@ class FriendController extends Controller
 
         if ($this->areFriends($sender->id, $receiver->id)) {
             return back()->with('status', 'You are already friends.');
+        }
+
+        if (FriendBlock::existsBetween((int) $sender->id, (int) $receiver->id)) {
+            return back()->with('status', 'You cannot send a friend request to this user.');
         }
 
         $existingIncoming = FriendRequest::where('sender_id', $receiver->id)
@@ -98,6 +103,45 @@ class FriendController extends Controller
         })->delete();
 
         return back()->with('status', 'Friend removed.');
+    }
+
+    public function block(Request $request, int $user): RedirectResponse
+    {
+        $blockerId = (int) $request->user()->id;
+
+        if ($blockerId === $user) {
+            return back()->with('status', 'You cannot block yourself.');
+        }
+
+        User::findOrFail($user);
+
+        FriendBlock::firstOrCreate(
+            ['blocker_id' => $blockerId, 'blocked_id' => $user],
+            ['created_at' => now()]
+        );
+
+        // Blocking someone also ends any existing friendship and clears any
+        // pending friend request between the two of you, in either direction.
+        Friend::where(function ($query) use ($blockerId, $user) {
+            $query->where('user_id', $blockerId)->where('friend_id', $user);
+        })->orWhere(function ($query) use ($blockerId, $user) {
+            $query->where('user_id', $user)->where('friend_id', $blockerId);
+        })->delete();
+
+        FriendRequest::where(function ($query) use ($blockerId, $user) {
+            $query->where('sender_id', $blockerId)->where('receiver_id', $user);
+        })->orWhere(function ($query) use ($blockerId, $user) {
+            $query->where('sender_id', $user)->where('receiver_id', $blockerId);
+        })->delete();
+
+        return back()->with('status', 'User blocked.');
+    }
+
+    public function unblock(int $user): RedirectResponse
+    {
+        FriendBlock::where('blocker_id', Auth::id())->where('blocked_id', $user)->delete();
+
+        return back()->with('status', 'User unblocked.');
     }
 
     private function areFriends(int $userId, int $friendId): bool

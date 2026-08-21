@@ -137,6 +137,7 @@ class DonationController extends Controller
             ->where('reporter_id', $userId)
             ->where('reportable_type', 'donation')
             ->where('reportable_id', $donation->id)
+            ->where('status', 0)
             ->exists();
 
         $commentIds = $comments->pluck('id')
