@@ -81,7 +81,25 @@ class ForumPost extends Model
 
         if (str_contains($normalizedPath, 'uploads/forum/')) {
             $normalizedPath = Str::after($normalizedPath, 'uploads/forum/');
-            $normalizedPath = 'uploads/forum/' . ltrim($normalizedPath, '/');
+            $normalizedPath = ltrim($normalizedPath, '/');
+
+            // "thumbnails/<uuid>.png" -> folder=thumbnails, filename=<uuid>.png
+            $segments = explode('/', $normalizedPath, 2);
+
+            if (count($segments) === 2 && $segments[0] !== '' && $segments[1] !== '') {
+                // Served through a route (see ForumController::serveMedia()),
+                // not linked to as a static file: the upload itself is written
+                // under Laravel's own public_path(), but on some hosts the web
+                // server's actual document root is a different directory (e.g.
+                // a "public_html" folder that isn't Laravel's public/), so a
+                // direct static link to it 404s even though the file is
+                // genuinely on disk. Routing through PHP sidesteps that
+                // mismatch — it only depends on Laravel routing working,
+                // which it already does for every other page.
+                //
+                // absolute: false, same reasoning as below — host-agnostic.
+                return route('forum.media', ['folder' => $segments[0], 'filename' => $segments[1]], false);
+            }
         }
 
         // Root-relative on purpose, not asset(): asset() builds the URL from

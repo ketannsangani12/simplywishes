@@ -42,6 +42,11 @@ Route::middleware('auth')->prefix('chat')->name('chat.')->group(function () {
 });
 Route::get('/forum', [ForumController::class, 'index'])->name('forum')->middleware('auth');
 Route::post('/forum', [ForumController::class, 'store'])->name('forum.store')->middleware('auth');
+// No auth middleware: the home page shows forum thumbnails to guests too,
+// and these were plain public static files before — this route just serves
+// the same files the same (public) way, only through PHP instead of relying
+// on the web server's static file document root (see ForumController::serveMedia()).
+Route::get('/forum-uploads/{folder}/{filename}', [ForumController::class, 'serveMedia'])->name('forum.media')->where(['folder' => 'thumbnails|videos', 'filename' => '[A-Za-z0-9\-]+\.[A-Za-z0-9]+']);
 Route::get('/forum/{forum}/edit', [ForumController::class, 'edit'])->name('forum.edit')->middleware('auth')->whereNumber('forum');
 Route::put('/forum/{forum}', [ForumController::class, 'update'])->name('forum.update')->middleware('auth')->whereNumber('forum');
 Route::delete('/forum/{forum}', [ForumController::class, 'destroy'])->name('forum.destroy')->middleware('auth')->whereNumber('forum');

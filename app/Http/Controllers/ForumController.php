@@ -180,6 +180,39 @@ class ForumController extends Controller
             ->with('status', 'Your forum post has been deleted successfully.');
     }
 
+    /**
+     * Stream an uploaded forum thumbnail/video back through Laravel instead
+     * of relying on the web server to serve it as a static file.
+     *
+     * Uploaded files are written under Laravel's own public_path(), which is
+     * always readable/writable by PHP. On some hosts, though, the web
+     * server's actual document root is a different directory (e.g. a
+     * "public_html" folder that isn't Laravel's public/), so a plain static
+     * URL to that file 404s even though the upload itself succeeded and the
+     * file is genuinely sitting on disk. Serving it through a route sidesteps
+     * that mismatch entirely, since it only depends on PHP/Laravel routing
+     * (which is already working, or none of this app would work), not on
+     * the web server's static file document root.
+     */
+    public function serveMedia(string $folder, string $filename): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        if (! in_array($folder, ['thumbnails', 'videos'], true)) {
+            abort(404);
+        }
+
+        if (str_contains($filename, '/') || str_contains($filename, '..')) {
+            abort(404);
+        }
+
+        $path = public_path('uploads/forum/' . $folder . '/' . $filename);
+
+        if (! is_file($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
+    }
+
     public function index(Request $request): View
     {
         $tab = $request->query('tab', 'articles');
