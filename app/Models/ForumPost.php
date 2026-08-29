@@ -84,6 +84,15 @@ class ForumPost extends Model
             $normalizedPath = 'uploads/forum/' . ltrim($normalizedPath, '/');
         }
 
-        return asset($normalizedPath);
+        // Root-relative on purpose, not asset(): asset() builds the URL from
+        // APP_URL (or whatever host Laravel thinks it's on), which can end up
+        // pointing at a different host/port than the one actually serving the
+        // page (e.g. APP_URL=http://127.0.0.1:8000 while the site is really
+        // browsed at a Herd/Valet *.test domain) — the thumbnail "uploads
+        // fine" but the <img> src points at a host that isn't reachable, so
+        // it renders broken. A path starting with "/" is resolved by the
+        // browser against whatever host actually served the current page,
+        // so it works regardless of what APP_URL is set to.
+        return '/' . ltrim($normalizedPath, '/');
     }
 }
