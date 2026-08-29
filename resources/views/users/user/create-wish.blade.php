@@ -5,7 +5,7 @@
 @push('head')
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="{{ asset('js/create-wish.js') }}" defer></script>
+  <script src="/js/create-wish.js" defer></script>
 @endpush
 
 @section('content')

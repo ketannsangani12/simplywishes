@@ -9,7 +9,7 @@
     'story_image_default',
     $currentImage && !str_starts_with($currentImage, 'uploads/happy-stories/') ? $currentImage : null
   );
-  $currentImageUrl = $currentImage ? (filter_var($currentImage, FILTER_VALIDATE_URL) ? $currentImage : asset($currentImage)) : null;
+  $currentImageUrl = $currentImage ? (filter_var($currentImage, FILTER_VALIDATE_URL) ? $currentImage : '/' . ltrim($currentImage, '/')) : null;
 @endphp
 
 @section('title', $isEdit ? 'Edit Happy Story' : 'Tell Your Happy Story')
@@ -113,7 +113,7 @@
                   <label class="relative block cursor-pointer group">
                     <input class="peer sr-only" name="story_image_default" type="radio" value="{{ $imagePath }}" @checked($selectedDefaultImage === $imagePath) />
                     <img class="h-20 w-full object-cover rounded-lg border border-transparent peer-checked:border-2 peer-checked:border-primary shadow-sm"
-                      src="{{ asset($imagePath) }}" alt="Default image {{ $index + 1 }}" />
+                      src="/{{ ltrim($imagePath, '/') }}" alt="Default image {{ $index + 1 }}" />
                     <span class="absolute inset-0 rounded-lg ring-2 ring-transparent peer-checked:ring-primary/70"></span>
                   </label>
                 @empty
