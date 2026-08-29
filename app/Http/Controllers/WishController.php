@@ -24,7 +24,7 @@ use Illuminate\View\View;
 
 class WishController extends Controller
 {
-    private const MAX_ACTIVE_LISTINGS = 3;
+    private const MAX_ACTIVE_LISTINGS = 5;
 
     private function storeUploadedWishImage(\Illuminate\Http\UploadedFile $file): string
     {
@@ -68,7 +68,7 @@ class WishController extends Controller
                 ->back()
                 ->withInput()
                 ->withErrors([
-                    'listing_limit' => 'You can only have up to 3 active or in-progress wishes at a time.',
+                    'listing_limit' => 'You have reached the maximum limit of 5 active wishes. Please remove an existing wish before creating a new one',
                 ]);
         }
 
@@ -571,7 +571,7 @@ class WishController extends Controller
                 ->back()
                 ->withInput()
                 ->withErrors([
-                    'listing_limit' => 'You can only have up to 3 active or in-progress wishes at a time.',
+                    'listing_limit' => 'You have reached the maximum limit of 5 active wishes. Please remove an existing wish before creating a new one',
                 ]);
         }
 
@@ -761,9 +761,12 @@ class WishController extends Controller
 
     private function hasReachedActiveListingLimit(int $userId, ?int $excludeWishId = null): bool
     {
+        // Only wishes still in the "Active" state (wish_progress_status = 0)
+        // count toward the limit. Once a wish is granted (1) or fulfilled (2)
+        // it's In Progress / completed and no longer counts.
         return Wish::where('wished_by', $userId)
             ->where('wish_status', 1)
-            ->whereIn('wish_progress_status', [0, 1])
+            ->where('wish_progress_status', 0)
             ->when($excludeWishId, fn ($query) => $query->where('w_id', '!=', $excludeWishId))
             ->count()
             >= self::MAX_ACTIVE_LISTINGS;

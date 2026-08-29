@@ -24,7 +24,7 @@ use Illuminate\View\View;
 
 class DonationController extends Controller
 {
-    private const MAX_ACTIVE_LISTINGS = 3;
+    private const MAX_ACTIVE_LISTINGS = 5;
 
     private function storeUploadedDonationImage(\Illuminate\Http\UploadedFile $file): string
     {
@@ -350,7 +350,7 @@ class DonationController extends Controller
                 ->back()
                 ->withInput()
                 ->withErrors([
-                    'listing_limit' => 'You can only have up to 3 active or in-progress donations at a time.',
+                    'listing_limit' => 'You have reached the maximum limit of 5 active donations. Please remove an existing donation before creating a new one',
                 ]);
         }
 
@@ -431,7 +431,7 @@ class DonationController extends Controller
                 ->back()
                 ->withInput()
                 ->withErrors([
-                    'listing_limit' => 'You can only have up to 3 active or in-progress donations at a time.',
+                    'listing_limit' => 'You have reached the maximum limit of 5 active donations. Please remove an existing donation before creating a new one',
                 ]);
         }
 
@@ -615,8 +615,11 @@ class DonationController extends Controller
 
     private function hasReachedActiveListingLimit(int $userId, ?int $excludeDonationId = null): bool
     {
+        // Only donations still in the "Active" state (status = 1) count
+        // toward the limit. Once a donation is granted (2) or completed (3)
+        // it's In Progress / completed and no longer counts.
         return Donation::where('created_by', $userId)
-            ->whereIn('status', [1, 2])
+            ->where('status', 1)
             ->when($excludeDonationId, fn ($query) => $query->where('id', '!=', $excludeDonationId))
             ->count()
             >= self::MAX_ACTIVE_LISTINGS;
