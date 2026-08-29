@@ -15,11 +15,11 @@
             <a class="hover:text-primary transition-colors" href="{{ route('contact.us') }}">Contact Us</a>
           </div>
           <div class="flex items-center gap-4">
-            <a aria-label="App Store" class="flex h-12 items-center" href="#">
+            <a aria-label="App Store" class="flex h-12 items-center" href="https://apps.apple.com/us/app/simplywishes/id1321973376?ls=1" target="_blank" rel="noopener noreferrer">
               <img alt="Download on the App Store" class="h-full w-auto object-contain"
                 src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" />
             </a>
-            <a aria-label="Google Play" class="flex h-12 items-center" href="#">
+            <a aria-label="Google Play" class="flex h-12 items-center" href="https://play.google.com/store/apps/details?id=com.simply.wishes" target="_blank" rel="noopener noreferrer">
               {{-- Embedded inline (not a separate static file under public/) so this
                    badge can never 404 on a deploy that doesn't sync every asset file. --}}
               <img alt="Get it on Google Play" class="h-full w-auto object-contain"

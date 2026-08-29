@@ -34,7 +34,7 @@
                 <div class="md:col-span-2">
                   <label class="block text-sm font-semibold text-text-light dark:text-text-dark mb-2" for="email">Email
                     Address <span class="text-red-500">*</span></label>
-                  <input id="email" name="email" required
+                  <input id="email" name="email" required value="{{ old('email') }}"
                     class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="you@example.com" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" />
                   @error('email')
@@ -44,7 +44,7 @@
                 <div>
                   <label class="block text-sm font-semibold text-text-light dark:text-text-dark mb-2" for="first-name">First
                     Name <span class="text-red-500">*</span></label>
-                  <input id="first-name" name="first-name" required
+                  <input id="first-name" name="first-name" required value="{{ old('first-name') }}"
                     class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary"
                     type="text" />
                   @error('first-name')
@@ -54,7 +54,7 @@
                 <div>
                   <label class="block text-sm font-semibold text-text-light dark:text-text-dark mb-2" for="last-name">Last
                     Name <span class="text-red-500">*</span></label>
-                  <input id="last-name" name="last-name" required
+                  <input id="last-name" name="last-name" required value="{{ old('last-name') }}"
                     class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary"
                     type="text" />
                   @error('last-name')
@@ -65,7 +65,7 @@
                   <label class="block text-sm font-semibold text-text-light dark:text-text-dark mb-2" for="about">About me</label>
                   <textarea id="about" name="about" rows="3"
                     class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary"
-                    placeholder="Tell us a bit about yourself"></textarea>
+                    placeholder="Tell us a bit about yourself">{{ old('about') }}</textarea>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:col-span-2">
                   <div>
@@ -75,7 +75,7 @@
                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary">
                       <option value="">--Select Country--</option>
                       @foreach ($countries as $country)
-                        <option value="{{ $country->id }}">{{ $country->name }}</option>
+                        <option value="{{ $country->id }}" @selected(old('country') == $country->id)>{{ $country->name }}</option>
                       @endforeach
                     </select>
                     @error('country')
@@ -85,9 +85,12 @@
                   <div>
                     <label class="block text-sm font-semibold text-text-light dark:text-text-dark mb-2" for="state">State
                       <span class="text-red-500">*</span></label>
-                    <select id="state" name="state" required disabled data-cities-url="{{ route('cities.by.state', ['state' => '__ID__']) }}"
+                    <select id="state" name="state" required @if($states->isEmpty()) disabled @endif data-cities-url="{{ route('cities.by.state', ['state' => '__ID__']) }}"
                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary">
                       <option value="">--Select State--</option>
+                      @foreach ($states as $state)
+                        <option value="{{ $state->id }}" @selected(old('state') == $state->id)>{{ $state->name }}</option>
+                      @endforeach
                     </select>
                     @error('state')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -96,9 +99,12 @@
                   <div>
                     <label class="block text-sm font-semibold text-text-light dark:text-text-dark mb-2" for="city">City
                       <span class="text-red-500">*</span></label>
-                    <select id="city" name="city" required disabled
+                    <select id="city" name="city" required @if($cities->isEmpty()) disabled @endif
                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-text-light dark:text-text-dark px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary">
                       <option value="">--Select City--</option>
+                      @foreach ($cities as $city)
+                        <option value="{{ $city->id }}" @selected(old('city') == $city->id)>{{ $city->name }}</option>
+                      @endforeach
                     </select>
                     @error('city')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -182,7 +188,7 @@
                     @endphp
                     <label class="relative group cursor-pointer">
                       <input class="peer sr-only" name="avatar-default" type="radio" value="{{ $fileName }}"
-                        @if ($index === 0) checked @endif />
+                        @checked(old('avatar-default', $index === 0 ? $fileName : null) === $fileName) />
                       <img alt="Avatar option {{ $index + 1 }}"
                         class="w-16 h-16 rounded-lg border border-gray-200 bg-white object-cover"
                         src="{{ asset('images/users-default/' . $fileName) }}" />

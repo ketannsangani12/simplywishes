@@ -61,7 +61,28 @@ class AuthController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        return view('users.signup', compact('countries'));
+        // Re-hydrate the dependent State/City dropdowns from the previously
+        // submitted (and now flashed) country/state, so a failed signup
+        // (e.g. "email already registered") redisplays the user's selection
+        // instead of resetting the location fields to empty/disabled.
+        $states = collect();
+        $cities = collect();
+
+        if (old('country')) {
+            $states = State::query()
+                ->where('country_id', old('country'))
+                ->orderBy('name')
+                ->get(['id', 'name']);
+        }
+
+        if (old('state')) {
+            $cities = City::query()
+                ->where('state_id', old('state'))
+                ->orderBy('name')
+                ->get(['id', 'name']);
+        }
+
+        return view('users.signup', compact('countries', 'states', 'cities'));
     }
 
     public function signup(Request $request): RedirectResponse
