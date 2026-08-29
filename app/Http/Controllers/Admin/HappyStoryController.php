@@ -73,22 +73,7 @@ class HappyStoryController extends Controller
             $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
             $fileName = Str::uuid()->toString() . '.' . $extension;
 
-            $candidateDirectories = [
-                public_path('uploads/happy-stories'),
-                base_path('../public_html/uploads/happy-stories'),
-            ];
-
-            $uploadDirectory = null;
-            foreach ($candidateDirectories as $directory) {
-                $parentDirectory = dirname($directory);
-                if (is_dir($directory) || is_dir($parentDirectory)) {
-                    $uploadDirectory = $directory;
-                    break;
-                }
-            }
-
-            $uploadDirectory ??= public_path('uploads/happy-stories');
-
+            $uploadDirectory = public_path('uploads/happy-stories');
             File::ensureDirectoryExists($uploadDirectory);
             $file->move($uploadDirectory, $fileName);
 
@@ -124,15 +109,9 @@ class HappyStoryController extends Controller
         });
 
         if ($story->story_image && str_starts_with($story->story_image, 'uploads/happy-stories/')) {
-            $candidateFiles = [
-                public_path($story->story_image),
-                base_path('../public_html/' . $story->story_image),
-            ];
-
-            foreach ($candidateFiles as $file) {
-                if (File::exists($file)) {
-                    File::delete($file);
-                }
+            $filePath = public_path($story->story_image);
+            if (File::exists($filePath)) {
+                File::delete($filePath);
             }
         }
 

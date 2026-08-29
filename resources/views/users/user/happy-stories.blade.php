@@ -7,15 +7,8 @@
 @section('title', $isMine ? 'Simply Wishes - My Happy Stories' : 'Simply Wishes - Happy Stories')
 
 @php
-  $storyImage = function ($story) {
-    $image = $story->story_image;
-
-    if (! $image) {
-      return 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80';
-    }
-
-    return filter_var($image, FILTER_VALIDATE_URL) ? $image : asset($image);
-  };
+  $storyImage = fn ($story) => $story->imageUrl()
+    ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80';
 
   $storyAuthor = function ($story) {
     $user = $story->user;

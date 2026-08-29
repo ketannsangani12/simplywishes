@@ -59,6 +59,11 @@ Route::delete('/forum/{forum}/comments/{comment}', [ForumController::class, 'des
 Route::post('/forum/{forum}/comments/{comment}/like', [ForumController::class, 'toggleCommentLike'])->name('forum.comments.like')->middleware('auth');
 Route::post('/forum/{forum}/comments/{comment}/report', [ForumController::class, 'reportComment'])->name('forum.comments.report')->middleware('auth');
 Route::get('/my-wishes', [SiteController::class, 'myWishes'])->name('my.wishes')->middleware('auth');
+// No auth middleware: happy story images (default picks and uploads alike)
+// show up on the public happy stories listing and the home page too, not
+// just inside the auth-gated create/edit forms.
+Route::get('/happy-stories/default-image/{filename}', [SiteController::class, 'defaultHappyStoryImage'])->name('happy.stories.default-image')->where('filename', '[A-Za-z0-9\-]+\.[A-Za-z0-9]+');
+Route::get('/happy-stories/upload/{filename}', [SiteController::class, 'happyStoryUpload'])->name('happy.stories.upload')->where('filename', '[A-Za-z0-9\-]+\.[A-Za-z0-9]+');
 Route::get('/happy-stories/create', [SiteController::class, 'addHappyStory'])->name('happy.stories.create')->middleware('auth');
 Route::post('/happy-stories', [SiteController::class, 'storeHappyStory'])->name('happy.stories.store')->middleware('auth');
 Route::get('/happy-stories/{story}/edit', [SiteController::class, 'editHappyStory'])->name('happy.stories.edit')->middleware('auth')->whereNumber('story');

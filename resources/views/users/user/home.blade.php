@@ -29,9 +29,8 @@
       ? (filter_var($donation->image, FILTER_VALIDATE_URL) ? $donation->image : asset($donation->image))
       : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
 
-  $storyImage = fn ($story) => $story->story_image
-      ? (filter_var($story->story_image, FILTER_VALIDATE_URL) ? $story->story_image : asset($story->story_image))
-      : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=900&q=80';
+  $storyImage = fn ($story) => $story->imageUrl()
+      ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=900&q=80';
 
   $forumImage = function ($post) {
       $image = method_exists($post, 'imageUrl') ? $post->imageUrl() : ($post->e_image ?: $post->article_image);

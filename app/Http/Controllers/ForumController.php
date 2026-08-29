@@ -490,21 +490,10 @@ class ForumController extends Controller
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'bin');
         $fileName = Str::uuid()->toString() . '.' . $extension;
 
-        $candidateDirectories = [
-            base_path('../public_html/uploads/forum/' . $folder),
-            public_path('uploads/forum/' . $folder),
-        ];
-
-        $uploadDirectory = null;
-        foreach ($candidateDirectories as $directory) {
-            $parentDirectory = dirname($directory);
-            if (is_dir($directory) || is_dir($parentDirectory)) {
-                $uploadDirectory = $directory;
-                break;
-            }
-        }
-
-        $uploadDirectory ??= public_path('uploads/forum/' . $folder);
+        // Always public_path(): serveMedia() below only ever looks for the
+        // file there, so writing it anywhere else means it can never be
+        // found again regardless of what URL points at it.
+        $uploadDirectory = public_path('uploads/forum/' . $folder);
         File::ensureDirectoryExists($uploadDirectory);
         $file->move($uploadDirectory, $fileName);
 
@@ -517,10 +506,9 @@ class ForumController extends Controller
             return;
         }
 
-        foreach ([public_path($path), base_path('../public_html/' . $path)] as $filePath) {
-            if (is_file($filePath)) {
-                @unlink($filePath);
-            }
+        $filePath = public_path($path);
+        if (is_file($filePath)) {
+            @unlink($filePath);
         }
     }
 }

@@ -368,15 +368,9 @@ class ReportController extends Controller
             return;
         }
 
-        $candidateFiles = [
-            public_path($story->story_image),
-            base_path('../public_html/' . $story->story_image),
-        ];
-
-        foreach ($candidateFiles as $file) {
-            if (File::exists($file)) {
-                File::delete($file);
-            }
+        $filePath = public_path($story->story_image);
+        if (File::exists($filePath)) {
+            File::delete($filePath);
         }
     }
 }

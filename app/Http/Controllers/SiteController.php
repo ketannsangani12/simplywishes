@@ -489,6 +489,57 @@ class SiteController extends Controller
         ));
     }
 
+    /**
+     * Stream one of the bundled "default image" choices for a happy story
+     * back through Laravel instead of relying on the web server to serve it
+     * as a static file.
+     *
+     * These files are committed to the repo under public/images/happy-
+     * stories-default/, so they're always present wherever the app itself
+     * is deployed. On some hosts, though, the web server's actual document
+     * root is a different directory than Laravel's public/ folder, so a
+     * plain static URL to the file 404s even though it's genuinely on disk.
+     * Serving it through a route sidesteps that mismatch entirely, since it
+     * only depends on PHP/Laravel routing (already working, or none of this
+     * app would work), not on the web server's static file document root.
+     */
+    public function defaultHappyStoryImage(string $filename): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        if (str_contains($filename, '/') || str_contains($filename, '..')) {
+            abort(404);
+        }
+
+        $path = public_path('images/happy-stories-default/' . $filename);
+
+        if (! is_file($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
+    }
+
+    /**
+     * Stream a user-uploaded happy story image back through Laravel, for
+     * the same reason as defaultHappyStoryImage() above: the file is
+     * reliably written to and readable from public_path(), but a direct
+     * static URL to it can 404 on hosts where the web server's document
+     * root isn't that same directory.
+     */
+    public function happyStoryUpload(string $filename): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        if (str_contains($filename, '/') || str_contains($filename, '..')) {
+            abort(404);
+        }
+
+        $path = public_path('uploads/happy-stories/' . $filename);
+
+        if (! is_file($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
+    }
+
     public function addHappyStory(): View
     {
         $wishes = Wish::where('wished_by', Auth::id())
@@ -717,22 +768,10 @@ class SiteController extends Controller
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $fileName = Str::uuid()->toString() . '.' . $extension;
 
-        $candidateDirectories = [
-            base_path('../public_html/uploads/happy-stories'),
-            public_path('uploads/happy-stories'),
-        ];
-
-        $uploadDirectory = null;
-        foreach ($candidateDirectories as $directory) {
-            $parentDirectory = dirname($directory);
-            if (is_dir($directory) || is_dir($parentDirectory)) {
-                $uploadDirectory = $directory;
-                break;
-            }
-        }
-
-        $uploadDirectory ??= public_path('uploads/happy-stories');
-
+        // Always public_path(): the serving routes above only ever look for
+        // the file there, so writing it anywhere else means it can never be
+        // found again regardless of what URL points at it.
+        $uploadDirectory = public_path('uploads/happy-stories');
         File::ensureDirectoryExists($uploadDirectory);
         $file->move($uploadDirectory, $fileName);
 
@@ -745,10 +784,9 @@ class SiteController extends Controller
             return;
         }
 
-        foreach ([public_path($path), base_path('../public_html/' . $path)] as $filePath) {
-            if (is_file($filePath)) {
-                @unlink($filePath);
-            }
+        $filePath = public_path($path);
+        if (is_file($filePath)) {
+            @unlink($filePath);
         }
     }
 
