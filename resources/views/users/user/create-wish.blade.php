@@ -6,6 +6,37 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="/js/create-wish.js" defer></script>
+  <style>
+    /* Editing an older draft can pre-fill this calendar with a date that
+       was valid when it was saved but has since slipped into the past
+       (minDate: 'today' below only blocks *new* past selections, it
+       doesn't retroactively hide an already-saved one). Flatpickr marks
+       that day both .selected and .flatpickr-disabled, and by default the
+       disabled styling wins the cascade, fading it to ~10% opacity —
+       visually almost identical to any other past, unselected day, with
+       no way to tell "this is what was picked" from "this is just a
+       greyed-out day." These two rules give each state its own clear,
+       distinct look instead. */
+    .flatpickr-day.today {
+      border-width: 2px;
+      border-color: #FFD700;
+      font-weight: 700;
+    }
+    .flatpickr-day.today:hover,
+    .flatpickr-day.today:focus {
+      border-color: #FFD700;
+      background: #FFD700;
+      color: #083344;
+    }
+    .flatpickr-day.selected.flatpickr-disabled,
+    .flatpickr-day.selected.flatpickr-disabled:hover {
+      background: transparent;
+      border: 2px solid #64748B;
+      color: #334155;
+      box-shadow: none;
+      cursor: default;
+    }
+  </style>
 @endpush
 
 @section('content')
