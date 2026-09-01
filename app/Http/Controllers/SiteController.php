@@ -510,13 +510,21 @@ class SiteController extends Controller
             abort(404);
         }
 
-        $path = public_path('images/happy-stories-default/' . $filename);
+        // See WishController::defaultImage() for why both locations are
+        // checked: these are pre-seeded assets that may only exist under
+        // public_html on hosts where it's a sibling of this Laravel install.
+        $candidates = [
+            public_path('images/happy-stories-default/' . $filename),
+            base_path('../public_html/images/happy-stories-default/' . $filename),
+        ];
 
-        if (! is_file($path)) {
-            abort(404);
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return response()->file($path);
+            }
         }
 
-        return response()->file($path);
+        abort(404);
     }
 
     /**

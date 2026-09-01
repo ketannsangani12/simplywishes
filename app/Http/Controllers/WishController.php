@@ -57,13 +57,24 @@ class WishController extends Controller
             abort(404);
         }
 
-        $path = public_path('images/wishes-default/' . $filename);
+        // These default images are a fixed, pre-seeded set (not written by
+        // this app at runtime), so on hosts where the web server's document
+        // root (public_html) is a sibling of this Laravel install rather
+        // than its own public/ folder, they may only actually exist under
+        // public_html — e.g. uploaded there directly, or by a deploy step
+        // that predates this codebase. Check both locations.
+        $candidates = [
+            public_path('images/wishes-default/' . $filename),
+            base_path('../public_html/images/wishes-default/' . $filename),
+        ];
 
-        if (! is_file($path)) {
-            abort(404);
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return response()->file($path);
+            }
         }
 
-        return response()->file($path);
+        abort(404);
     }
 
     /**
