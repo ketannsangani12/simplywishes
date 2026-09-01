@@ -540,13 +540,21 @@ class SiteController extends Controller
             abort(404);
         }
 
-        $path = public_path('uploads/happy-stories/' . $filename);
+        // See WishController::uploadedImage() for why both locations are
+        // checked: stories uploaded before the write-path fix may have
+        // landed under public_html instead of this app's own public/.
+        $candidates = [
+            public_path('uploads/happy-stories/' . $filename),
+            base_path('../public_html/uploads/happy-stories/' . $filename),
+        ];
 
-        if (! is_file($path)) {
-            abort(404);
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return response()->file($path);
+            }
         }
 
-        return response()->file($path);
+        abort(404);
     }
 
     public function addHappyStory(): View

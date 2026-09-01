@@ -87,13 +87,22 @@ class WishController extends Controller
             abort(404);
         }
 
-        $path = public_path('uploads/wishes/' . $filename);
+        // storeUploadedWishImage() now always writes to public_path(), but
+        // wishes uploaded before that fix may have landed under public_html
+        // instead (the old code guessed between the two at write time).
+        // Check both so those older uploads don't 404.
+        $candidates = [
+            public_path('uploads/wishes/' . $filename),
+            base_path('../public_html/uploads/wishes/' . $filename),
+        ];
 
-        if (! is_file($path)) {
-            abort(404);
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return response()->file($path);
+            }
         }
 
-        return response()->file($path);
+        abort(404);
     }
 
     public function create(): View
