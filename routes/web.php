@@ -84,6 +84,7 @@ Route::delete('/friends/{user}/block', [FriendController::class, 'unblock'])->na
 Route::get('/my-profile', [SiteController::class, 'updateProfile'])->name('profile.edit')->middleware('auth');
 Route::put('/my-profile', [AuthController::class, 'updateProfile'])->name('profile.update')->middleware('auth');
 Route::put('/my-profile/password', [AuthController::class, 'updatePassword'])->name('profile.password.update')->middleware('auth');
+Route::delete('/my-profile', [AuthController::class, 'deleteAccount'])->name('profile.destroy')->middleware('auth');
 Route::get('/wishes/create', [WishController::class, 'create'])->name('wishes.create')->middleware('auth');
 Route::post('/wishes', [WishController::class, 'store'])->name('wishes.store')->middleware('auth');
 Route::get('/wishes/active', [WishController::class, 'active'])->name('wishes.active');

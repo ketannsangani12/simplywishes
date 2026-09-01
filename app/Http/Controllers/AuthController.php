@@ -35,6 +35,14 @@ class AuthController extends Controller
         $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
+            if (Auth::user()->isDeleted()) {
+                Auth::logout();
+
+                return back()
+                    ->withErrors(['email' => 'The provided credentials do not match our records.'])
+                    ->onlyInput('email');
+            }
+
             $request->session()->regenerate();
 
             return redirect()->route('home')->with('status', 'Logged in successfully.');
@@ -243,6 +251,66 @@ class AuthController extends Controller
         return redirect()->route('profile.edit')->with('status', 'Password updated successfully.');
     }
 
+    public function deleteAccount(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'delete_password' => ['required', 'string'],
+        ], [
+            'delete_password.required' => 'Please enter your password to confirm account deletion.',
+        ]);
+
+        if (! Hash::check($request->input('delete_password'), $user->password)) {
+            return back()
+                ->withErrors(['delete_password' => 'The password you entered is incorrect.'])
+                ->with('open_delete_account', true);
+        }
+
+        // Remove the physical file only for a user-uploaded avatar. Default
+        // avatars live under images/users-default/ and are shared assets.
+        if ($user->profile_image && str_starts_with($user->profile_image, 'uploads/users/')) {
+            $path = public_path($user->profile_image);
+            if (is_file($path)) {
+                File::delete($path);
+            }
+        }
+
+        // Deactivate & anonymize rather than hard-delete: wishes, donations,
+        // forum posts, chat messages, friend requests, etc. all reference
+        // the user by a plain integer column with no DB foreign key, so a
+        // hard delete would leave every one of those orphaned instead of
+        // cleanly removed. This scrubs personal info, frees the email for
+        // reuse, and blocks login (see login()), while their historical
+        // content stays intact and shows as "Deleted User" to everyone else.
+        $user->forceFill([
+            'name' => 'Deleted User',
+            'first_name' => 'Deleted',
+            'last_name' => 'User',
+            'username' => null,
+            'email' => 'deleted-user-' . $user->id . '-' . Str::random(10) . '@deleted.simplywishes.invalid',
+            'fb_id' => null,
+            'google_id' => null,
+            'about' => null,
+            'country' => null,
+            'state' => null,
+            'city' => null,
+            'profile_image' => null,
+            'email_verified_at' => null,
+            'password' => Hash::make(Str::random(40)),
+            'remember_token' => null,
+            'deleted_at' => now(),
+        ])->save();
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()
+            ->route('home')
+            ->with('status', 'Your account has been deleted. We\'re sorry to see you go.');
+    }
+
     public function statesByCountry(int $country): JsonResponse
     {
         $states = State::query()
@@ -344,7 +412,11 @@ class AuthController extends Controller
         $firstName = $googleUser->user['given_name'] ?? null;
         $lastName = $googleUser->user['family_name'] ?? null;
 
-        $user = User::where('email', $email)->first();
+        // Excludes deleted accounts deliberately: their email was replaced
+        // with a placeholder on deletion (see deleteAccount()), so a real
+        // match here should never happen — this is defense in depth against
+        // ever reactivating a deleted account instead of creating a fresh one.
+        $user = User::where('email', $email)->whereNull('deleted_at')->first();
         if (!$user) {
             $user = new User();
             $user->email = $email;

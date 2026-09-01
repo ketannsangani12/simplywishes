@@ -51,6 +51,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'deleted_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -58,5 +59,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function presence(): HasOne
     {
         return $this->hasOne(UserPresence::class, 'user_id');
+    }
+
+    /**
+     * Whether the account has been self-deleted (deactivated & anonymized).
+     * Not Laravel's SoftDeletes — see the deleted_at migration for why.
+     */
+    public function isDeleted(): bool
+    {
+        return $this->deleted_at !== null;
     }
 }

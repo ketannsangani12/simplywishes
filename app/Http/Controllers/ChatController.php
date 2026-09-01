@@ -102,6 +102,7 @@ class ChatController extends Controller
 
         $users = User::with('presence')
             ->where('id', '!=', $userId)
+            ->whereNull('deleted_at')
             ->when($searchTerm !== '', function ($query) use ($searchTerm) {
                 $query->where(function ($userQuery) use ($searchTerm) {
                     $userQuery->where('name', 'like', "%{$searchTerm}%")

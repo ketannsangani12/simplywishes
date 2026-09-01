@@ -228,10 +228,61 @@
             </div>
           </div>
         </form>
+
+        <div class="px-6 pb-8 sm:px-8">
+          <div class="rounded-2xl border border-red-200 bg-red-50/60 p-5 sm:p-6">
+            <div class="mb-4">
+              <h2 class="text-lg font-semibold text-red-700">Delete account</h2>
+              <p class="text-sm text-red-700/80">
+                This permanently deactivates your account and removes your personal information. You'll be logged out
+                and won't be able to sign back in. Your existing wishes, donations, and posts stay visible to others
+                but are shown as from "Deleted User".
+              </p>
+            </div>
+            <button type="button" id="open-delete-account" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-300 bg-white text-sm font-semibold text-red-700 hover:bg-red-100 transition-colors">
+              <span class="material-symbols-outlined text-base">person_remove</span>
+              Delete my account
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 </main>
+
+<div id="delete-account-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-account-title">
+  <div class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-200">
+    <form method="POST" action="{{ route('profile.destroy') }}" class="p-6 space-y-4">
+      @csrf
+      @method('DELETE')
+
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined text-red-600 text-3xl">warning</span>
+        <div>
+          <h2 id="delete-account-title" class="text-lg font-semibold text-text-light">Delete your account?</h2>
+          <p class="mt-1 text-sm text-text-muted-light">This can't be undone. Enter your password to confirm.</p>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-sm font-semibold text-text-light" for="delete-password">Password</label>
+        <input id="delete-password" name="delete_password" type="password" autocomplete="current-password"
+          class="w-full rounded-lg border border-gray-200 bg-white text-text-light px-4 py-3 focus:ring-2 focus:ring-red-300 focus:border-red-400" />
+        @error('delete_password')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+      </div>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" id="cancel-delete-account" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-text-light hover:border-gray-300 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors">
+          <span class="material-symbols-outlined text-base">delete_forever</span>
+          Permanently delete
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -360,6 +411,34 @@
     if (countrySelect.value) {
       loadStates(countrySelect.value);
     }
+
+    const deleteModal = document.getElementById('delete-account-modal');
+    const openDeleteModal = document.getElementById('open-delete-account');
+    const cancelDeleteModal = document.getElementById('cancel-delete-account');
+    const deletePasswordInput = document.getElementById('delete-password');
+
+    const showDeleteModal = () => {
+      deleteModal?.classList.remove('hidden');
+      deleteModal?.classList.add('flex');
+      deletePasswordInput?.focus();
+    };
+
+    const hideDeleteModal = () => {
+      deleteModal?.classList.add('hidden');
+      deleteModal?.classList.remove('flex');
+    };
+
+    openDeleteModal?.addEventListener('click', showDeleteModal);
+    cancelDeleteModal?.addEventListener('click', hideDeleteModal);
+    deleteModal?.addEventListener('click', (event) => {
+      if (event.target === deleteModal) {
+        hideDeleteModal();
+      }
+    });
+
+    @if (session('open_delete_account') || $errors->has('delete_password'))
+      showDeleteModal();
+    @endif
   });
 </script>
 @endsection

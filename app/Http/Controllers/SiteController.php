@@ -108,6 +108,7 @@ class SiteController extends Controller
 
         $userBaseQuery = function () use ($searchTerm) {
             return User::query()
+                ->whereNull('deleted_at')
                 ->when($searchTerm !== '', function ($query) use ($searchTerm) {
                     $query->where(function ($userQuery) use ($searchTerm) {
                         $userQuery->where('name', 'like', "%{$searchTerm}%")
