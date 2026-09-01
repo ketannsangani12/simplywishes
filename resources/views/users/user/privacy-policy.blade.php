@@ -14,7 +14,7 @@
           discloses, and protects information when you visit our websites, use our services, or interact with our
           communications.
         </p>
-        <p class="mt-4 text-sm text-text-muted-light dark:text-text-muted-dark">Last updated: December 20, 2024</p>
+        <p class="mt-4 text-sm text-text-muted-light dark:text-text-muted-dark">Last updated: September 1, 2026</p>
       </div>
     </div>
   </section>

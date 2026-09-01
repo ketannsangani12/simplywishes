@@ -2,6 +2,15 @@
 
 @section('title', 'Simply Wishes - Wish Detail')
 
+@php
+  $ogImageUrl = $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80';
+  $ogImageUrl = filter_var($ogImageUrl, FILTER_VALIDATE_URL) ? $ogImageUrl : request()->getSchemeAndHttpHost() . $ogImageUrl;
+@endphp
+@section('og_type', 'article')
+@section('og_title', $wish->wish_title ?: 'A wish on Simply Wishes')
+@section('og_description', \Illuminate\Support\Str::limit(strip_tags((string) $wish->wish_description) ?: 'Help make this wish come true.', 200))
+@section('og_image', $ogImageUrl)
+
 @section('content')
 @php
   $source = (string) request()->query('source', '');
@@ -31,7 +40,7 @@
           </h1>
           <div class="flex flex-wrap items-center gap-2">
             @if((int) ($wish->wished_by ?? 0) === (int) auth()->id() && (int) ($wish->wish_progress_status ?? 0) === 0)
-              <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('wishes.edit', $wish->w_id) }}">
+              <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('wishes.edit', ['wish' => $wish->w_id, 'source' => $source, 'source_tab' => $sourceTab]) }}">
                 <span class="material-icons !text-base">edit</span>
                 Update
               </a>
@@ -57,10 +66,7 @@
       <div class="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-1">
           <div class="rounded-xl border border-border-light dark:border-border-dark overflow-hidden bg-white dark:bg-surface-dark shadow-sm relative">
-            @php
-              $image = $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80';
-            @endphp
-            <img alt="Wish image" class="w-full object-cover aspect-square" src="{{ $image }}" />
+            <img alt="Wish image" class="w-full object-cover aspect-square" src="{{ $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80' }}" />
             <div class="absolute top-3 right-3 flex items-center gap-2">
               <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-wish-id="{{ $wish->w_id }}" aria-label="Save wish" type="button">
                 <span class="material-icons !text-base {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
@@ -217,9 +223,14 @@
       </div>
     </div>
 
-    <div class="max-w-5xl mx-auto mt-8 bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60">
+    <div id="comments" class="max-w-5xl mx-auto mt-8 bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60">
       <div class="p-6 sm:p-8 space-y-6">
         <h2 class="text-2xl font-bold text-brand-blue-light dark:text-brand-blue-dark">Comments</h2>
+        @if (session('comment_status'))
+          <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            {{ session('comment_status') }}
+          </div>
+        @endif
         <div class="rounded-xl border border-border-light dark:border-border-dark p-4 bg-white dark:bg-surface-dark space-y-4">
           <form action="{{ route('wishes.comments.store', $wish->w_id) }}" method="POST" class="space-y-4">
             @csrf

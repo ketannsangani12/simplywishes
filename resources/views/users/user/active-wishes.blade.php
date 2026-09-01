@@ -107,7 +107,7 @@ No granted wishes or donations yet.
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 @foreach($grantedWishes as $wish)
 @php
-  $image = $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
+  $image = $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-wish-type="{{ (int) $wish->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
@@ -168,7 +168,7 @@ No granted wishes or donations yet.
 @endforeach
 @foreach(($grantedDonations ?? collect()) as $donation)
 @php
-  $image = $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
+  $image = $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-donation-type="{{ (int) $donation->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
@@ -239,7 +239,7 @@ No in-progress wishes or donations yet.
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 @foreach($inProgressWishes as $wish)
 @php
-  $image = $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
+  $image = $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-wish-type="{{ (int) $wish->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
@@ -300,7 +300,7 @@ No in-progress wishes or donations yet.
 @endforeach
 @foreach(($inProgressDonations ?? collect()) as $donation)
 @php
-  $image = $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
+  $image = $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-donation-type="{{ (int) $donation->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
@@ -381,7 +381,7 @@ No current wishes available yet.
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 @foreach($wishes as $wish)
 @php
-  $image = $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
+  $image = $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-wish-type="{{ (int) $wish->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">
@@ -458,7 +458,7 @@ No current donations available yet.
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 @foreach($donations as $donation)
 @php
-  $image = $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
+  $image = $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
 @endphp
 <div class="bg-card-light dark:bg-card-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300" data-donation-type="{{ (int) $donation->non_pay_option === 1 ? 'non-financial' : 'financial' }}">
 <div class="relative">

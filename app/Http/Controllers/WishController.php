@@ -31,26 +31,58 @@ class WishController extends Controller
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $filename = Str::uuid()->toString() . '.' . $extension;
 
-        $candidateDirectories = [
-            base_path('../public_html/uploads/wishes'),
-            public_path('uploads/wishes'),
-        ];
-
-        $uploadDirectory = null;
-        foreach ($candidateDirectories as $directory) {
-            $parentDirectory = dirname($directory);
-            if (is_dir($directory) || is_dir($parentDirectory)) {
-                $uploadDirectory = $directory;
-                break;
-            }
-        }
-
-        $uploadDirectory ??= public_path('uploads/wishes');
-
+        // Always public_path(): uploadedImage() below only ever looks for
+        // the file there, so writing it anywhere else means it can never be
+        // found again regardless of what URL points at it.
+        $uploadDirectory = public_path('uploads/wishes');
         File::ensureDirectoryExists($uploadDirectory);
         $file->move($uploadDirectory, $filename);
 
         return 'uploads/wishes/' . $filename;
+    }
+
+    /**
+     * Stream a default wish image back through Laravel rather than relying
+     * on the web server to serve public/images/wishes-default/ directly.
+     * asset()/a plain static URL can be wrong for two independent reasons on
+     * some hosts: the app's APP_URL not matching the domain that actually
+     * served the request, and/or the web server's document root not being
+     * this public/ directory at all. Routing through PHP sidesteps both,
+     * since it only depends on Laravel's own routing, which is already
+     * proven to work (the rest of the site runs through it).
+     */
+    public function defaultImage(string $filename): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        if (str_contains($filename, '/') || str_contains($filename, '..')) {
+            abort(404);
+        }
+
+        $path = public_path('images/wishes-default/' . $filename);
+
+        if (! is_file($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
+    }
+
+    /**
+     * Stream a user-uploaded wish image back through Laravel, for the same
+     * reason as defaultImage() above.
+     */
+    public function uploadedImage(string $filename): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        if (str_contains($filename, '/') || str_contains($filename, '..')) {
+            abort(404);
+        }
+
+        $path = public_path('uploads/wishes/' . $filename);
+
+        if (! is_file($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
     }
 
     public function create(): View
@@ -139,7 +171,10 @@ class WishController extends Controller
         }
 
         return redirect()
-            ->route($isDraft ? 'wishes.drafts' : 'wishes.show', $isDraft ? [] : ['wish' => $wish->w_id])
+            ->route(
+                $isDraft ? 'wishes.drafts' : 'wishes.show',
+                $isDraft ? [] : ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'current-wishes']
+            )
             ->with('status', $isDraft ? 'Your wish draft has been saved.' : 'Your wish has been created successfully.');
     }
 
@@ -387,7 +422,7 @@ class WishController extends Controller
         );
 
         return redirect()
-            ->route('wishes.active')
+            ->route('wishes.show', $wish->w_id)
             ->with('status', 'Wish reported successfully.');
     }
 
@@ -421,7 +456,8 @@ class WishController extends Controller
 
         return redirect()
             ->route('wishes.show', $wish->w_id)
-            ->with('status', 'Comment posted successfully.');
+            ->with('comment_status', 'Comment posted successfully.')
+            ->withFragment('comments');
     }
 
     public function destroyComment(int $wish, int $comment): RedirectResponse
@@ -447,7 +483,8 @@ class WishController extends Controller
 
         return redirect()
             ->route('wishes.show', $wish->w_id)
-            ->with('status', 'Comment deleted successfully.');
+            ->with('comment_status', 'Comment deleted successfully.')
+            ->withFragment('comments');
     }
 
     public function updateComment(Request $request, int $wish, int $comment): RedirectResponse
@@ -474,7 +511,8 @@ class WishController extends Controller
 
         return redirect()
             ->route('wishes.show', $wish->w_id)
-            ->with('status', 'Comment updated successfully.');
+            ->with('comment_status', 'Comment updated successfully.')
+            ->withFragment('comments');
     }
 
     public function toggleCommentLike(int $wish, int $comment): RedirectResponse
@@ -504,7 +542,7 @@ class WishController extends Controller
             ]);
         }
 
-        return redirect()->route('wishes.show', $wish->w_id);
+        return redirect()->route('wishes.show', $wish->w_id)->withFragment('comments');
     }
 
     public function reportComment(Request $request, int $wish, int $comment): RedirectResponse
@@ -524,7 +562,8 @@ class WishController extends Controller
         if ((int) $comment->user_id === (int) Auth::id()) {
             return redirect()
                 ->route('wishes.show', $wish->w_id)
-                ->with('status', 'You cannot report your own comment.');
+                ->with('comment_status', 'You cannot report your own comment.')
+                ->withFragment('comments');
         }
 
         DB::table('reports')->updateOrInsert(
@@ -544,7 +583,8 @@ class WishController extends Controller
 
         return redirect()
             ->route('wishes.show', $wish->w_id)
-            ->with('status', 'Comment reported successfully.');
+            ->with('comment_status', 'Comment reported successfully.')
+            ->withFragment('comments');
     }
 
     public function edit(int $wish): View
@@ -640,9 +680,26 @@ class WishController extends Controller
             $wish->forceFill(['wish_email_status' => 1])->save();
         }
 
+        if ($isDraft) {
+            return redirect()
+                ->route('wishes.drafts')
+                ->with('status', 'Your wish draft has been updated.');
+        }
+
+        // Land back on the wish's own page, same as a fresh submission does
+        // (WishController::store()) — carrying forward whatever source/
+        // source_tab the edit form was opened with (see create-wish.blade.php)
+        // so the Back arrow there still points wherever the user actually
+        // started from (My Wishes & Donations, Active Wishes & Donations,
+        // etc.), instead of unconditionally dropping them on My Wishes &
+        // Donations regardless of where they came from.
         return redirect()
-            ->route($isDraft ? 'wishes.drafts' : 'my.wishes')
-            ->with('status', $isDraft ? 'Your wish draft has been updated.' : 'Your wish has been updated.');
+            ->route('wishes.show', [
+                'wish' => $wish->w_id,
+                'source' => $request->input('source') ?: 'active',
+                'source_tab' => $request->input('source_tab') ?: 'current-wishes',
+            ])
+            ->with('status', 'Your wish has been updated.');
     }
 
     public function destroy(Request $request, int $wish): RedirectResponse

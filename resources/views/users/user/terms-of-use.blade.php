@@ -13,18 +13,13 @@
           Welcome to the SimplyWishes Website. By accessing and using this website, you are agreeing to these Terms of Use
           ("Terms of Use"). Please read them carefully.
         </p>
+        <p class="mt-4 text-sm text-text-muted-light dark:text-text-muted-dark">Last updated: September 1, 2026</p>
       </div>
     </div>
   </section>
 
   <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
     <article class="max-w-4xl mx-auto bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6 sm:p-8 space-y-10">
-      <div class="space-y-4">
-        <p class="text-text-light dark:text-text-dark leading-relaxed">
-          These Terms of Use were last updated in 2023.
-        </p>
-      </div>
-
       <div class="space-y-4">
         <h2 class="text-2xl font-semibold text-text-light dark:text-text-dark">1. Acceptance of Terms of Use; Modifications.</h2>
         <p class="text-text-light dark:text-text-dark leading-relaxed">

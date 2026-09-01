@@ -6,6 +6,27 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <title>@yield('title', 'Simply Wishes')</title>
+  {{--
+    Open Graph tags for link previews (Facebook, etc). Without these,
+    Facebook's scraper falls back to guessing an image from the raw page
+    HTML — and since the Google Play badge in the footer is embedded as an
+    inline base64 data: URI (so it can never 404), it's the one image on
+    every page a scraper can always read without a network fetch, so it
+    wins that guess. Pages that show a specific post (wish/donation/forum/
+    happy story) set og_title/og_description/og_image via @section() to
+    override these defaults.
+  --}}
+  <meta property="og:site_name" content="Simply Wishes" />
+  <meta property="og:type" content="@yield('og_type', 'website')" />
+  <meta property="og:url" content="{{ url()->current() }}" />
+  <meta property="og:title" content="@yield('og_title', 'Simply Wishes')" />
+  <meta property="og:description" content="@yield('og_description', 'Join us in creating life-changing wish experiences for children with critical illnesses.')" />
+  @hasSection('og_image')
+    <meta property="og:image" content="@yield('og_image')" />
+    <meta name="twitter:card" content="summary_large_image" />
+  @else
+    <meta name="twitter:card" content="summary" />
+  @endif
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
   <link href="https://fonts.googleapis.com" rel="preconnect" />
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />

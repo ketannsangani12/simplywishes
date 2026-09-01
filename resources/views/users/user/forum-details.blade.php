@@ -11,7 +11,23 @@
   $postImage = $post->imageUrl();
   $postVideoUrl = $post->videoUrl();
   $postLikesCount = $post->likes_count ?? $post->likes->count();
+
+  // A text-only article genuinely has no thumbnail (the on-page <img> is
+  // skipped for it too), but og:image still needs *something* — otherwise
+  // Facebook falls back to guessing an image from the page, which is
+  // exactly the bug being fixed here. Same generic fallback as the forum
+  // card on the home page uses for the same case.
+  $ogImageUrl = $postImage ?: ((int) $post->is_video_only === 1
+      ? 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80'
+      : 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80');
+  if (! filter_var($ogImageUrl, FILTER_VALIDATE_URL)) {
+      $ogImageUrl = request()->getSchemeAndHttpHost() . $ogImageUrl;
+  }
 @endphp
+@section('og_type', 'article')
+@section('og_title', $post->e_title ?: 'A post on the Simply Wishes forum')
+@section('og_description', \Illuminate\Support\Str::limit(strip_tags($post->description ?: $post->e_text ?: ''), 200) ?: 'Join the conversation on Simply Wishes.')
+@section('og_image', $ogImageUrl)
 
 @section('content')
 <main class="flex-1 bg-gradient-to-b from-white via-white to-slate-50 dark:from-background-dark dark:via-background-dark dark:to-background-dark">
@@ -43,14 +59,12 @@
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <form method="POST" action="{{ route('forum.like', $post->e_id) }}">
-                @csrf
-                <button type="submit" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold {{ $likedByCurrentUser ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">
-                  <span class="material-icons text-base">favorite</span>
-                  Love
-                  <span class="text-xs font-bold">{{ $postLikesCount }}</span>
-                </button>
-              </form>
+              <button type="button" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold js-forum-like {{ $likedByCurrentUser ? 'bg-red-100 text-red-600 is-active' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}"
+                data-forum-id="{{ $post->e_id }}" aria-label="Like post">
+                <span class="material-symbols-outlined text-base">{{ $likedByCurrentUser ? 'favorite' : 'favorite_border' }}</span>
+                <span>Like</span>
+                <span data-like-count>{{ $postLikesCount }}</span>
+              </button>
               @if ((int) ($post->created_by ?? 0) === (int) auth()->id())
                 <a href="{{ route('forum.edit', $post->e_id) }}" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">
                   <span class="material-icons text-base">edit</span>
@@ -130,11 +144,17 @@
         </div>
       </article>
 
-      <section class="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
+      <section id="comments" class="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold text-brand-blue-light dark:text-brand-blue-dark">Comments</h2>
           <span class="text-sm text-text-muted-light dark:text-text-muted-dark">{{ $comments->count() }} comments</span>
         </div>
+
+        @if (session('comment_status'))
+          <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
+            {{ session('comment_status') }}
+          </div>
+        @endif
 
         <div class="rounded-xl border border-border-light dark:border-border-dark p-4 bg-white dark:bg-surface-dark space-y-4">
           <form action="{{ route('forum.comments.store', $post->e_id) }}" method="POST" class="space-y-4">
@@ -338,6 +358,47 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    document.querySelectorAll('.js-forum-like').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const forumId = button.getAttribute('data-forum-id');
+        if (!forumId) return;
+
+        try {
+          const res = await fetch(`{{ url('/forum') }}/${forumId}/like`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': csrfToken || '',
+              'Accept': 'application/json',
+            },
+          });
+
+          if (!res.ok) return;
+          const data = await res.json();
+
+          const icon = button.querySelector('.material-symbols-outlined');
+          const count = button.querySelector('[data-like-count]');
+
+          button.classList.toggle('is-active', data.liked);
+          button.classList.toggle('bg-red-100', data.liked);
+          button.classList.toggle('text-red-600', data.liked);
+          button.classList.toggle('bg-slate-100', !data.liked);
+          button.classList.toggle('text-slate-700', !data.liked);
+          button.classList.toggle('hover:bg-slate-200', !data.liked);
+          if (icon) {
+            icon.textContent = data.liked ? 'favorite' : 'favorite_border';
+          }
+          if (count) {
+            count.textContent = String(data.likes_count);
+          }
+        } catch (e) {
+          // ignore client-side errors
+        }
+      });
+    });
+
     document.querySelectorAll('.js-reply-toggle').forEach((button) => {
       button.addEventListener('click', function () {
         const targetId = button.getAttribute('data-reply-target');

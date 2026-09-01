@@ -23,7 +23,7 @@
                 <article class="bg-surface-light rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                   <div class="relative">
                     @php
-                      $image = $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
+                      $image = $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
                     @endphp
                     <img alt="Wish image" class="w-full aspect-[4/3] object-cover" src="{{ $image }}" />
                     <span class="absolute top-3 left-3 inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 shadow-sm">

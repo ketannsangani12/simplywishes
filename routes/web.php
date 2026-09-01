@@ -64,6 +64,12 @@ Route::get('/my-wishes', [SiteController::class, 'myWishes'])->name('my.wishes')
 // just inside the auth-gated create/edit forms.
 Route::get('/happy-stories/default-image/{filename}', [SiteController::class, 'defaultHappyStoryImage'])->name('happy.stories.default-image')->where('filename', '[A-Za-z0-9\-]+\.[A-Za-z0-9]+');
 Route::get('/happy-stories/upload/{filename}', [SiteController::class, 'happyStoryUpload'])->name('happy.stories.upload')->where('filename', '[A-Za-z0-9\-]+\.[A-Za-z0-9]+');
+// No auth middleware, same reason: wish/donation images show on the public
+// active-wishes listing and home page, not just the owner's own pages.
+Route::get('/wishes/default-image/{filename}', [WishController::class, 'defaultImage'])->name('wishes.default-image')->where('filename', '[A-Za-z0-9\-]+\.[A-Za-z0-9]+');
+Route::get('/wishes/upload/{filename}', [WishController::class, 'uploadedImage'])->name('wishes.upload')->where('filename', '[A-Za-z0-9\-]+\.[A-Za-z0-9]+');
+Route::get('/donations/default-image/{filename}', [DonationController::class, 'defaultImage'])->name('donations.default-image')->where('filename', '[A-Za-z0-9\-]+\.[A-Za-z0-9]+');
+Route::get('/donations/upload/{filename}', [DonationController::class, 'uploadedImage'])->name('donations.upload')->where('filename', '[A-Za-z0-9\-]+\.[A-Za-z0-9]+');
 Route::get('/happy-stories/create', [SiteController::class, 'addHappyStory'])->name('happy.stories.create')->middleware('auth');
 Route::post('/happy-stories', [SiteController::class, 'storeHappyStory'])->name('happy.stories.store')->middleware('auth');
 Route::get('/happy-stories/{story}/edit', [SiteController::class, 'editHappyStory'])->name('happy.stories.edit')->middleware('auth')->whereNumber('story');

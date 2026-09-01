@@ -42,4 +42,32 @@ class Donation extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * URL for image, routed through DonationController rather than a plain
+     * asset()/static path — see WishController::defaultImage() for why.
+     */
+    public function imageUrl(): ?string
+    {
+        $path = trim((string) $this->image);
+        if ($path === '') {
+            return null;
+        }
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'uploads/donations/')) {
+            return route('donations.upload', ['filename' => basename($path)], false);
+        }
+
+        if (str_starts_with($path, 'images/wishes-default/')) {
+            return route('donations.default-image', ['filename' => basename($path)], false);
+        }
+
+        return '/' . $path;
+    }
 }

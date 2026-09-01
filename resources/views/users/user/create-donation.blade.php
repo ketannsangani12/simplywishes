@@ -3,7 +3,7 @@
 @section('title', 'Simply Wishes - Make a Donation')
 
 @push('head')
-  <script src="{{ asset('js/create-donation.js') }}" defer></script>
+  <script src="/js/create-donation.js" defer></script>
 @endpush
 
 @section('content')
@@ -51,6 +51,12 @@
               @csrf
               @if($isEdit)
                 @method('PUT')
+                {{-- See create-wish.blade.php for why: carries the donation
+                     detail page's source/source_tab through the edit
+                     round-trip so a successful submit returns the user to
+                     the same Back-arrow context they had before editing. --}}
+                <input type="hidden" name="source" value="{{ old('source', request()->query('source', '')) }}" />
+                <input type="hidden" name="source_tab" value="{{ old('source_tab', request()->query('source_tab', '')) }}" />
               @endif
               <div class="space-y-2">
                 <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="donation-title">Donation Title <span class="text-red-500">*</span></label>
@@ -141,8 +147,8 @@
                 @endphp
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark p-3" data-donation-default-grid>
                   @forelse ($defaultDonationImages as $imagePath)
-                    <button type="button" class="relative rounded-lg overflow-hidden border border-transparent hover:border-primary group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary" data-donation-default-item data-default-image="{{ asset($imagePath) }}">
-                      <img class="w-full h-28 object-cover" src="{{ asset($imagePath) }}" alt="Default donation image" />
+                    <button type="button" class="relative rounded-lg overflow-hidden border border-transparent hover:border-primary group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary" data-donation-default-item data-default-image="{{ route('donations.default-image', ['filename' => basename($imagePath)], false) }}">
+                      <img class="w-full h-28 object-cover" src="{{ route('donations.default-image', ['filename' => basename($imagePath)], false) }}" alt="Default donation image" />
                       <span class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white font-semibold text-sm">Use Image</span>
                       <span class="absolute inset-0 bg-primary/35 opacity-0 transition" data-selected-overlay></span>
                       <span class="absolute top-2 right-2 bg-primary text-brand-blue-light rounded-full p-1 shadow-lg opacity-0 transition" data-selected-check>

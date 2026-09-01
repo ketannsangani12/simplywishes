@@ -25,7 +25,16 @@
 
     return filter_var($user->profile_image, FILTER_VALIDATE_URL) ? $user->profile_image : asset($user->profile_image);
   };
+
+  $ogImageUrl = $storyImage($story);
+  if (! filter_var($ogImageUrl, FILTER_VALIDATE_URL)) {
+      $ogImageUrl = request()->getSchemeAndHttpHost() . $ogImageUrl;
+  }
 @endphp
+@section('og_type', 'article')
+@section('og_title', $story->wish?->wish_title ?: 'A happy story on Simply Wishes')
+@section('og_description', \Illuminate\Support\Str::limit(strip_tags((string) $story->story_text) ?: 'Read this happy story on Simply Wishes.', 200))
+@section('og_image', $ogImageUrl)
 
 @section('content')
 <main class="flex-1 bg-gradient-to-b from-white via-white to-slate-50 dark:from-background-dark dark:via-background-dark dark:to-background-dark">
@@ -138,12 +147,18 @@
             <p class="mt-2 whitespace-pre-line text-base leading-7 text-text-light dark:text-text-dark">{{ $story->story_text }}</p>
           </div>
 
-          <div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60">
+          <div id="comments" class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60">
             <div class="p-6 sm:p-8 space-y-6">
               <div class="flex items-center justify-between gap-3">
                 <h2 class="text-2xl font-bold text-brand-blue-light dark:text-brand-blue-dark">Comments</h2>
                 <span class="text-sm text-text-muted-light dark:text-text-muted-dark">{{ $comments->count() }} comments</span>
               </div>
+
+              @if (session('comment_status'))
+                <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
+                  {{ session('comment_status') }}
+                </div>
+              @endif
 
               <div class="rounded-xl border border-border-light dark:border-border-dark p-4 bg-white dark:bg-surface-dark space-y-4">
                 <form action="{{ route('happy.stories.comments.store', $story->hs_id) }}" method="POST" class="space-y-4">

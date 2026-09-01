@@ -17,7 +17,7 @@
     'title' => $wish->wish_title ?: 'Untitled wish',
     'subtitle' => 'Wish',
     'description' => $wish->wish_description ?: 'No description yet.',
-    'image' => $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
+    'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
     'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Active',
   ])->concat(collect($activeDonations)->map(fn ($donation) => [
@@ -26,7 +26,7 @@
     'title' => $donation->title ?: 'Untitled donation',
     'subtitle' => 'Donation',
     'description' => $donation->description ?: 'No description yet.',
-    'image' => $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
+    'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
     'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Active',
   ]))->sortByDesc('id')->values();
@@ -37,7 +37,7 @@
     'title' => $wish->wish_title ?: 'Untitled wish',
     'subtitle' => 'Wish',
     'description' => $wish->wish_description ?: 'No description yet.',
-    'image' => $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
+    'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
     'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'In Progress',
   ])->concat(collect($inProgressDonations)->map(fn ($donation) => [
@@ -46,7 +46,7 @@
     'title' => $donation->title ?: 'Untitled donation',
     'subtitle' => 'Donation',
     'description' => $donation->description ?: 'No description yet.',
-    'image' => $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
+    'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
     'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'In Progress',
   ]))->sortByDesc('id')->values();
@@ -57,7 +57,7 @@
     'title' => $wish->wish_title ?: 'Untitled wish',
     'subtitle' => 'Wish',
     'description' => $wish->wish_description ?: 'No description yet.',
-    'image' => $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
+    'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
     'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Granted',
   ])->concat(collect($grantedDonations)->map(fn ($donation) => [
@@ -66,7 +66,7 @@
     'title' => $donation->title ?: 'Untitled donation',
     'subtitle' => 'Donation',
     'description' => $donation->description ?: 'No description yet.',
-    'image' => $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
+    'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
     'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Granted',
   ]))->sortByDesc('id')->values();
@@ -77,7 +77,7 @@
     'title' => $wish->wish_title ?: 'Untitled wish',
     'subtitle' => 'Saved Wish',
     'description' => $wish->wish_description ?: 'No description yet.',
-    'image' => $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
+    'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
     'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Saved',
   ])->concat(collect($savedDonations)->map(fn ($donation) => [
@@ -86,7 +86,7 @@
     'title' => $donation->title ?: 'Untitled donation',
     'subtitle' => 'Saved Donation',
     'description' => $donation->description ?: 'No description yet.',
-    'image' => $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
+    'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
     'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Saved',
   ]))->sortByDesc('id')->values();

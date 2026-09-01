@@ -46,7 +46,7 @@
               <input class="block w-full rounded-md border-slate-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-slate-700 dark:border-slate-600 dark:text-white" id="video-title" name="video_title" value="{{ $titleValue }}" type="text" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="video-description">Description <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="video-description">Description</label>
               <textarea class="w-full h-40 rounded-md border border-slate-300 p-3 shadow-sm focus:border-primary focus:ring-primary dark:bg-slate-700 dark:border-slate-600 dark:text-white" id="video-description" name="video_content">{{ $contentValue }}</textarea>
             </div>
             <div class="grid gap-6 md:grid-cols-2">

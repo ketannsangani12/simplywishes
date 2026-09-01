@@ -6,6 +6,7 @@ use App\Models\ForumComment;
 use App\Models\ForumCommentLike;
 use App\Models\ForumLike;
 use App\Models\ForumPost;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,24 +27,33 @@ class ForumController extends Controller
         $videoFileField = $postType === 'video' ? 'video_featured_video_file' : 'article_featured_video_file';
         $thumbnailField = $postType === 'video' ? 'video_thumbnail' : 'article_thumbnail';
 
+        // Description is only mandatory for an article — the video form
+        // intentionally leaves it optional (no asterisk in the UI, since a
+        // video post leans on the video itself), so both content fields
+        // are 'nullable' here and the *article*-only requirement is
+        // enforced explicitly below instead of via a blanket 'required'
+        // that would wrongly force video posts to have one too.
         $validator = Validator::make($request->all(), [
             'post_type' => ['required', 'in:article,video'],
-            $titleField => ['required', 'string', 'max:250'],
-            $contentField => ['required', 'string'],
+            $titleField => ['nullable', 'string', 'max:250'],
+            $contentField => ['nullable', 'string'],
             $videoUrlField => ['nullable', 'url', 'max:2048'],
             $videoFileField => ['nullable', 'file', 'mimes:mp4,webm,ogg,mov,m4v,avi', 'max:51200'],
             $thumbnailField => ['nullable', 'image', 'max:10240'],
         ]);
 
-        $validator->after(function ($validator) use ($request) {
-            if ($request->input('post_type') === 'video') {
-                if (! $request->filled('video_featured_video_url') && ! $request->hasFile('video_featured_video_file')) {
-                    $validator->errors()->add('video_featured_video_url', 'Please provide a video URL or upload a video file.');
-                }
+        // A single, plain-language error covers every "you left a mandatory
+        // field empty" case, instead of Laravel's default per-field message
+        // (e.g. "The video content field is required.") which doesn't map
+        // to anything the user can see on the form.
+        $validator->after(function ($validator) use ($request, $postType, $titleField, $contentField) {
+            $missingMandatory = ! $request->filled($titleField)
+                || ($postType === 'article' && ! $request->filled($contentField))
+                || ($postType === 'video' && ! $request->filled('video_featured_video_url') && ! $request->hasFile('video_featured_video_file'))
+                || ($postType === 'video' && ! $request->hasFile('video_thumbnail'));
 
-                if (! $request->hasFile('video_thumbnail')) {
-                    $validator->errors()->add('video_thumbnail', 'Please upload a thumbnail image for the video.');
-                }
+            if ($missingMandatory) {
+                $validator->errors()->add('mandatory', 'Please complete all mandatory fields before proceeding.');
             }
         });
 
@@ -103,20 +113,25 @@ class ForumController extends Controller
         $videoFileField = $postType === 'video' ? 'video_featured_video_file' : 'article_featured_video_file';
         $thumbnailField = $postType === 'video' ? 'video_thumbnail' : 'article_thumbnail';
 
+        // See store() above: description is only mandatory for an article.
         $validator = Validator::make($request->all(), [
-            $titleField => ['required', 'string', 'max:250'],
-            $contentField => ['required', 'string'],
+            $titleField => ['nullable', 'string', 'max:250'],
+            $contentField => ['nullable', 'string'],
             $videoUrlField => ['nullable', 'url', 'max:2048'],
             $videoFileField => ['nullable', 'file', 'mimes:mp4,webm,ogg,mov,m4v,avi', 'max:51200'],
             $thumbnailField => ['nullable', 'image', 'max:10240'],
         ]);
 
-        $validator->after(function ($validator) use ($request, $postType, $videoUrlField, $videoFileField, $post) {
-            if ($postType === 'video'
-                && ! $request->filled($videoUrlField)
-                && ! $request->hasFile($videoFileField)
-                && empty($post->featured_video_url)) {
-                $validator->errors()->add($videoUrlField, 'Please provide a video URL or upload a video file.');
+        $validator->after(function ($validator) use ($request, $postType, $titleField, $contentField, $videoUrlField, $videoFileField, $post) {
+            $missingMandatory = ! $request->filled($titleField)
+                || ($postType === 'article' && ! $request->filled($contentField))
+                || ($postType === 'video'
+                    && ! $request->filled($videoUrlField)
+                    && ! $request->hasFile($videoFileField)
+                    && empty($post->featured_video_url));
+
+            if ($missingMandatory) {
+                $validator->errors()->add('mandatory', 'Please complete all mandatory fields before proceeding.');
             }
         });
 
@@ -246,7 +261,12 @@ class ForumController extends Controller
             ->paginate(9)
             ->withQueryString();
 
-        return view('users.user.forum', compact('tab', 'searchTerm', 'posts'));
+        $likedPostIds = ForumLike::where('user_id', Auth::id())
+            ->whereIn('forum_id', $posts->pluck('e_id'))
+            ->pluck('forum_id')
+            ->all();
+
+        return view('users.user.forum', compact('tab', 'searchTerm', 'posts', 'likedPostIds'));
     }
 
     public function show(int $forum): View
@@ -312,7 +332,7 @@ class ForumController extends Controller
         return view('users.user.forum-details', compact('post', 'likedByCurrentUser', 'likedCommentIds', 'comments', 'hasReportedForum'));
     }
 
-    public function toggleLike(int $forum): RedirectResponse
+    public function toggleLike(Request $request, int $forum): RedirectResponse|JsonResponse
     {
         $post = ForumPost::where('status', 1)->findOrFail($forum);
 
@@ -322,11 +342,23 @@ class ForumController extends Controller
 
         if ($like) {
             $like->delete();
+            $liked = false;
         } else {
             ForumLike::create([
                 'forum_id' => $post->e_id,
                 'user_id' => Auth::id(),
                 'created_at' => now(),
+            ]);
+            $liked = true;
+        }
+
+        // The heart icon on both the forum listing cards and the post detail
+        // page likes instantly via fetch(), matching Happy Stories. Plain
+        // (non-JS) form submits still fall back to the old full-page redirect.
+        if ($request->wantsJson()) {
+            return response()->json([
+                'liked' => $liked,
+                'likes_count' => ForumLike::where('forum_id', $post->e_id)->count(),
             ]);
         }
 
@@ -356,7 +388,10 @@ class ForumController extends Controller
             'comment' => trim($validated['comment']),
         ]);
 
-        return redirect()->route('forum.show', $post->e_id)->with('status', 'Comment posted successfully.');
+        return redirect()
+            ->route('forum.show', $post->e_id)
+            ->with('comment_status', 'Comment posted successfully.')
+            ->withFragment('comments');
     }
 
     public function updateComment(Request $request, int $forum, int $comment): RedirectResponse
@@ -375,7 +410,10 @@ class ForumController extends Controller
             'comment' => trim($validated['comment']),
         ]);
 
-        return redirect()->route('forum.show', $post->e_id)->with('status', 'Comment updated successfully.');
+        return redirect()
+            ->route('forum.show', $post->e_id)
+            ->with('comment_status', 'Comment updated successfully.')
+            ->withFragment('comments');
     }
 
     public function destroyComment(int $forum, int $comment): RedirectResponse
@@ -393,7 +431,10 @@ class ForumController extends Controller
         ForumCommentLike::whereIn('comment_id', $commentIds)->delete();
         ForumComment::whereIn('id', $commentIds)->delete();
 
-        return redirect()->route('forum.show', $post->e_id)->with('status', 'Comment deleted successfully.');
+        return redirect()
+            ->route('forum.show', $post->e_id)
+            ->with('comment_status', 'Comment deleted successfully.')
+            ->withFragment('comments');
     }
 
     public function toggleCommentLike(int $forum, int $comment): RedirectResponse
@@ -417,7 +458,7 @@ class ForumController extends Controller
             ]);
         }
 
-        return redirect()->route('forum.show', $post->e_id);
+        return redirect()->route('forum.show', $post->e_id)->withFragment('comments');
     }
 
     public function report(Request $request, int $forum): RedirectResponse
@@ -462,7 +503,8 @@ class ForumController extends Controller
         if ((int) $comment->user_id === (int) Auth::id()) {
             return redirect()
                 ->route('forum.show', $post->e_id)
-                ->with('status', 'You cannot report your own comment.');
+                ->with('comment_status', 'You cannot report your own comment.')
+                ->withFragment('comments');
         }
 
         DB::table('reports')->updateOrInsert(
@@ -482,7 +524,8 @@ class ForumController extends Controller
 
         return redirect()
             ->route('forum.show', $post->e_id)
-            ->with('status', 'Comment reported successfully.');
+            ->with('comment_status', 'Comment reported successfully.')
+            ->withFragment('comments');
     }
 
     private function storeForumUpload($file, string $folder): string

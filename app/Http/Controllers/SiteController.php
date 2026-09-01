@@ -737,7 +737,8 @@ class SiteController extends Controller
 
         return redirect()
             ->route('happy.stories.show', $story->hs_id)
-            ->with('status', 'Comment posted successfully.');
+            ->with('comment_status', 'Comment posted successfully.')
+            ->withFragment('comments');
     }
 
     public function updateHappyStoryComment(Request $request, int $story, int $comment): RedirectResponse
@@ -761,7 +762,8 @@ class SiteController extends Controller
 
         return redirect()
             ->route('happy.stories.show', $story->hs_id)
-            ->with('status', 'Comment updated successfully.');
+            ->with('comment_status', 'Comment updated successfully.')
+            ->withFragment('comments');
     }
 
     private function storeHappyStoryImage(\Illuminate\Http\UploadedFile $file): string
@@ -811,7 +813,8 @@ class SiteController extends Controller
 
         return redirect()
             ->route('happy.stories.show', $story->hs_id)
-            ->with('status', 'Comment deleted successfully.');
+            ->with('comment_status', 'Comment deleted successfully.')
+            ->withFragment('comments');
     }
 
     public function toggleHappyStoryCommentLike(int $story, int $comment): RedirectResponse
@@ -838,7 +841,7 @@ class SiteController extends Controller
             ]);
         }
 
-        return redirect()->route('happy.stories.show', $story->hs_id);
+        return redirect()->route('happy.stories.show', $story->hs_id)->withFragment('comments');
     }
 
     public function reportHappyStoryComment(Request $request, int $story, int $comment): RedirectResponse
@@ -855,7 +858,8 @@ class SiteController extends Controller
         if ((int) $comment->user_id === (int) Auth::id()) {
             return redirect()
                 ->route('happy.stories.show', $story->hs_id)
-                ->with('status', 'You cannot report your own comment.');
+                ->with('comment_status', 'You cannot report your own comment.')
+                ->withFragment('comments');
         }
 
         DB::table('reports')->updateOrInsert(
@@ -875,7 +879,8 @@ class SiteController extends Controller
 
         return redirect()
             ->route('happy.stories.show', $story->hs_id)
-            ->with('status', 'Comment reported successfully.');
+            ->with('comment_status', 'Comment reported successfully.')
+            ->withFragment('comments');
     }
 
     public function myFriends(Request $request): View

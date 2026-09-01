@@ -45,4 +45,32 @@ class Wish extends Model
     {
         return $this->belongsTo(User::class, 'wished_by');
     }
+
+    /**
+     * URL for primary_image, routed through WishController rather than a
+     * plain asset()/static path — see WishController::defaultImage() for why.
+     */
+    public function imageUrl(): ?string
+    {
+        $path = trim((string) $this->primary_image);
+        if ($path === '') {
+            return null;
+        }
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'uploads/wishes/')) {
+            return route('wishes.upload', ['filename' => basename($path)], false);
+        }
+
+        if (str_starts_with($path, 'images/wishes-default/')) {
+            return route('wishes.default-image', ['filename' => basename($path)], false);
+        }
+
+        return '/' . $path;
+    }
 }

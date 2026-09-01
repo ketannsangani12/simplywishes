@@ -263,9 +263,11 @@
                 </p>
                 <div class="flex items-center justify-between gap-3">
                   <a class="text-primary font-semibold hover:underline mt-auto self-start" href="{{ route('forum.show', $post->e_id) }}">Read More →</a>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">
-                    {{ $post->likes_count ?? 0 }} likes
-                  </div>
+                  <button type="button" class="inline-flex items-center gap-1 js-forum-like {{ in_array($post->e_id, $likedPostIds ?? [], true) ? 'text-rose-500 is-active' : 'text-slate-500 dark:text-slate-400 hover:text-rose-500' }}"
+                    data-forum-id="{{ $post->e_id }}" aria-label="Like post">
+                    <span class="material-symbols-outlined text-base">{{ in_array($post->e_id, $likedPostIds ?? [], true) ? 'favorite' : 'favorite_border' }}</span>
+                    <span data-like-count>{{ $post->likes_count ?? 0 }}</span>
+                  </button>
                 </div>
               </div>
             </article>
@@ -292,6 +294,48 @@
       if (searchInput.value.trim() === '') {
         searchInput.form.submit();
       }
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    document.querySelectorAll('.js-forum-like').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const forumId = button.getAttribute('data-forum-id');
+        if (!forumId) return;
+
+        try {
+          const res = await fetch(`{{ url('/forum') }}/${forumId}/like`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': token || '',
+              'Accept': 'application/json',
+            },
+          });
+
+          if (!res.ok) return;
+          const data = await res.json();
+
+          const icon = button.querySelector('.material-symbols-outlined');
+          const count = button.querySelector('[data-like-count]');
+
+          button.classList.toggle('is-active', data.liked);
+          button.classList.toggle('text-rose-500', data.liked);
+          button.classList.toggle('text-slate-500', !data.liked);
+          button.classList.toggle('dark:text-slate-400', !data.liked);
+          button.classList.toggle('hover:text-rose-500', !data.liked);
+          if (icon) {
+            icon.textContent = data.liked ? 'favorite' : 'favorite_border';
+          }
+          if (count) {
+            count.textContent = String(data.likes_count);
+          }
+        } catch (e) {
+          // ignore client-side errors
+        }
+      });
     });
   });
 </script>

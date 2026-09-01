@@ -2,6 +2,15 @@
 
 @section('title', 'Simply Wishes - Donation Detail')
 
+@php
+  $ogImageUrl = $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80';
+  $ogImageUrl = filter_var($ogImageUrl, FILTER_VALIDATE_URL) ? $ogImageUrl : request()->getSchemeAndHttpHost() . $ogImageUrl;
+@endphp
+@section('og_type', 'article')
+@section('og_title', $donation->title ?: 'A donation on Simply Wishes')
+@section('og_description', \Illuminate\Support\Str::limit(strip_tags((string) $donation->description) ?: 'Help make this donation happen.', 200))
+@section('og_image', $ogImageUrl)
+
 @section('content')
 @php
   $source = (string) request()->query('source', '');
@@ -31,7 +40,7 @@
           </h1>
           <div class="flex flex-wrap items-center gap-2">
             @if((int) ($donation->created_by ?? 0) === (int) auth()->id() && in_array((int) $donation->status, [0, 1], true))
-              <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('donations.edit', $donation->id) }}">
+              <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('donations.edit', ['donation' => $donation->id, 'source' => $source, 'source_tab' => $sourceTab]) }}">
                 <span class="material-icons !text-base">edit</span>
                 Update
               </a>
@@ -57,10 +66,7 @@
       <div class="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-1">
           <div class="rounded-xl border border-border-light dark:border-border-dark overflow-hidden bg-white dark:bg-surface-dark shadow-sm relative">
-            @php
-              $image = $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80';
-            @endphp
-            <img alt="Donation image" class="w-full object-cover aspect-square" src="{{ $image }}" />
+            <img alt="Donation image" class="w-full object-cover aspect-square" src="{{ $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80' }}" />
             <div class="absolute top-3 right-3 flex items-center gap-2">
               <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-donation-id="{{ $donation->id }}" aria-label="Save donation" type="button">
                 <span class="material-icons !text-base {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($donation->id, $favDonationIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
@@ -210,9 +216,14 @@
       </div>
     </div>
 
-    <div class="max-w-5xl mx-auto mt-8 bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60">
+    <div id="comments" class="max-w-5xl mx-auto mt-8 bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60">
       <div class="p-6 sm:p-8 space-y-6">
         <h2 class="text-2xl font-bold text-brand-blue-light dark:text-brand-blue-dark">Comments</h2>
+        @if (session('comment_status'))
+          <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            {{ session('comment_status') }}
+          </div>
+        @endif
         <div class="rounded-xl border border-border-light dark:border-border-dark p-4 bg-white dark:bg-surface-dark space-y-4">
           <form action="{{ route('donations.comments.store', $donation->id) }}" method="POST" class="space-y-4">
             @csrf

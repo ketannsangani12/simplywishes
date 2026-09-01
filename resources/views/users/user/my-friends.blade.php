@@ -48,7 +48,7 @@
       'id' => $wish->w_id,
       'title' => $wish->wish_title ?: 'Untitled wish',
       'description' => $wish->wish_description ?: 'No description yet.',
-      'image' => $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
+      'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
       'link' => route('wishes.show', $wish->w_id),
       'status' => $statusLabel,
       'statusClass' => $statusClass,
@@ -68,7 +68,7 @@
       'id' => $donation->id,
       'title' => $donation->title ?: 'Untitled donation',
       'description' => $donation->description ?: 'No description yet.',
-      'image' => $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
+      'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
       'link' => route('donations.show', $donation->id),
       'status' => $statusLabel,
       'statusClass' => $statusClass,
@@ -193,16 +193,16 @@
                     @endphp
 
                     <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-4 shadow-sm">
-                      <div class="flex items-start gap-4">
+                      <a href="{{ route('members.show', $friend->id) }}" class="flex items-start gap-4 group">
                         <img src="{{ $friendAvatar }}" alt="{{ $friendName }} avatar" class="h-14 w-14 rounded-xl object-cover" />
                         <div class="min-w-0 flex-1">
-                          <h3 class="truncate text-base font-semibold text-brand-blue-light dark:text-white">{{ $friendName }}</h3>
+                          <h3 class="truncate text-base font-semibold text-brand-blue-light dark:text-white group-hover:underline">{{ $friendName }}</h3>
                           <p class="truncate text-sm text-text-muted-light dark:text-text-muted-dark">{{ $friend->email ?? '' }}</p>
                           @if (! empty($friend->username))
                             <p class="truncate text-xs text-text-muted-light/80 dark:text-text-muted-dark/80">@{{ $friend->username }}</p>
                           @endif
                         </div>
-                      </div>
+                      </a>
 
                       <div class="mt-4 flex items-center gap-2">
                         <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
@@ -308,16 +308,16 @@
                   @endphp
 
                   <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-4 shadow-sm">
-                    <div class="flex items-start gap-4">
+                    <a href="{{ route('members.show', $user->id) }}" class="flex items-start gap-4 group">
                       <img src="{{ $avatar }}" alt="{{ $name }} avatar" class="h-14 w-14 rounded-xl object-cover" />
                       <div class="min-w-0 flex-1">
-                        <h3 class="truncate text-base font-semibold text-brand-blue-light dark:text-white">{{ $name }}</h3>
+                        <h3 class="truncate text-base font-semibold text-brand-blue-light dark:text-white group-hover:underline">{{ $name }}</h3>
                         <p class="truncate text-sm text-text-muted-light dark:text-text-muted-dark">{{ $user->email }}</p>
                         @if (! empty($user->username))
                           <p class="truncate text-xs text-text-muted-light/80 dark:text-text-muted-dark/80">@{{ $user->username }}</p>
                         @endif
                       </div>
-                    </div>
+                    </a>
 
                     <div class="mt-4 flex flex-wrap items-center gap-2">
                       @if ($isFriend)
@@ -385,11 +385,21 @@
                   $senderAvatar = $avatarFor($sender, $senderName);
                 @endphp
                 <div class="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-3">
-                  <img src="{{ $senderAvatar }}" alt="{{ $senderName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
-                  <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white">{{ $senderName }}</p>
-                    <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark">{{ $sender->email ?? '' }}</p>
-                  </div>
+                  @if ($sender)
+                    <a href="{{ route('members.show', $sender->id) }}" class="flex min-w-0 flex-1 items-center gap-3 group">
+                      <img src="{{ $senderAvatar }}" alt="{{ $senderName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
+                      <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white group-hover:underline">{{ $senderName }}</p>
+                        <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark">{{ $sender->email ?? '' }}</p>
+                      </div>
+                    </a>
+                  @else
+                    <img src="{{ $senderAvatar }}" alt="{{ $senderName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
+                    <div class="min-w-0 flex-1">
+                      <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white">{{ $senderName }}</p>
+                      <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark"></p>
+                    </div>
+                  @endif
                   <div class="flex items-center gap-2">
                     <form method="POST" action="{{ route('friends.requests.accept', $friendRequest->id) }}">
                       @csrf
@@ -422,11 +432,21 @@
                   $receiverAvatar = $avatarFor($receiver, $receiverName);
                 @endphp
                 <div class="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-3">
-                  <img src="{{ $receiverAvatar }}" alt="{{ $receiverName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
-                  <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white">{{ $receiverName }}</p>
-                    <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark">{{ $receiver->email ?? '' }}</p>
-                  </div>
+                  @if ($receiver)
+                    <a href="{{ route('members.show', $receiver->id) }}" class="flex min-w-0 flex-1 items-center gap-3 group">
+                      <img src="{{ $receiverAvatar }}" alt="{{ $receiverName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
+                      <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white group-hover:underline">{{ $receiverName }}</p>
+                        <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark">{{ $receiver->email ?? '' }}</p>
+                      </div>
+                    </a>
+                  @else
+                    <img src="{{ $receiverAvatar }}" alt="{{ $receiverName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
+                    <div class="min-w-0 flex-1">
+                      <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white">{{ $receiverName }}</p>
+                      <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark"></p>
+                    </div>
+                  @endif
                   <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-300">Pending</span>
                 </div>
               @empty
@@ -449,11 +469,13 @@
                   $blockedAvatar = $avatarFor($blockedUser, $blockedName);
                 @endphp
                 <div class="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0b1220] p-3">
-                  <img src="{{ $blockedAvatar }}" alt="{{ $blockedName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
-                  <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white">{{ $blockedName }}</p>
-                    <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark">{{ $blockedUser->email ?? '' }}</p>
-                  </div>
+                  <a href="{{ route('members.show', $blockedUser->id) }}" class="flex min-w-0 flex-1 items-center gap-3 group">
+                    <img src="{{ $blockedAvatar }}" alt="{{ $blockedName }} avatar" class="h-11 w-11 rounded-xl object-cover" />
+                    <div class="min-w-0 flex-1">
+                      <p class="truncate text-sm font-semibold text-brand-blue-light dark:text-white group-hover:underline">{{ $blockedName }}</p>
+                      <p class="truncate text-xs text-text-muted-light dark:text-text-muted-dark">{{ $blockedUser->email ?? '' }}</p>
+                    </div>
+                  </a>
                   <form method="POST" action="{{ route('friends.unblock', $blockedUser->id) }}">
                     @csrf
                     @method('DELETE')

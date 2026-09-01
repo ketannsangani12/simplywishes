@@ -45,60 +45,66 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex flex-wrap items-center gap-3 mt-5">
+          <!-- flex-nowrap + a smaller mobile size for every pill: on a phone
+               these were wrapping (Block dropping to its own line) because
+               three px-4/text-sm pills don't fit a ~360-414px screen. They
+               shrink below sm: and return to the original desktop sizing at
+               sm: and up. overflow-x-auto is a safety net so an unusually
+               long name/label scrolls the row instead of wrapping it. -->
+          <div class="flex flex-nowrap items-center gap-2 sm:gap-3 mt-5 overflow-x-auto">
             @if($isSelf)
               <a href="{{ route('profile.edit') }}"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-blue-light text-white text-sm font-semibold shadow hover:shadow-md">
-                <span class="material-symbols-outlined text-base">edit</span> Edit Profile
+                class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-brand-blue-light text-white text-xs sm:text-sm font-semibold shadow hover:shadow-md whitespace-nowrap shrink-0">
+                <span class="material-symbols-outlined text-sm sm:text-base">edit</span> Edit Profile
               </a>
             @elseif($isBlockedByMe)
-              <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-text-muted-light dark:text-text-muted-dark text-sm font-semibold">
-                <span class="material-symbols-outlined text-base">block</span> You blocked this user
+              <span class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-text-muted-light dark:text-text-muted-dark text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0">
+                <span class="material-symbols-outlined text-sm sm:text-base">block</span> You blocked this user
               </span>
-              <form method="POST" action="{{ route('friends.unblock', $member->id) }}">
+              <form method="POST" action="{{ route('friends.unblock', $member->id) }}" class="shrink-0">
                 @csrf
                 @method('DELETE')
                 <button type="submit"
-                  class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
+                  class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-xs sm:text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 whitespace-nowrap">
                   Unblock
                 </button>
               </form>
             @else
               @unless($isBlockingMe)
                 <a href="{{ route('inbox', ['user' => $member->id]) }}"
-                  class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-blue-light text-white text-sm font-semibold shadow hover:shadow-md">
-                  <span class="material-symbols-outlined text-base">chat</span> Message
+                  class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-brand-blue-light text-white text-xs sm:text-sm font-semibold shadow hover:shadow-md whitespace-nowrap shrink-0">
+                  <span class="material-symbols-outlined text-sm sm:text-base">chat</span> Message
                 </a>
 
                 @if($isFriend)
-                  <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-semibold">
-                    <span class="material-symbols-outlined text-base">how_to_reg</span> Friends
+                  <span class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0">
+                    <span class="material-symbols-outlined text-sm sm:text-base">how_to_reg</span> Friends
                   </span>
                 @elseif($requestSent)
-                  <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-text-muted-light dark:text-text-muted-dark text-sm font-semibold">
-                    <span class="material-symbols-outlined text-base">schedule</span> Request sent
+                  <span class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-text-muted-light dark:text-text-muted-dark text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0">
+                    <span class="material-symbols-outlined text-sm sm:text-base">schedule</span> Request sent
                   </span>
                 @elseif($requestReceived)
                   <a href="{{ route('my.friends') }}"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <span class="material-symbols-outlined text-base">group_add</span> Respond to request
+                    class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-xs sm:text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 whitespace-nowrap shrink-0">
+                    <span class="material-symbols-outlined text-sm sm:text-base">group_add</span> Respond to request
                   </a>
                 @else
-                  <form method="POST" action="{{ route('friends.requests.send', $member->id) }}">
+                  <form method="POST" action="{{ route('friends.requests.send', $member->id) }}" class="shrink-0">
                     @csrf
                     <button type="submit"
-                      class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <span class="material-symbols-outlined text-base">person_add</span> Add Friend
+                      class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-xs sm:text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 whitespace-nowrap">
+                      <span class="material-symbols-outlined text-sm sm:text-base">person_add</span> Add Friend
                     </button>
                   </form>
                 @endif
               @endunless
 
-              <form method="POST" action="{{ route('friends.block', $member->id) }}" onsubmit="return confirm('Block {{ $name }}? They will be removed as a friend and won\'t be able to message you or send friend requests.');">
+              <form method="POST" action="{{ route('friends.block', $member->id) }}" onsubmit="return confirm('Block {{ $name }}? They will be removed as a friend and won\'t be able to message you or send friend requests.');" class="shrink-0">
                 @csrf
                 <button type="submit"
-                  class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50">
-                  <span class="material-symbols-outlined text-base">block</span> Block
+                  class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-red-200 text-red-600 text-xs sm:text-sm font-semibold hover:bg-red-50 whitespace-nowrap">
+                  <span class="material-symbols-outlined text-sm sm:text-base">block</span> Block
                 </button>
               </form>
             @endif

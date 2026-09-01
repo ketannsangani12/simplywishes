@@ -31,26 +31,55 @@ class DonationController extends Controller
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $filename = Str::uuid()->toString() . '.' . $extension;
 
-        $candidateDirectories = [
-            base_path('../public_html/uploads/donations'),
-            public_path('uploads/donations'),
-        ];
-
-        $uploadDirectory = null;
-        foreach ($candidateDirectories as $directory) {
-            $parentDirectory = dirname($directory);
-            if (is_dir($directory) || is_dir($parentDirectory)) {
-                $uploadDirectory = $directory;
-                break;
-            }
-        }
-
-        $uploadDirectory ??= public_path('uploads/donations');
-
+        // Always public_path(): uploadedImage() below only ever looks for
+        // the file there, so writing it anywhere else means it can never be
+        // found again regardless of what URL points at it.
+        $uploadDirectory = public_path('uploads/donations');
         File::ensureDirectoryExists($uploadDirectory);
         $file->move($uploadDirectory, $filename);
 
         return 'uploads/donations/' . $filename;
+    }
+
+    /**
+     * Stream a default donation image back through Laravel rather than
+     * relying on the web server to serve public/images/wishes-default/
+     * directly (donations reuse the same default image set as wishes — see
+     * the picker in create-donation.blade.php). See
+     * WishController::defaultImage() for why this goes through PHP.
+     */
+    public function defaultImage(string $filename): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        if (str_contains($filename, '/') || str_contains($filename, '..')) {
+            abort(404);
+        }
+
+        $path = public_path('images/wishes-default/' . $filename);
+
+        if (! is_file($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
+    }
+
+    /**
+     * Stream a user-uploaded donation image back through Laravel, for the
+     * same reason as defaultImage() above.
+     */
+    public function uploadedImage(string $filename): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        if (str_contains($filename, '/') || str_contains($filename, '..')) {
+            abort(404);
+        }
+
+        $path = public_path('uploads/donations/' . $filename);
+
+        if (! is_file($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
     }
 
     public function create(): View
@@ -181,7 +210,7 @@ class DonationController extends Controller
         );
 
         return redirect()
-            ->route('wishes.active')
+            ->route('donations.show', $donation->id)
             ->with('status', 'Donation reported successfully.');
     }
 
@@ -215,7 +244,8 @@ class DonationController extends Controller
 
         return redirect()
             ->route('donations.show', $donation->id)
-            ->with('status', 'Comment posted successfully.');
+            ->with('comment_status', 'Comment posted successfully.')
+            ->withFragment('comments');
     }
 
     public function destroyComment(int $donation, int $comment): RedirectResponse
@@ -241,7 +271,8 @@ class DonationController extends Controller
 
         return redirect()
             ->route('donations.show', $donation->id)
-            ->with('status', 'Comment deleted successfully.');
+            ->with('comment_status', 'Comment deleted successfully.')
+            ->withFragment('comments');
     }
 
     public function updateComment(Request $request, int $donation, int $comment): RedirectResponse
@@ -268,7 +299,8 @@ class DonationController extends Controller
 
         return redirect()
             ->route('donations.show', $donation->id)
-            ->with('status', 'Comment updated successfully.');
+            ->with('comment_status', 'Comment updated successfully.')
+            ->withFragment('comments');
     }
 
     public function toggleCommentLike(int $donation, int $comment): RedirectResponse
@@ -298,7 +330,7 @@ class DonationController extends Controller
             ]);
         }
 
-        return redirect()->route('donations.show', $donation->id);
+        return redirect()->route('donations.show', $donation->id)->withFragment('comments');
     }
 
     public function reportComment(Request $request, int $donation, int $comment): RedirectResponse
@@ -317,7 +349,8 @@ class DonationController extends Controller
         if ((int) $comment->user_id === (int) Auth::id()) {
             return redirect()
                 ->route('donations.show', $donation->id)
-                ->with('status', 'You cannot report your own comment.');
+                ->with('comment_status', 'You cannot report your own comment.')
+                ->withFragment('comments');
         }
 
         DB::table('reports')->updateOrInsert(
@@ -337,7 +370,8 @@ class DonationController extends Controller
 
         return redirect()
             ->route('donations.show', $donation->id)
-            ->with('status', 'Comment reported successfully.');
+            ->with('comment_status', 'Comment reported successfully.')
+            ->withFragment('comments');
     }
 
     public function store(Request $request): RedirectResponse
@@ -413,7 +447,10 @@ class DonationController extends Controller
         }
 
         return redirect()
-            ->route($isDraft ? 'donations.drafts' : 'donations.show', $isDraft ? [] : ['donation' => $donation->id])
+            ->route(
+                $isDraft ? 'donations.drafts' : 'donations.show',
+                $isDraft ? [] : ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'current-donations']
+            )
             ->with('status', $isDraft ? 'Your donation draft has been saved.' : 'Your donation has been created successfully.');
     }
 
@@ -494,9 +531,23 @@ class DonationController extends Controller
             $donation->forceFill(['donation_email_status' => 1])->save();
         }
 
+        if ($isDraft) {
+            return redirect()
+                ->route('donations.drafts')
+                ->with('status', 'Your donation draft has been updated.');
+        }
+
+        // See WishController::update() for why: land back on the donation's
+        // own page like a fresh submission does, carrying forward whatever
+        // source/source_tab the edit form was opened with so the Back arrow
+        // still points wherever the user actually started from.
         return redirect()
-            ->route($isDraft ? 'donations.drafts' : 'my.wishes')
-            ->with('status', $isDraft ? 'Your donation draft has been updated.' : 'Your donation has been updated.');
+            ->route('donations.show', [
+                'donation' => $donation->id,
+                'source' => $request->input('source') ?: 'active',
+                'source_tab' => $request->input('source_tab') ?: 'current-donations',
+            ])
+            ->with('status', 'Your donation has been updated.');
     }
 
     public function destroy(Request $request, int $donation): RedirectResponse

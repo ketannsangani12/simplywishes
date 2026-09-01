@@ -21,13 +21,11 @@
       return filter_var($user->profile_image, FILTER_VALIDATE_URL) ? $user->profile_image : asset($user->profile_image);
   };
 
-  $wishImage = fn ($wish) => $wish->primary_image
-      ? (filter_var($wish->primary_image, FILTER_VALIDATE_URL) ? $wish->primary_image : asset($wish->primary_image))
-      : 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
+  $wishImage = fn ($wish) => $wish->imageUrl()
+      ?: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
 
-  $donationImage = fn ($donation) => $donation->image
-      ? (filter_var($donation->image, FILTER_VALIDATE_URL) ? $donation->image : asset($donation->image))
-      : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
+  $donationImage = fn ($donation) => $donation->imageUrl()
+      ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
 
   $storyImage = fn ($story) => $story->imageUrl()
       ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=900&q=80';

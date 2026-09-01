@@ -22,7 +22,7 @@
                 <article class="bg-surface-light rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                   <div class="relative">
                     @php
-                      $image = $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
+                      $image = $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
                     @endphp
                     <img alt="Donation image" class="w-full aspect-[4/3] object-cover" src="{{ $image }}" />
                     <span class="absolute top-3 left-3 inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 shadow-sm">

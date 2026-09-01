@@ -82,16 +82,16 @@
                 $avatar = $userAvatar($user, $name);
                 $count = (int) ($user->items_count ?? 0);
               @endphp
-              <article class="rounded-2xl border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark shadow-sm p-5 flex items-center gap-4">
+              <a href="{{ route('members.show', $user->id) }}" class="rounded-2xl border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark shadow-sm p-5 flex items-center gap-4 transition hover:shadow-md hover:border-primary/60">
                 <img src="{{ $avatar }}" alt="{{ $name }}" class="h-16 w-16 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
                 <div class="min-w-0 flex-1">
-                  <h3 class="font-semibold text-text-light dark:text-text-dark truncate">{{ $name }}</h3>
+                  <h3 class="font-semibold text-text-light dark:text-text-dark truncate hover:underline">{{ $name }}</h3>
                   <div class="mt-2 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                     <span>{{ $count }}</span>
                     <span>{{ ($tab ?? 'wishers') === 'wishers' ? 'wishes created' : (($tab ?? 'wishers') === 'granters' ? 'wishes granted' : 'donations created') }}</span>
                   </div>
                 </div>
-              </article>
+              </a>
             @endforeach
           </div>
         @endif
