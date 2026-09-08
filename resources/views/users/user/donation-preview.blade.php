@@ -35,10 +35,10 @@
     <div class="max-w-5xl mx-auto bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60 overflow-hidden">
       <div class="p-6 sm:p-8 border-b border-border-light dark:border-border-dark bg-slate-50/60 dark:bg-background-dark/60">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue-light dark:text-brand-blue-dark break-words">
+          <h1 class="min-w-0 flex-1 text-2xl sm:text-3xl font-bold text-brand-blue-light dark:text-brand-blue-dark break-words">
             {{ $donation->title ?: 'Untitled donation' }}
           </h1>
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
             @if((int) ($donation->created_by ?? 0) === (int) auth()->id() && in_array((int) $donation->status, [0, 1], true))
               <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('donations.edit', ['donation' => $donation->id, 'source' => $source, 'source_tab' => $sourceTab]) }}">
                 <span class="material-icons !text-base">edit</span>
@@ -148,23 +148,15 @@
             @endif
 
             @if(!$isCreator && $isPublished)
-              @if($isFinancial)
-                <form action="{{ route('donations.accept', $donation->id) }}" method="POST">
-                  @csrf
-                  <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-emerald-600 text-white font-semibold shadow hover:bg-emerald-700 transition" type="submit">
-                    <span class="material-icons !text-base">volunteer_activism</span>
-                    Accept This Donation
-                  </button>
-                </form>
-              @else
-                <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-emerald-600 text-white font-semibold shadow hover:bg-emerald-700 transition js-open-non-financial-accept" type="button">
-                  <span class="material-icons !text-base">volunteer_activism</span>
-                  Accept This Donation
-                </button>
-              @endif
+              <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-emerald-600 text-white font-semibold shadow hover:bg-emerald-700 transition js-open-accept-modal" type="button">
+                <span class="material-icons !text-base">volunteer_activism</span>
+                Accept This Donation
+              </button>
             @elseif($isCreator && $isInProgress)
               <form action="{{ route('donations.complete', $donation->id) }}" method="POST">
                 @csrf
+                <input type="hidden" name="source" value="{{ $source }}" />
+                <input type="hidden" name="source_tab" value="{{ $sourceTab }}" />
                 <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-brand-blue-light text-white font-semibold shadow hover:opacity-90 transition" type="submit" onclick="return confirm('Mark this donation as completed?');">
                   <span class="material-icons !text-base">task_alt</span>
                   Complete Donation
@@ -418,40 +410,56 @@
   </section>
 </main>
 
-@if(!$isCreator && $isPublished && !$isFinancial)
-  <div class="fixed inset-0 z-50 hidden js-non-financial-modal" aria-hidden="true">
-    <div class="absolute inset-0 bg-slate-900/50 js-close-non-financial-modal"></div>
-    <div class="relative flex min-h-full items-center justify-center p-4">
-      <div class="w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h2 class="text-2xl font-semibold text-slate-900">Non-financial</h2>
-          <button class="text-slate-400 transition hover:text-slate-600 js-close-non-financial-modal" type="button" aria-label="Close">
-            <span class="material-icons">close</span>
+@if(!$isCreator && $isPublished)
+  <div class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4 js-accept-modal" aria-hidden="true">
+    <div class="absolute inset-0 js-close-accept-modal"></div>
+    <div class="relative w-full max-w-md rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-surface-dark shadow-xl">
+      <form action="{{ route('donations.accept', $donation->id) }}" method="POST" class="p-6 space-y-4">
+        @csrf
+        <input type="hidden" name="source" value="{{ $source }}" />
+        <input type="hidden" name="source_tab" value="{{ $sourceTab }}" />
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3">
+            <span class="material-icons text-primary text-2xl">volunteer_activism</span>
+            <div>
+              <h2 class="text-lg font-semibold text-text-light dark:text-text-dark">{{ $isFinancial ? 'Financial' : 'Non-Financial' }} donation — confirm before accepting</h2>
+              @if($isFinancial)
+                <p class="mt-1 text-sm text-text-muted-light dark:text-text-muted-dark">
+                  The donor would like to receive payment via
+                  <span class="font-semibold text-text-light dark:text-text-dark">{{ \Illuminate\Support\Str::headline($donation->financial_assistance ?: 'the method they specified') }}</span>
+                  @if($donation->show_mail)
+                    — contact: <span class="font-semibold text-text-light dark:text-text-dark">{{ $donation->show_mail }}</span>
+                  @endif
+                </p>
+              @else
+                <p class="mt-1 text-sm text-text-muted-light dark:text-text-muted-dark">
+                  Accept this donation via
+                  <span class="font-semibold text-text-light dark:text-text-dark">{{ $deliveryTypeLabel }}</span>
+                  @if($donation->description_of_way)
+                    : <span class="font-semibold text-text-light dark:text-text-dark">{{ $donation->description_of_way }}</span>
+                  @endif
+                </p>
+              @endif
+            </div>
+          </div>
+          <button class="shrink-0 text-text-muted-light hover:text-text-light dark:hover:text-text-dark transition js-close-accept-modal" type="button" aria-label="Close">
+            <span class="material-icons text-xl">close</span>
           </button>
         </div>
-        <form action="{{ route('donations.accept', $donation->id) }}" method="POST" class="flex min-h-[32rem] flex-col">
-          @csrf
-          <div class="flex-1 space-y-6 px-6 py-5 text-slate-800">
-            <div class="text-2xl font-medium text-amber-500">Accept this donation via the chosen delivery type(s): "{{ $deliveryTypeLabel }}"</div>
-            @if($donation->description_of_way)
-              <div class="text-lg">
-                <span class="font-semibold">{{ $donation->description_of_way }}</span>
-              </div>
-            @endif
-            <label class="flex items-start gap-3 text-[1.05rem] leading-8">
-              <input class="mt-2 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary js-non-financial-agreement" type="checkbox" name="non_financial_agreement" value="1" />
-              <span>I agree to accept this donation in the manner specified by the donor and within 10 days of the date that I accept it. In the meanwhile, this donation will be marked as "In Progress" and after 10 days, it will be marked as "Fulfilled". The donor should update or re-submit their donation if it has not been fulfilled after 10 days.</span>
-            </label>
-            @error('non_financial_agreement')
-              <p class="text-sm font-medium text-red-600">{{ $message }}</p>
-            @enderror
-          </div>
-          <div class="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">
-            <button class="rounded-md border border-slate-300 px-4 py-2 text-base text-slate-700 transition hover:bg-slate-50 js-close-non-financial-modal" type="button">Cancel</button>
-            <button class="rounded-md bg-blue-600 px-5 py-2 text-base font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 js-non-financial-submit" type="submit" disabled>Submit</button>
-          </div>
-        </form>
-      </div>
+
+        <label class="flex items-start gap-2.5 text-sm text-text-light dark:text-text-dark leading-relaxed">
+          <input class="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-primary focus:ring-primary js-accept-agreement" type="checkbox" name="non_financial_agreement" value="1" />
+          <span>I agree that the donor will have 14 days to fulfill this donation before it's considered granted. In the meantime, it will be marked as "In Progress" and after 14 days, it will be marked as "Fulfilled". If the donation has not been fulfilled after 14 days, the donor may re-submit it to our website. In addition, any financial transaction arranged with the donor must happen outside of the realm of SimplyWishes.</span>
+        </label>
+        @error('non_financial_agreement')
+          <p class="text-sm font-medium text-red-600">{{ $message }}</p>
+        @enderror
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-text-light dark:text-text-dark hover:border-gray-300 transition-colors js-close-accept-modal" type="button">Cancel</button>
+          <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50 js-accept-submit" type="submit" disabled>Submit</button>
+        </div>
+      </form>
     </div>
   </div>
 @endif
@@ -555,55 +563,55 @@
 
     document.addEventListener('click', () => closeShareMenus());
 
-    const nonFinancialModal = document.querySelector('.js-non-financial-modal');
-    const openNonFinancialModalButton = document.querySelector('.js-open-non-financial-accept');
-    const nonFinancialAgreement = document.querySelector('.js-non-financial-agreement');
-    const nonFinancialSubmit = document.querySelector('.js-non-financial-submit');
+    const acceptModal = document.querySelector('.js-accept-modal');
+    const openAcceptModalButton = document.querySelector('.js-open-accept-modal');
+    const acceptAgreement = document.querySelector('.js-accept-agreement');
+    const acceptSubmit = document.querySelector('.js-accept-submit');
 
-    const toggleNonFinancialSubmit = () => {
-      if (!nonFinancialAgreement || !nonFinancialSubmit) {
+    const toggleAcceptSubmit = () => {
+      if (!acceptAgreement || !acceptSubmit) {
         return;
       }
 
-      nonFinancialSubmit.disabled = !nonFinancialAgreement.checked;
+      acceptSubmit.disabled = !acceptAgreement.checked;
     };
 
-    const closeNonFinancialModal = () => {
-      if (!nonFinancialModal) {
+    const closeAcceptModal = () => {
+      if (!acceptModal) {
         return;
       }
 
-      nonFinancialModal.classList.add('hidden');
-      nonFinancialModal.setAttribute('aria-hidden', 'true');
+      acceptModal.classList.add('hidden');
+      acceptModal.setAttribute('aria-hidden', 'true');
     };
 
-    const openNonFinancialModal = () => {
-      if (!nonFinancialModal) {
+    const openAcceptModal = () => {
+      if (!acceptModal) {
         return;
       }
 
-      nonFinancialModal.classList.remove('hidden');
-      nonFinancialModal.setAttribute('aria-hidden', 'false');
-      toggleNonFinancialSubmit();
+      acceptModal.classList.remove('hidden');
+      acceptModal.setAttribute('aria-hidden', 'false');
+      toggleAcceptSubmit();
     };
 
-    openNonFinancialModalButton?.addEventListener('click', openNonFinancialModal);
-    nonFinancialAgreement?.addEventListener('change', toggleNonFinancialSubmit);
+    openAcceptModalButton?.addEventListener('click', openAcceptModal);
+    acceptAgreement?.addEventListener('change', toggleAcceptSubmit);
 
-    document.querySelectorAll('.js-close-non-financial-modal').forEach((button) => {
-      button.addEventListener('click', closeNonFinancialModal);
+    document.querySelectorAll('.js-close-accept-modal').forEach((button) => {
+      button.addEventListener('click', closeAcceptModal);
     });
 
-    if (nonFinancialModal) {
+    if (acceptModal) {
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-          closeNonFinancialModal();
+          closeAcceptModal();
         }
       });
     }
 
     @if($errors->has('non_financial_agreement'))
-      openNonFinancialModal();
+      openAcceptModal();
     @endif
 
     document.querySelectorAll('.js-reply-toggle').forEach((button) => {

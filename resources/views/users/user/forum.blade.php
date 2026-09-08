@@ -14,7 +14,7 @@
 
     if (! $image) {
       return $post->is_video_only
-        ? 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'
+        ? 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80'
         : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1200&q=80';
     }
 
@@ -207,7 +207,7 @@
                     </div>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="thumbnail-image">Upload a Thumbnail Image for your Video <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="thumbnail-image">Upload a Thumbnail Image for your Video <span class="text-slate-500 dark:text-slate-400 font-normal">(Optional)</span></label>
                     <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="thumbnail-image" name="video_thumbnail" type="file" />
                   </div>
                   <div class="flex justify-end">

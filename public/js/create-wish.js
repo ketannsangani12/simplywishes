@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateFilled = !!dateValue;
     const dateInPast = dateFilled && isPastDate(dateValue);
     const dateOk = dateFilled && !dateInPast;
-    showError('wish-date', !dateOk, dateInPast ? 'Please choose today or a future date.' : 'Date is required.');
+    showError('wish-date', !dateOk, dateInPast ? "Please select today's date or a future date for your wish to be granted" : 'Date is required.');
     valid = valid && dateOk;
 
     const fundingOk = !!funding;

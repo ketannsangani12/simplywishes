@@ -47,10 +47,13 @@ class ForumController extends Controller
         // (e.g. "The video content field is required.") which doesn't map
         // to anything the user can see on the form.
         $validator->after(function ($validator) use ($request, $postType, $titleField, $contentField) {
+            // The video thumbnail is optional, same as the article's — leave
+            // it blank and the post falls back to a generic default image
+            // wherever a thumbnail would show, same as an article without
+            // one already does.
             $missingMandatory = ! $request->filled($titleField)
                 || ($postType === 'article' && ! $request->filled($contentField))
-                || ($postType === 'video' && ! $request->filled('video_featured_video_url') && ! $request->hasFile('video_featured_video_file'))
-                || ($postType === 'video' && ! $request->hasFile('video_thumbnail'));
+                || ($postType === 'video' && ! $request->filled('video_featured_video_url') && ! $request->hasFile('video_featured_video_file'));
 
             if ($missingMandatory) {
                 $validator->errors()->add('mandatory', 'Please complete all mandatory fields before proceeding.');

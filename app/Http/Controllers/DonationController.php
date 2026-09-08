@@ -616,13 +616,14 @@ class DonationController extends Controller
                 ->with('status', 'You cannot accept your own donation.');
         }
 
-        if ((int) $donation->non_pay_option === 1) {
-            $request->validate([
-                'non_financial_agreement' => ['accepted'],
-            ], [
-                'non_financial_agreement.accepted' => 'You must agree to the non-financial donation conditions before accepting this donation.',
-            ]);
-        }
+        // The agreement checkbox is required for both financial and
+        // non-financial donations now — same disclaimer modal, same
+        // condition, for either kind of acceptance.
+        $request->validate([
+            'non_financial_agreement' => ['accepted'],
+        ], [
+            'non_financial_agreement.accepted' => 'You must agree to the conditions before accepting this donation.',
+        ]);
 
         $donation->forceFill([
             'accepted_by' => Auth::id(),
@@ -645,12 +646,21 @@ class DonationController extends Controller
             Mail::to($donor->email)->send(new DonationAcceptedCreator($donation, $donor, $acceptor));
         }
 
+        // Carries forward whatever source/source_tab the Accept form was
+        // submitted with (see donation-preview.blade.php), so the Back
+        // arrow returns to wherever the user actually started — e.g. the
+        // Active Wishes & Donations page's Current Donations tab — instead
+        // of always falling back to its default tab.
         return redirect()
-            ->route('donations.show', $donation->id)
+            ->route('donations.show', [
+                'donation' => $donation->id,
+                'source' => $request->input('source') ?: 'active',
+                'source_tab' => $request->input('source_tab') ?: 'current-donations',
+            ])
             ->with('status', 'Donation accepted successfully. It is now in progress.');
     }
 
-    public function complete(int $donation): RedirectResponse
+    public function complete(Request $request, int $donation): RedirectResponse
     {
         $donation = Donation::where('id', $donation)
             ->where('created_by', Auth::id())
@@ -675,8 +685,16 @@ class DonationController extends Controller
             Mail::to($donor->email)->send(new DonationCreatorCompleted($donation, $donor));
         }
 
+        // Carries forward whatever source/source_tab the Complete Donation
+        // form was submitted with (see donation-preview.blade.php) — this
+        // action is only ever available on an In Progress donation, so
+        // that's the sensible fallback tab if none was given.
         return redirect()
-            ->route('donations.show', $donation->id)
+            ->route('donations.show', [
+                'donation' => $donation->id,
+                'source' => $request->input('source') ?: 'active',
+                'source_tab' => $request->input('source_tab') ?: 'in-progress',
+            ])
             ->with('status', 'Donation completed successfully.');
     }
 

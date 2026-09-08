@@ -17,6 +17,12 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 Route::get('/', [SiteController::class, 'home'])->name('home');
+// The site-wide default link-preview image (see layouts/app.blade.php's
+// og:image). Routed through PHP for the same reason as the other default
+// images below: if the web server's document root doesn't line up with
+// this Laravel install's own public/, a plain static URL to it 404s and a
+// social scraper falls back to guessing some other image off the page.
+Route::get('/images/social-share-default.png', [SiteController::class, 'socialShareImage'])->name('social.share.image');
 Route::get('/about-us', [SiteController::class, 'aboutUs'])->name('about');
 Route::get('/happy-stories', [SiteController::class, 'happyStories'])->name('happy.stories');
 Route::get('/my-happy-stories', [SiteController::class, 'myHappyStories'])->name('my.happy.stories')->middleware('auth');

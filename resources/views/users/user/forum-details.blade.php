@@ -18,7 +18,7 @@
   // exactly the bug being fixed here. Same generic fallback as the forum
   // card on the home page uses for the same case.
   $ogImageUrl = $postImage ?: ((int) $post->is_video_only === 1
-      ? 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80'
+      ? 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=80'
       : 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80');
   if (! filter_var($ogImageUrl, FILTER_VALIDATE_URL)) {
       $ogImageUrl = request()->getSchemeAndHttpHost() . $ogImageUrl;
@@ -41,13 +41,11 @@
         <h1 class="mt-4 text-2xl sm:text-4xl font-bold text-brand-blue-light dark:text-brand-blue-dark">{{ $post->e_title }}</h1>
       </div>
 
+      {{-- The thumbnail ($postImage) is deliberately not shown here — it's
+           only the preview/listing card's cover image and, for a video
+           post, the <video poster="..."> below. Once you're actually
+           reading the post, only the content itself should show. --}}
       <article class="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl shadow-sm overflow-hidden">
-        @if ($postImage)
-          <div class="relative">
-            <img alt="{{ $post->e_title }}" class="w-full max-h-[520px] object-cover" src="{{ $postImage }}" />
-          </div>
-        @endif
-
         <div class="p-6 sm:p-8 space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div class="flex items-center gap-3">
@@ -134,7 +132,11 @@
                   @endphp
                   <iframe class="w-full h-full" src="{{ $embedUrl }}" title="{{ $post->e_title }}" allowfullscreen></iframe>
                 @else
-                  <video class="w-full h-full bg-black" controls @if ($postImage) poster="{{ $postImage }}" @endif>
+                  {{-- Falls back to the same generic thumbnail the listing
+                       card and link previews use when no custom thumbnail
+                       was uploaded, so a video without one still gets a
+                       poster instead of a blank black box. --}}
+                  <video class="w-full h-full bg-black" controls poster="{{ $ogImageUrl }}">
                     <source src="{{ $postVideoUrl }}" />
                   </video>
                 @endif

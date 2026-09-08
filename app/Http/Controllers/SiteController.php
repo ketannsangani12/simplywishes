@@ -504,6 +504,28 @@ class SiteController extends Controller
      * only depends on PHP/Laravel routing (already working, or none of this
      * app would work), not on the web server's static file document root.
      */
+    /**
+     * The site-wide default link-preview image (layouts/app.blade.php's
+     * og:image fallback for any page that doesn't set its own). See
+     * defaultHappyStoryImage() below for why this goes through PHP rather
+     * than a plain static URL.
+     */
+    public function socialShareImage(): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $candidates = [
+            public_path('images/social-share-default.png'),
+            base_path('../public_html/images/social-share-default.png'),
+        ];
+
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return response()->file($path);
+            }
+        }
+
+        abort(404);
+    }
+
     public function defaultHappyStoryImage(string $filename): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         if (str_contains($filename, '/') || str_contains($filename, '..')) {

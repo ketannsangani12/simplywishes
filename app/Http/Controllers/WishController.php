@@ -151,7 +151,9 @@ class WishController extends Controller
             'i_agree_decide' => ['accepted'],
         ];
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'wish_date.after_or_equal' => "Please select today's date or a future date for your wish to be granted",
+        ]);
 
         $primaryImage = null;
         if ($request->hasFile('wish_image_upload')) {
@@ -248,7 +250,7 @@ class WishController extends Controller
                     'type' => 'wish',
                     'id' => $wish->w_id,
                     'title' => $wish->wish_title ?: 'Untitled wish',
-                    'image' => $wish->primary_image ? asset($wish->primary_image) : 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
+                    'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
                     'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'most-popular']),
                     'creator_id' => $wish->wished_by,
                     'like_count' => (int) ($wishLikeCounts[$wish->w_id] ?? 0),
@@ -265,7 +267,7 @@ class WishController extends Controller
                     'type' => 'donation',
                     'id' => $donation->id,
                     'title' => $donation->title ?: 'Untitled donation',
-                    'image' => $donation->image ? asset($donation->image) : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',
+                    'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',
                     'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'most-popular']),
                     'creator_id' => $donation->created_by,
                     'like_count' => (int) ($donationLikeCounts[$donation->id] ?? 0),
@@ -662,7 +664,9 @@ class WishController extends Controller
             'i_agree_decide' => ['accepted'],
         ];
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'wish_date.after_or_equal' => "Please select today's date or a future date for your wish to be granted",
+        ]);
 
         $primaryImage = $wish->primary_image;
         if ($request->hasFile('wish_image_upload')) {
@@ -773,13 +777,14 @@ class WishController extends Controller
                 ->with('status', 'You cannot grant your own wish.');
         }
 
-        if ((int) $wish->non_pay_option === 1) {
-            $request->validate([
-                'non_financial_agreement' => ['accepted'],
-            ], [
-                'non_financial_agreement.accepted' => 'You must agree to the non-financial wish conditions before granting this wish.',
-            ]);
-        }
+        // The agreement checkbox is required for both financial and
+        // non-financial wishes now — same disclaimer modal, same condition,
+        // for either kind of grant.
+        $request->validate([
+            'non_financial_agreement' => ['accepted'],
+        ], [
+            'non_financial_agreement.accepted' => 'You must agree to the conditions before granting this wish.',
+        ]);
 
         $timestamp = now()->format('Y-m-d H:i:s');
 
@@ -801,12 +806,21 @@ class WishController extends Controller
             Mail::to($grantor->email)->send(new WishGrantorConfirmation($wish, $creator, $grantor));
         }
 
+        // Carries forward whatever source/source_tab the Grant form was
+        // submitted with (see wish-preview.blade.php), so the Back arrow
+        // returns to wherever the user actually started — e.g. the Active
+        // Wishes & Donations page's Current Wishes tab — instead of always
+        // falling back to its default tab.
         return redirect()
-            ->route('wishes.show', $wish->w_id)
+            ->route('wishes.show', [
+                'wish' => $wish->w_id,
+                'source' => $request->input('source') ?: 'active',
+                'source_tab' => $request->input('source_tab') ?: 'current-wishes',
+            ])
             ->with('status', 'Wish granted successfully. It is now in progress.');
     }
 
-    public function fulfill(int $wish): RedirectResponse
+    public function fulfill(Request $request, int $wish): RedirectResponse
     {
         $wish = Wish::where('w_id', $wish)
             ->where('wished_by', Auth::id())
@@ -831,8 +845,16 @@ class WishController extends Controller
             Mail::to($grantor->email)->send(new WishGrantorFulfilled($wish, $grantor));
         }
 
+        // Carries forward whatever source/source_tab the Fulfilled form was
+        // submitted with (see wish-preview.blade.php) — this action is only
+        // ever available on an In Progress wish, so that's the sensible
+        // fallback tab if none was given.
         return redirect()
-            ->route('wishes.show', $wish->w_id)
+            ->route('wishes.show', [
+                'wish' => $wish->w_id,
+                'source' => $request->input('source') ?: 'active',
+                'source_tab' => $request->input('source_tab') ?: 'in-progress',
+            ])
             ->with('status', 'Wish fulfilled successfully. It is now granted.');
     }
 

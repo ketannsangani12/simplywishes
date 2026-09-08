@@ -35,10 +35,10 @@
     <div class="max-w-5xl mx-auto bg-surface-light dark:bg-surface-dark rounded-xl shadow-xl border border-border-light dark:border-border-dark/60 overflow-hidden">
       <div class="p-6 sm:p-8 border-b border-border-light dark:border-border-dark bg-slate-50/60 dark:bg-background-dark/60">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue-light dark:text-brand-blue-dark break-words">
+          <h1 class="min-w-0 flex-1 text-2xl sm:text-3xl font-bold text-brand-blue-light dark:text-brand-blue-dark break-words">
             {{ $wish->wish_title ?: 'Untitled wish' }}
           </h1>
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
             @if((int) ($wish->wished_by ?? 0) === (int) auth()->id() && (int) ($wish->wish_progress_status ?? 0) === 0)
               <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('wishes.edit', ['wish' => $wish->w_id, 'source' => $source, 'source_tab' => $sourceTab]) }}">
                 <span class="material-icons !text-base">edit</span>
@@ -152,23 +152,15 @@
             @endif
 
             @if(!$isCreator && $isCurrent)
-              @if($isFinancial)
-                <form action="{{ route('wishes.grant', $wish->w_id) }}" method="POST">
-                  @csrf
-                  <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-emerald-600 text-white font-semibold shadow hover:bg-emerald-700 transition" type="submit">
-                    <span class="material-icons !text-base">volunteer_activism</span>
-                    Grant This Wish
-                  </button>
-                </form>
-              @else
-                <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-emerald-600 text-white font-semibold shadow hover:bg-emerald-700 transition js-open-non-financial-grant" type="button">
-                  <span class="material-icons !text-base">volunteer_activism</span>
-                  Grant This Wish
-                </button>
-              @endif
+              <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-emerald-600 text-white font-semibold shadow hover:bg-emerald-700 transition js-open-grant-modal" type="button">
+                <span class="material-icons !text-base">volunteer_activism</span>
+                Grant This Wish
+              </button>
             @elseif($isCreator && $isInProgress)
               <form action="{{ route('wishes.fulfill', $wish->w_id) }}" method="POST">
                 @csrf
+                <input type="hidden" name="source" value="{{ $source }}" />
+                <input type="hidden" name="source_tab" value="{{ $sourceTab }}" />
                 <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-brand-blue-light text-white font-semibold shadow hover:opacity-90 transition" type="submit" onclick="return confirm('Are You Sure Your Wish Has been Fulfilled?');">
                   <span class="material-icons !text-base">task_alt</span>
                   Fulfilled
@@ -425,41 +417,56 @@
   </section>
 </main>
 
-@if(!$isCreator && $isCurrent && !$isFinancial)
-  <div class="fixed inset-0 z-50 hidden js-non-financial-modal" aria-hidden="true">
-    <div class="absolute inset-0 bg-slate-900/50 js-close-non-financial-modal"></div>
-    <div class="relative flex min-h-full items-center justify-center p-4">
-      <div class="w-full max-w-2xl overflow-hidden rounded-xl bg-white shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h2 class="text-2xl font-semibold text-slate-900">Non-financial</h2>
-          <button class="text-slate-400 transition hover:text-slate-600 js-close-non-financial-modal" type="button" aria-label="Close">
-            <span class="material-icons">close</span>
-          </button>
-        </div>
-        <form action="{{ route('wishes.grant', $wish->w_id) }}" method="POST" class="flex min-h-[32rem] flex-col">
-          @csrf
-          <div class="flex-1 space-y-6 px-6 py-5 text-slate-800">
-            <div class="text-2xl font-medium text-amber-500">“ Wisher would like to receive this wish via ”</div>
-            <div class="text-lg">
-              <span class="font-medium">{{ $deliveryTypeLabel }}</span>
-              @if($wish->description_of_way)
-                <span>: <span class="font-semibold">{{ $wish->description_of_way }}</span></span>
+@if(!$isCreator && $isCurrent)
+  <div class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4 js-grant-modal" aria-hidden="true">
+    <div class="absolute inset-0 js-close-grant-modal"></div>
+    <div class="relative w-full max-w-md rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-surface-dark shadow-xl">
+      <form action="{{ route('wishes.grant', $wish->w_id) }}" method="POST" class="p-6 space-y-4">
+        @csrf
+        <input type="hidden" name="source" value="{{ $source }}" />
+        <input type="hidden" name="source_tab" value="{{ $sourceTab }}" />
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3">
+            <span class="material-icons text-primary text-2xl">volunteer_activism</span>
+            <div>
+              <h2 class="text-lg font-semibold text-text-light dark:text-text-dark">{{ $isFinancial ? 'Financial' : 'Non-Financial' }} wish — confirm before granting</h2>
+              @if($isFinancial)
+                <p class="mt-1 text-sm text-text-muted-light dark:text-text-muted-dark">
+                  The wisher would like to receive payment via
+                  <span class="font-semibold text-text-light dark:text-text-dark">{{ \Illuminate\Support\Str::headline($wish->financial_assistance ?: 'the method they specified') }}</span>
+                  @if($wish->show_mail)
+                    — contact: <span class="font-semibold text-text-light dark:text-text-dark">{{ $wish->show_mail }}</span>
+                  @endif
+                </p>
+              @else
+                <p class="mt-1 text-sm text-text-muted-light dark:text-text-muted-dark">
+                  The wisher would like to receive this wish via
+                  <span class="font-semibold text-text-light dark:text-text-dark">{{ $deliveryTypeLabel }}</span>
+                  @if($wish->description_of_way)
+                    : <span class="font-semibold text-text-light dark:text-text-dark">{{ $wish->description_of_way }}</span>
+                  @endif
+                </p>
               @endif
             </div>
-            <label class="flex items-start gap-3 text-[1.05rem] leading-8">
-              <input class="mt-2 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary js-non-financial-agreement" type="checkbox" name="non_financial_agreement" value="1" />
-              <span>I agree to fulfill this wish in the manner specified by the wisher and within one month of the date I accept it as a grantor. In the meanwhile, this wish will be marked as "In Progress" and after one month, it will be marked as "Fulfilled". The Wisher should update or resubmit their wish if it has not been fulfilled after one month.</span>
-            </label>
-            @error('non_financial_agreement')
-              <p class="text-sm font-medium text-red-600">{{ $message }}</p>
-            @enderror
           </div>
-          <div class="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">
-            <button class="rounded-md border border-slate-300 px-4 py-2 text-base text-slate-700 transition hover:bg-slate-50 js-close-non-financial-modal" type="button">Cancel</button>
-            <button class="rounded-md bg-blue-600 px-5 py-2 text-base font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 js-non-financial-submit" type="submit" disabled>Submit</button>
-          </div>
-        </form>
-      </div>
+          <button class="shrink-0 text-text-muted-light hover:text-text-light dark:hover:text-text-dark transition js-close-grant-modal" type="button" aria-label="Close">
+            <span class="material-icons text-xl">close</span>
+          </button>
+        </div>
+
+        <label class="flex items-start gap-2.5 text-sm text-text-light dark:text-text-dark leading-relaxed">
+          <input class="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-primary focus:ring-primary js-grant-agreement" type="checkbox" name="non_financial_agreement" value="1" />
+          <span>In accepting to grant this Wish, I agree to work with the Wisher to fulfill their Wish within 14 days, during which time this Wish will be marked as In Progress. After 14 days, it will be marked as Fulfilled.</span>
+        </label>
+        @error('non_financial_agreement')
+          <p class="text-sm font-medium text-red-600">{{ $message }}</p>
+        @enderror
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-text-light dark:text-text-dark hover:border-gray-300 transition-colors js-close-grant-modal" type="button">Cancel</button>
+          <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50 js-grant-submit" type="submit" disabled>Submit</button>
+        </div>
+      </form>
     </div>
   </div>
 @endif
@@ -563,55 +570,55 @@
 
     document.addEventListener('click', () => closeShareMenus());
 
-    const nonFinancialModal = document.querySelector('.js-non-financial-modal');
-    const openNonFinancialModalButton = document.querySelector('.js-open-non-financial-grant');
-    const nonFinancialAgreement = document.querySelector('.js-non-financial-agreement');
-    const nonFinancialSubmit = document.querySelector('.js-non-financial-submit');
+    const grantModal = document.querySelector('.js-grant-modal');
+    const openGrantModalButton = document.querySelector('.js-open-grant-modal');
+    const grantAgreement = document.querySelector('.js-grant-agreement');
+    const grantSubmit = document.querySelector('.js-grant-submit');
 
-    const toggleNonFinancialSubmit = () => {
-      if (!nonFinancialAgreement || !nonFinancialSubmit) {
+    const toggleGrantSubmit = () => {
+      if (!grantAgreement || !grantSubmit) {
         return;
       }
 
-      nonFinancialSubmit.disabled = !nonFinancialAgreement.checked;
+      grantSubmit.disabled = !grantAgreement.checked;
     };
 
-    const closeNonFinancialModal = () => {
-      if (!nonFinancialModal) {
+    const closeGrantModal = () => {
+      if (!grantModal) {
         return;
       }
 
-      nonFinancialModal.classList.add('hidden');
-      nonFinancialModal.setAttribute('aria-hidden', 'true');
+      grantModal.classList.add('hidden');
+      grantModal.setAttribute('aria-hidden', 'true');
     };
 
-    const openNonFinancialModal = () => {
-      if (!nonFinancialModal) {
+    const openGrantModal = () => {
+      if (!grantModal) {
         return;
       }
 
-      nonFinancialModal.classList.remove('hidden');
-      nonFinancialModal.setAttribute('aria-hidden', 'false');
-      toggleNonFinancialSubmit();
+      grantModal.classList.remove('hidden');
+      grantModal.setAttribute('aria-hidden', 'false');
+      toggleGrantSubmit();
     };
 
-    openNonFinancialModalButton?.addEventListener('click', openNonFinancialModal);
-    nonFinancialAgreement?.addEventListener('change', toggleNonFinancialSubmit);
+    openGrantModalButton?.addEventListener('click', openGrantModal);
+    grantAgreement?.addEventListener('change', toggleGrantSubmit);
 
-    document.querySelectorAll('.js-close-non-financial-modal').forEach((button) => {
-      button.addEventListener('click', closeNonFinancialModal);
+    document.querySelectorAll('.js-close-grant-modal').forEach((button) => {
+      button.addEventListener('click', closeGrantModal);
     });
 
-    if (nonFinancialModal) {
+    if (grantModal) {
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-          closeNonFinancialModal();
+          closeGrantModal();
         }
       });
     }
 
     @if($errors->has('non_financial_agreement'))
-      openNonFinancialModal();
+      openGrantModal();
     @endif
 
     document.querySelectorAll('.js-reply-toggle').forEach((button) => {

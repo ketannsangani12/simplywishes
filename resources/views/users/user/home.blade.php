@@ -35,7 +35,7 @@
 
       if (! $image) {
           return $post->is_video_only
-              ? 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80'
+              ? 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=80'
               : 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80';
       }
 
@@ -172,11 +172,17 @@
 
                 $authorName = $personName($author, $isForum ? 'Forum Member' : 'Member');
                 $authorAvatar = $personAvatar($author, $authorName);
+                // source/source_tab thread through to the wish/donation
+                // detail page's own Back arrow, so it returns to whichever
+                // section of the Active Wishes & Donations page mirrors
+                // where the user actually started (Current Wishes, Current
+                // Donations, or Granted) instead of always landing on the
+                // page's default first tab.
                 $link = match (true) {
-                    $isWish => route('wishes.show', $item->w_id),
-                    $isDonation => route('donations.show', $item->id),
-                    $isGranted && $item instanceof \App\Models\Wish => route('wishes.show', $item->w_id),
-                    $isGranted && $item instanceof \App\Models\Donation => route('donations.show', $item->id),
+                    $isWish => route('wishes.show', ['wish' => $item->w_id, 'source' => 'active', 'source_tab' => 'current-wishes']),
+                    $isDonation => route('donations.show', ['donation' => $item->id, 'source' => 'active', 'source_tab' => 'current-donations']),
+                    $isGranted && $item instanceof \App\Models\Wish => route('wishes.show', ['wish' => $item->w_id, 'source' => 'active', 'source_tab' => 'granted']),
+                    $isGranted && $item instanceof \App\Models\Donation => route('donations.show', ['donation' => $item->id, 'source' => 'active', 'source_tab' => 'granted']),
                     $isStory => route('happy.stories.show', $item->hs_id),
                     $isForum => route('forum.show', $item->e_id),
                     default => '#',
