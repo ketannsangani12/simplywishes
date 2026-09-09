@@ -2,6 +2,10 @@
 
 @section('title', 'Simply Wishes Forum')
 
+@push('head')
+  <script src="/js/forum-upload-guard.js" defer></script>
+@endpush
+
 @php
   $tabLabels = [
     'articles' => 'Articles',
@@ -145,12 +149,16 @@
                           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-video-file">Or, Upload from your Files</label>
                           <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Choose a video that you own. Do not upload any copyright images such as images from movie characters or known company products or your post could be deleted without warning.</p>
                           <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="article-video-file" name="article_featured_video_file" type="file" />
+                          <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 50MB.</p>
+                          <p class="mt-1 text-sm text-red-600 hidden" data-error-for="article-video-file"></p>
                         </div>
                       </div>
                       <div class="space-y-4">
                         <div>
                           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-video-thumbnail">Upload a Thumbnail Image for your Video related to the Article</label>
                           <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="article-video-thumbnail" name="article_thumbnail" type="file" />
+                          <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 10MB.</p>
+                          <p class="mt-1 text-sm text-red-600 hidden" data-error-for="article-video-thumbnail"></p>
                         </div>
                       </div>
                     </div>
@@ -203,12 +211,16 @@
                         <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1" for="video-file">Upload from your Files</label>
                         <p class="text-xs text-slate-500 dark:text-slate-500 mb-2">Choose a video that you own. Do not upload any copyright images such as images from movie characters or known company products or your post could be deleted without warning.</p>
                         <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="video-file" name="video_featured_video_file" type="file" />
+                        <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 50MB.</p>
+                        <p class="mt-1 text-sm text-red-600 hidden" data-error-for="video-file"></p>
                       </div>
                     </div>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="thumbnail-image">Upload a Thumbnail Image for your Video <span class="text-slate-500 dark:text-slate-400 font-normal">(Optional)</span></label>
                     <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="thumbnail-image" name="video_thumbnail" type="file" />
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 10MB.</p>
+                    <p class="mt-1 text-sm text-red-600 hidden" data-error-for="thumbnail-image"></p>
                   </div>
                   <div class="flex justify-end">
                     <button class="bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors" type="submit">Create</button>

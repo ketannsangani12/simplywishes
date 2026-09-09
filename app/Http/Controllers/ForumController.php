@@ -40,6 +40,14 @@ class ForumController extends Controller
             $videoUrlField => ['nullable', 'url', 'max:2048'],
             $videoFileField => ['nullable', 'file', 'mimes:mp4,webm,ogg,mov,m4v,avi', 'max:51200'],
             $thumbnailField => ['nullable', 'image', 'max:10240'],
+        ], [
+            // The page also checks this client-side before the upload ever
+            // starts (see public/js/forum-upload-guard.js) so a real user
+            // normally never reaches this message — it's the fallback for
+            // anyone who lands here with JavaScript disabled/blocked.
+            $videoFileField . '.max' => 'That video file is larger than the 50MB limit. Please choose a smaller file, or compress it, and try again.',
+            $videoFileField . '.mimes' => 'Please upload a video in one of these formats: MP4, WebM, OGG, MOV, M4V, or AVI.',
+            $thumbnailField . '.max' => 'That thumbnail image is larger than the 10MB limit. Please choose a smaller image.',
         ]);
 
         // A single, plain-language error covers every "you left a mandatory
@@ -123,6 +131,10 @@ class ForumController extends Controller
             $videoUrlField => ['nullable', 'url', 'max:2048'],
             $videoFileField => ['nullable', 'file', 'mimes:mp4,webm,ogg,mov,m4v,avi', 'max:51200'],
             $thumbnailField => ['nullable', 'image', 'max:10240'],
+        ], [
+            $videoFileField . '.max' => 'That video file is larger than the 50MB limit. Please choose a smaller file, or compress it, and try again.',
+            $videoFileField . '.mimes' => 'Please upload a video in one of these formats: MP4, WebM, OGG, MOV, M4V, or AVI.',
+            $thumbnailField . '.max' => 'That thumbnail image is larger than the 10MB limit. Please choose a smaller image.',
         ]);
 
         $validator->after(function ($validator) use ($request, $postType, $titleField, $contentField, $videoUrlField, $videoFileField, $post) {

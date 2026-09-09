@@ -11,6 +11,10 @@
 
 @section('title', $isVideo ? 'Edit Forum Video' : 'Edit Forum Article')
 
+@push('head')
+  <script src="/js/forum-upload-guard.js" defer></script>
+@endpush
+
 @section('content')
 <main class="flex-grow bg-gradient-to-b from-white via-white to-slate-50 dark:from-background-dark dark:via-background-dark dark:to-background-dark">
   <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
@@ -58,6 +62,8 @@
                 <div>
                   <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1" for="video-file">Replace video file</label>
                   <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="video-file" name="video_featured_video_file" type="file" />
+                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 50MB.</p>
+                  <p class="mt-1 text-sm text-red-600 hidden" data-error-for="video-file"></p>
                   @if ($uploadedVideoUrl)
                     <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Current uploaded video is attached to this post.</p>
                   @endif
@@ -67,6 +73,8 @@
                 <div>
                   <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="thumbnail-image">Replace thumbnail image</label>
                   <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="thumbnail-image" name="video_thumbnail" type="file" />
+                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 10MB.</p>
+                  <p class="mt-1 text-sm text-red-600 hidden" data-error-for="thumbnail-image"></p>
                 </div>
                 @if ($thumbnailUrl)
                   <div>
@@ -94,12 +102,16 @@
                 <div>
                   <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-video-file">Replace video file</label>
                   <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="article-video-file" name="article_featured_video_file" type="file" />
+                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 50MB.</p>
+                  <p class="mt-1 text-sm text-red-600 hidden" data-error-for="article-video-file"></p>
                 </div>
               </div>
               <div class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-video-thumbnail">Replace thumbnail image</label>
                   <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="article-video-thumbnail" name="article_thumbnail" type="file" />
+                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 10MB.</p>
+                  <p class="mt-1 text-sm text-red-600 hidden" data-error-for="article-video-thumbnail"></p>
                 </div>
                 @if ($thumbnailUrl)
                   <div>
