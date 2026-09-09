@@ -81,10 +81,10 @@ No popular wishes or donations yet.
 </div>
 <div class="p-4 space-y-3">
 <div class="flex items-center justify-between gap-3">
-<a href="{{ $item['link'] }}" class="block hover:underline">
+<a href="{{ $item['link'] }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $item['title'] }}</h3>
 </a>
-<span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600">
+<span class="shrink-0 whitespace-nowrap inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600">
 {{ $item['like_count'] }} {{ \Illuminate\Support\Str::plural('Like', $item['like_count']) }}
 </span>
 </div>
@@ -148,10 +148,10 @@ No granted wishes or donations yet.
 </div>
 <div class="p-4 space-y-3">
 <div class="flex items-center justify-between mb-2">
-<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="block hover:underline">
+<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $wish->wish_title ?: 'Untitled wish' }}</h3>
 </a>
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Granted</span>
+<span class="shrink-0 whitespace-nowrap inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Granted</span>
 </div>
 @php
   $creator = $userMap[$wish->wished_by] ?? null;
@@ -209,10 +209,10 @@ No granted wishes or donations yet.
 </div>
 <div class="p-4 space-y-3">
 <div class="flex items-center justify-between mb-2">
-<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="block hover:underline">
+<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $donation->title ?: 'Untitled donation' }}</h3>
 </a>
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Granted</span>
+<span class="shrink-0 whitespace-nowrap inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Granted</span>
 </div>
 @php
   $creator = $userMap[$donation->created_by] ?? null;
@@ -280,10 +280,10 @@ No in-progress wishes or donations yet.
 </div>
 <div class="p-4 space-y-3">
 <div class="flex items-center justify-between mb-2">
-<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="block hover:underline">
+<a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $wish->wish_title ?: 'Untitled wish' }}</h3>
 </a>
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">In Progress</span>
+<span class="shrink-0 whitespace-nowrap inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">In Progress</span>
 </div>
 @php
   $creator = $userMap[$wish->wished_by] ?? null;
@@ -341,10 +341,10 @@ No in-progress wishes or donations yet.
 </div>
 <div class="p-4 space-y-3">
 <div class="flex items-center justify-between mb-2">
-<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="block hover:underline">
+<a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $donation->title ?: 'Untitled donation' }}</h3>
 </a>
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">In Progress</span>
+<span class="shrink-0 whitespace-nowrap inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">In Progress</span>
 </div>
 @php
   $creator = $userMap[$donation->created_by] ?? null;
