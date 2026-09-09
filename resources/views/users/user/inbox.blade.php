@@ -587,7 +587,11 @@
     }
 
     async function deleteMessage(id) {
-      if (!window.confirm('Delete this message?')) return;
+      const confirmed = await window.confirmDialog({
+        title: 'Delete message?',
+        message: 'This message will be permanently deleted for you. This cannot be undone.',
+      });
+      if (!confirmed) return;
       try {
         const res = await fetch(`${ROUTES.conversationsBase}/${activeConversationId}/messages/${id}`, {
           method: 'DELETE',
@@ -702,7 +706,11 @@
     chatDeleteConversationBtn.addEventListener('click', async () => {
       chatOptionsMenu.classList.add('hidden');
       if (!activeConversationId) return;
-      if (!window.confirm('Delete this conversation? It will be removed from your inbox.')) return;
+      const confirmed = await window.confirmDialog({
+        title: 'Delete conversation?',
+        message: 'It will be removed from your inbox. This cannot be undone.',
+      });
+      if (!confirmed) return;
 
       const idToDelete = activeConversationId;
       try {

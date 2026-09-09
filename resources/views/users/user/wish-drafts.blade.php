@@ -53,7 +53,7 @@
                       <form action="{{ route('wishes.destroy', $wish->w_id) }}" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors" type="submit" onclick="return confirm('Delete this draft?');">
+                        <button class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors" type="button" data-confirm-delete data-confirm-title="Delete draft?" data-confirm-message="This wish draft will be permanently deleted. This cannot be undone.">
                           <span class="material-symbols-outlined text-base">delete</span>
                         </button>
                       </form>

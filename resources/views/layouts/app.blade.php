@@ -25,6 +25,7 @@
   <meta property="og:image" content="@hasSection('og_image')@yield('og_image')@else{{ request()->getSchemeAndHttpHost() . route('social.share.image', [], false) }}@endif" />
   <meta name="twitter:card" content="summary_large_image" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script src="/js/confirm-modal.js" defer></script>
   <link href="https://fonts.googleapis.com" rel="preconnect" />
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
   <link
@@ -107,6 +108,7 @@
     @yield('content')
     @include('partials.footer')
   </div>
+  @include('partials.confirm-modal')
 </body>
 
 </html>

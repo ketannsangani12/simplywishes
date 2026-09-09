@@ -68,10 +68,10 @@
                   <span class="material-icons text-base">edit</span>
                   Edit
                 </a>
-                <form action="{{ route('forum.destroy', $post->e_id) }}" method="POST" onsubmit="return confirm('Delete this forum post? This cannot be undone.')">
+                <form action="{{ route('forum.destroy', $post->e_id) }}" method="POST">
                   @csrf
                   @method('DELETE')
-                  <button type="submit" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold bg-red-50 text-red-600 hover:bg-red-100" aria-label="Delete forum">
+                  <button type="button" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold bg-red-50 text-red-600 hover:bg-red-100" aria-label="Delete forum" data-confirm-delete data-confirm-title="Delete forum post?" data-confirm-message="This post and all of its comments will be permanently deleted. This cannot be undone.">
                     <span class="material-icons text-base">delete</span>
                     Delete
                   </button>
@@ -218,7 +218,7 @@
                           <form action="{{ route('forum.comments.destroy', [$post->e_id, $comment->id]) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button class="text-text-muted-light transition hover:text-red-500" type="submit" aria-label="Delete comment" onclick="return confirm('Delete this comment?');">
+                            <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete comment" data-confirm-delete data-confirm-title="Delete comment?" data-confirm-message="This comment will be permanently deleted. This cannot be undone.">
                               <span class="material-icons !text-base">delete</span>
                             </button>
                           </form>
@@ -303,7 +303,7 @@
                                     <form action="{{ route('forum.comments.destroy', [$post->e_id, $reply->id]) }}" method="POST">
                                       @csrf
                                       @method('DELETE')
-                                      <button class="text-text-muted-light transition hover:text-red-500" type="submit" aria-label="Delete reply" onclick="return confirm('Delete this reply?');">
+                                      <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete reply" data-confirm-delete data-confirm-title="Delete reply?" data-confirm-message="This reply will be permanently deleted. This cannot be undone.">
                                         <span class="material-icons !text-base">delete</span>
                                       </button>
                                     </form>
