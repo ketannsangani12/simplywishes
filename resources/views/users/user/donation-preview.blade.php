@@ -38,13 +38,13 @@
           <h1 class="min-w-0 flex-1 text-2xl sm:text-3xl font-bold text-brand-blue-light dark:text-brand-blue-dark break-words">
             {{ $donation->title ?: 'Untitled donation' }}
           </h1>
-          <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <div class="flex flex-nowrap items-center gap-2 shrink-0 overflow-x-auto scrollbar-hide">
             @if((int) ($donation->created_by ?? 0) === (int) auth()->id() && in_array((int) $donation->status, [0, 1], true))
-              <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('donations.edit', ['donation' => $donation->id, 'source' => $source, 'source_tab' => $sourceTab]) }}">
+              <a class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('donations.edit', ['donation' => $donation->id, 'source' => $source, 'source_tab' => $sourceTab]) }}">
                 <span class="material-icons !text-base">edit</span>
                 Update
               </a>
-              <form action="{{ route('donations.destroy', $donation->id) }}" method="POST">
+              <form class="shrink-0" action="{{ route('donations.destroy', $donation->id) }}" method="POST">
                 @csrf
                 @method('DELETE')
                 <input type="hidden" name="source" value="{{ $source }}">
@@ -55,7 +55,7 @@
                 </button>
               </form>
             @endif
-            <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition" href="{{ $backUrl }}">
+            <a class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition" href="{{ $backUrl }}">
               <span class="material-icons !text-base">arrow_back</span>
               Back
             </a>
