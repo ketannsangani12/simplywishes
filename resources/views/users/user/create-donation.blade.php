@@ -218,6 +218,7 @@
                   <label id="donation-method-label" class="block text-sm font-semibold text-text-light dark:text-text-dark" for="donation-notes">Add details for your selected method <span class="text-red-500">*</span></label>
                   <textarea id="donation-notes" name="donation_notes" rows="4" placeholder="Example: I can ship within 3 days, or meet within 5 miles of downtown."
                     class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-2 focus:ring-primary/60 focus:border-primary resize-y">{{ old('donation_notes', $donation->description_of_way ?? '') }}</textarea>
+                  <p class="text-sm text-red-600 hidden" data-error-for="donation-notes">Please provide the details.</p>
                 </div>
               </div>
 

@@ -404,32 +404,34 @@ class DonationController extends Controller
                 ]);
         }
 
-        $rules = $isDraft ? [
-            'donation_title' => ['nullable', 'string', 'max:100'],
-            'donation_description' => ['nullable', 'string'],
-            'donation_funding' => ['nullable', 'in:yes,no'],
-            'donation_payment' => ['nullable', 'string', 'max:255'],
-            'expected_cost' => ['nullable', 'numeric', 'min:0'],
-            'donation_method' => ['nullable', 'string', 'max:100'],
-            'donation_notes' => ['nullable', 'string'],
-            'donation_image_upload' => ['nullable', 'required_without:donation_image_default', 'image', 'max:5120'],
-            'donation_image_default' => ['nullable', 'required_without:donation_image_upload', 'string', 'max:500'],
-        ] : [
+        // A draft is still built from the same form as a real submission,
+        // and shares the same mandatory fields — the only thing a draft is
+        // actually exempt from is agreeing to the terms below, since that's
+        // tied to the donation going live, not to describing it. Saving a
+        // completely blank "draft" was never a meaningful state to allow.
+        $rules = [
             'donation_title' => ['required', 'string', 'max:100'],
             'donation_description' => ['nullable', 'string'],
             'donation_funding' => ['required', 'in:yes,no'],
             'donation_payment' => ['nullable', 'required_if:donation_funding,yes', 'string', 'max:255'],
             'expected_cost' => ['nullable', 'required_if:donation_funding,yes', 'numeric', 'min:0'],
             'donation_method' => ['nullable', 'required_if:donation_funding,no', 'string', 'max:100'],
-            'donation_notes' => ['nullable', 'string'],
+            // Also fixes a pre-existing gap: this field is marked mandatory
+            // in the form ("Add details for your selected method *") for a
+            // non-financial donation, but was never actually enforced here.
+            'donation_notes' => ['nullable', 'required_if:donation_funding,no', 'string'],
             'donation_image_upload' => ['nullable', 'required_without:donation_image_default', 'image', 'max:5120'],
             'donation_image_default' => ['nullable', 'required_without:donation_image_upload', 'string', 'max:500'],
-            'donation_terms' => ['accepted'],
         ];
+
+        if (! $isDraft) {
+            $rules['donation_terms'] = ['accepted'];
+        }
 
         $validated = $request->validate($rules, [
             'donation_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
             'donation_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
+            'donation_notes.required_if' => 'Please provide the details for your selected method.',
         ]);
 
         $image = null;
@@ -491,32 +493,34 @@ class DonationController extends Controller
                 ]);
         }
 
-        $rules = $isDraft ? [
-            'donation_title' => ['nullable', 'string', 'max:100'],
-            'donation_description' => ['nullable', 'string'],
-            'donation_funding' => ['nullable', 'in:yes,no'],
-            'donation_payment' => ['nullable', 'string', 'max:255'],
-            'expected_cost' => ['nullable', 'numeric', 'min:0'],
-            'donation_method' => ['nullable', 'string', 'max:100'],
-            'donation_notes' => ['nullable', 'string'],
-            'donation_image_upload' => ['nullable', 'required_without:donation_image_default', 'image', 'max:5120'],
-            'donation_image_default' => ['nullable', 'required_without:donation_image_upload', 'string', 'max:500'],
-        ] : [
+        // A draft is still built from the same form as a real submission,
+        // and shares the same mandatory fields — the only thing a draft is
+        // actually exempt from is agreeing to the terms below, since that's
+        // tied to the donation going live, not to describing it. Saving a
+        // completely blank "draft" was never a meaningful state to allow.
+        $rules = [
             'donation_title' => ['required', 'string', 'max:100'],
             'donation_description' => ['nullable', 'string'],
             'donation_funding' => ['required', 'in:yes,no'],
             'donation_payment' => ['nullable', 'required_if:donation_funding,yes', 'string', 'max:255'],
             'expected_cost' => ['nullable', 'required_if:donation_funding,yes', 'numeric', 'min:0'],
             'donation_method' => ['nullable', 'required_if:donation_funding,no', 'string', 'max:100'],
-            'donation_notes' => ['nullable', 'string'],
+            // Also fixes a pre-existing gap: this field is marked mandatory
+            // in the form ("Add details for your selected method *") for a
+            // non-financial donation, but was never actually enforced here.
+            'donation_notes' => ['nullable', 'required_if:donation_funding,no', 'string'],
             'donation_image_upload' => ['nullable', 'required_without:donation_image_default', 'image', 'max:5120'],
             'donation_image_default' => ['nullable', 'required_without:donation_image_upload', 'string', 'max:500'],
-            'donation_terms' => ['accepted'],
         ];
+
+        if (! $isDraft) {
+            $rules['donation_terms'] = ['accepted'];
+        }
 
         $validated = $request->validate($rules, [
             'donation_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
             'donation_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
+            'donation_notes.required_if' => 'Please provide the details for your selected method.',
         ]);
 
         $image = $donation->image;

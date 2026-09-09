@@ -124,19 +124,12 @@ class WishController extends Controller
                 ]);
         }
 
-        $rules = $isDraft ? [
-            'wish_title' => ['nullable', 'string', 'max:100'],
-            'wish_description' => ['nullable', 'string'],
-            'wish_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
-            'funding' => ['nullable', 'in:yes,no'],
-            'payment' => ['nullable', 'string', 'max:255'],
-            'contact' => ['nullable', 'string', 'max:255', 'email'],
-            'expected_cost' => ['nullable', 'numeric', 'min:0'],
-            'non_financial_method' => ['nullable', 'string', 'max:100'],
-            'description_of_way' => ['nullable', 'string'],
-            'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
-            'wish_image_default' => ['nullable', 'required_without:wish_image_upload', 'string', 'max:500'],
-        ] : [
+        // A draft is still built from the same form as a real submission,
+        // and shares the same mandatory fields — the only thing a draft is
+        // actually exempt from is agreeing to the terms below, since that's
+        // tied to the wish going live, not to describing it. Saving a
+        // completely blank "draft" was never a meaningful state to allow.
+        $rules = [
             'wish_title' => ['required', 'string', 'max:100'],
             'wish_description' => ['nullable', 'string'],
             'wish_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
@@ -148,8 +141,11 @@ class WishController extends Controller
             'description_of_way' => ['nullable', 'required_if:funding,no', 'string'],
             'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
             'wish_image_default' => ['nullable', 'required_without:wish_image_upload', 'string', 'max:500'],
-            'i_agree_decide' => ['accepted'],
         ];
+
+        if (! $isDraft) {
+            $rules['i_agree_decide'] = ['accepted'];
+        }
 
         $validated = $request->validate($rules, [
             'wish_date.after_or_equal' => "Please select today's date or a future date for your wish to be granted",
@@ -640,19 +636,12 @@ class WishController extends Controller
                 ]);
         }
 
-        $rules = $isDraft ? [
-            'wish_title' => ['nullable', 'string', 'max:100'],
-            'wish_description' => ['nullable', 'string'],
-            'wish_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
-            'funding' => ['nullable', 'in:yes,no'],
-            'payment' => ['nullable', 'string', 'max:255'],
-            'contact' => ['nullable', 'string', 'max:255', 'email'],
-            'expected_cost' => ['nullable', 'numeric', 'min:0'],
-            'non_financial_method' => ['nullable', 'string', 'max:100'],
-            'description_of_way' => ['nullable', 'string'],
-            'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
-            'wish_image_default' => ['nullable', 'required_without:wish_image_upload', 'string', 'max:500'],
-        ] : [
+        // A draft is still built from the same form as a real submission,
+        // and shares the same mandatory fields — the only thing a draft is
+        // actually exempt from is agreeing to the terms below, since that's
+        // tied to the wish going live, not to describing it. Saving a
+        // completely blank "draft" was never a meaningful state to allow.
+        $rules = [
             'wish_title' => ['required', 'string', 'max:100'],
             'wish_description' => ['nullable', 'string'],
             'wish_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
@@ -664,8 +653,11 @@ class WishController extends Controller
             'description_of_way' => ['nullable', 'required_if:funding,no', 'string'],
             'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
             'wish_image_default' => ['nullable', 'required_without:wish_image_upload', 'string', 'max:500'],
-            'i_agree_decide' => ['accepted'],
         ];
+
+        if (! $isDraft) {
+            $rules['i_agree_decide'] = ['accepted'];
+        }
 
         $validated = $request->validate($rules, [
             'wish_date.after_or_equal' => "Please select today's date or a future date for your wish to be granted",

@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.classList.toggle('hidden', !show);
   };
 
-  const validateDonationForm = () => {
+  const validateDonationForm = ({ skipTerms = false } = {}) => {
     let valid = true;
 
     const title = document.getElementById('donation-title');
@@ -171,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const funding = document.querySelector('input[name="donation_funding"]:checked');
     const payment = document.querySelector('input[name="donation_payment"]:checked');
     const cost = document.getElementById('donation-cost');
+    const notes = document.getElementById('donation-notes');
     const terms = document.getElementById('donation-terms');
 
     const titleOk = !!(title && title.value.trim());
@@ -189,8 +190,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const methodOk = !!method;
       showError('donation-method', !methodOk);
       valid = valid && methodOk;
+
+      const notesOk = !!(notes && notes.value.trim());
+      showError('donation-notes', !notesOk);
+      valid = valid && notesOk;
     } else {
       showError('donation-method', false);
+      showError('donation-notes', false);
     }
 
     if (funding && funding.value === 'yes') {
@@ -206,9 +212,19 @@ document.addEventListener('DOMContentLoaded', () => {
       showError('donation-cost', false);
     }
 
-    const termsOk = !!(terms && terms.checked);
-    showError('donation-terms', !termsOk);
-    valid = valid && termsOk;
+    // The "I agree" consent checkbox is about accepting the acceptance
+    // process on a *live* donation — a draft isn't live yet (and the server
+    // always saves i_agree_decide as false for a draft regardless of what
+    // was submitted, see DonationController::store()/update()), so it's the
+    // one field exempt from "drafts require the same mandatory fields as a
+    // real submission."
+    if (!skipTerms) {
+      const termsOk = !!(terms && terms.checked);
+      showError('donation-terms', !termsOk);
+      valid = valid && termsOk;
+    } else {
+      showError('donation-terms', false);
+    }
 
     return valid;
   };
@@ -248,27 +264,17 @@ document.addEventListener('DOMContentLoaded', () => {
     methodLabel.innerHTML = `${labelText} <span class="text-red-500">*</span>`;
   };
 
-  const validateImageOnly = () => {
-    const imageOk = !!(defaultInput && defaultInput.value.trim()) || !!(uploadInput && uploadInput.files && uploadInput.files.length > 0);
-    showError('donation-image', !imageOk);
-    return imageOk;
-  };
-
   if (form) {
     form.addEventListener('submit', (event) => {
       const submitter = event.submitter;
-      if (submitter && submitter.value === 'draft') {
-        // Drafts skip the rest of the required-field checks (title, funding,
-        // etc. can stay blank while a donation is still being drafted), but
-        // the image is required even for a draft — leaving it unset is what
-        // was letting an unrelated random stock photo stand in as the post
-        // image once the draft/donation went live.
-        if (!validateImageOnly()) {
-          event.preventDefault();
-        }
-        return;
-      }
-      if (!validateDonationForm()) {
+      const isDraft = !!(submitter && submitter.value === 'draft');
+      // A draft uses the exact same mandatory-field rules as a real
+      // submission (title, image, funding choice and its dependent
+      // details) — the form shouldn't let someone save a completely blank
+      // draft just because "draft" sounds like it should be lenient. The
+      // only thing a draft doesn't require yet is agreeing to the terms,
+      // since that's tied to actually going live.
+      if (!validateDonationForm({ skipTerms: isDraft })) {
         event.preventDefault();
       }
     });
@@ -307,6 +313,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cost) {
       cost.addEventListener('input', () => {
         if (String(cost.value).trim()) showError('donation-cost', false);
+      });
+    }
+
+    const notes = document.getElementById('donation-notes');
+    if (notes) {
+      notes.addEventListener('input', () => {
+        if (notes.value.trim()) showError('donation-notes', false);
       });
     }
 

@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const isEmailValid = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-  const validateWishForm = () => {
+  const validateWishForm = ({ skipTerms = false } = {}) => {
     let valid = true;
 
     const title = document.getElementById('wish-title');
@@ -299,34 +299,34 @@ document.addEventListener('DOMContentLoaded', () => {
       showError('description_of_way', false);
     }
 
-    const termsOk = !!(termsCheck && termsCheck.checked);
-    showError('terms', !termsOk);
-    valid = valid && termsOk;
+    // The "I agree" consent checkbox is about accepting the granting
+    // process on a *live* wish — a draft isn't live yet (and the server
+    // always saves i_agree_decide as false for a draft regardless of what
+    // was submitted, see WishController::store()/update()), so it's the one
+    // field that's exempt from "drafts require the same mandatory fields as
+    // a real submission."
+    if (!skipTerms) {
+      const termsOk = !!(termsCheck && termsCheck.checked);
+      showError('terms', !termsOk);
+      valid = valid && termsOk;
+    } else {
+      showError('terms', false);
+    }
 
     return valid;
-  };
-
-  const validateImageOnly = () => {
-    const imageOk = !!(defaultInput && defaultInput.value.trim()) || !!(uploadInput && uploadInput.files && uploadInput.files.length > 0);
-    showError('wish-image', !imageOk);
-    return imageOk;
   };
 
   if (form) {
     form.addEventListener('submit', (event) => {
       const submitter = event.submitter;
-      if (submitter && submitter.value === 'draft') {
-        // Drafts skip the rest of the required-field checks (title, date,
-        // funding, etc. can stay blank while a wish is still being drafted),
-        // but the image is required even for a draft — leaving it unset is
-        // what was letting an unrelated random stock photo stand in as the
-        // post image once the draft/wish went live.
-        if (!validateImageOnly()) {
-          event.preventDefault();
-        }
-        return;
-      }
-      if (!validateWishForm()) {
+      const isDraft = !!(submitter && submitter.value === 'draft');
+      // A draft uses the exact same mandatory-field rules as a real
+      // submission (title, date, image, funding choice and its dependent
+      // details) — the form shouldn't let someone save a completely blank
+      // draft just because "draft" sounds like it should be lenient. The
+      // only thing a draft doesn't require yet is agreeing to the terms,
+      // since that's tied to actually going live.
+      if (!validateWishForm({ skipTerms: isDraft })) {
         event.preventDefault();
       }
     });
