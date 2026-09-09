@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (uploadInput) {
       uploadInput.value = '';
     }
+    showError('wish-image', false);
   });
 
   if (uploadInput) {
@@ -45,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (uploadInput.files && uploadInput.files.length > 0) {
         clearSelected();
         defaultInput.value = '';
+        showError('wish-image', false);
         const file = uploadInput.files[0];
         if (uploadPreview) {
           const url = URL.createObjectURL(file);
@@ -237,6 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return entered.getTime() < today.getTime();
   };
 
+  const isEmailValid = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
   const validateWishForm = () => {
     let valid = true;
 
@@ -252,6 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleOk = !!(title && title.value.trim());
     showError('wish-title', !titleOk);
     valid = valid && titleOk;
+
+    const imageOk = !!(defaultInput && defaultInput.value.trim()) || !!(uploadInput && uploadInput.files && uploadInput.files.length > 0);
+    showError('wish-image', !imageOk);
+    valid = valid && imageOk;
 
     const dateValue = date ? date.value.trim() : '';
     const dateFilled = !!dateValue;
@@ -269,9 +277,11 @@ document.addEventListener('DOMContentLoaded', () => {
       showError('payment', !paymentOk);
       valid = valid && paymentOk;
 
-      const contactOk = !!(contact && contact.value.trim());
-      showError('contact', !contactOk);
-      valid = valid && contactOk;
+      const contactValue = contact ? contact.value.trim() : '';
+      const contactFilled = !!contactValue;
+      const contactFormatOk = contactFilled && isEmailValid(contactValue);
+      showError('contact', !contactFormatOk, contactFilled ? 'Please enter a valid email address.' : 'Email is required.');
+      valid = valid && contactFormatOk;
     } else {
       showError('payment', false);
       showError('contact', false);
@@ -296,10 +306,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return valid;
   };
 
+  const validateImageOnly = () => {
+    const imageOk = !!(defaultInput && defaultInput.value.trim()) || !!(uploadInput && uploadInput.files && uploadInput.files.length > 0);
+    showError('wish-image', !imageOk);
+    return imageOk;
+  };
+
   if (form) {
     form.addEventListener('submit', (event) => {
       const submitter = event.submitter;
       if (submitter && submitter.value === 'draft') {
+        // Drafts skip the rest of the required-field checks (title, date,
+        // funding, etc. can stay blank while a wish is still being drafted),
+        // but the image is required even for a draft — leaving it unset is
+        // what was letting an unrelated random stock photo stand in as the
+        // post image once the draft/wish went live.
+        if (!validateImageOnly()) {
+          event.preventDefault();
+        }
         return;
       }
       if (!validateWishForm()) {
@@ -328,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (contact) {
       contact.addEventListener('input', () => {
-        if (contact.value.trim()) showError('contact', false);
+        if (isEmailValid(contact.value.trim())) showError('contact', false);
       });
     }
     if (nonFinancialNotesInput) {

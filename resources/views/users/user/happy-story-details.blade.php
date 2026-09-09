@@ -248,7 +248,7 @@
                               @csrf
                               <button class="inline-flex items-center gap-1 {{ in_array($comment->id, $likedCommentIds ?? [], true) ? 'text-red-500' : 'hover:text-red-500' }}" type="submit">
                                 <span class="material-icons !text-base">{{ in_array($comment->id, $likedCommentIds ?? [], true) ? 'favorite' : 'favorite_border' }}</span>
-                                Love
+                                Like
                               </button>
                             </form>
                             <button class="inline-flex items-center gap-1 hover:text-primary js-reply-toggle" type="button" data-reply-target="story-reply-{{ $comment->id }}">
@@ -339,7 +339,7 @@
                                           @csrf
                                           <button class="inline-flex items-center gap-1 {{ in_array($reply->id, $likedCommentIds ?? [], true) ? 'text-red-500' : 'hover:text-red-500' }}" type="submit">
                                             <span class="material-icons !text-base">{{ in_array($reply->id, $likedCommentIds ?? [], true) ? 'favorite' : 'favorite_border' }}</span>
-                                            Love
+                                            Like
                                           </button>
                                         </form>
                                         @if((int) $reply->user_id !== (int) auth()->id())

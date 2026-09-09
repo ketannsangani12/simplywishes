@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (uploadInput) {
       uploadInput.value = '';
     }
+    showError('donation-image', false);
   });
 
   const state = {
@@ -83,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (uploadInput.files && uploadInput.files.length > 0) {
         clearSelected();
         defaultInput.value = '';
+        showError('donation-image', false);
         const file = uploadInput.files[0];
         if (uploadPreview) {
           const url = URL.createObjectURL(file);
@@ -175,6 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
     showError('donation-title', !titleOk);
     valid = valid && titleOk;
 
+    const imageOk = !!(defaultInput && defaultInput.value.trim()) || !!(uploadInput && uploadInput.files && uploadInput.files.length > 0);
+    showError('donation-image', !imageOk);
+    valid = valid && imageOk;
+
     const fundingOk = !!funding;
     showError('donation-funding', !fundingOk);
     valid = valid && fundingOk;
@@ -242,10 +248,24 @@ document.addEventListener('DOMContentLoaded', () => {
     methodLabel.innerHTML = `${labelText} <span class="text-red-500">*</span>`;
   };
 
+  const validateImageOnly = () => {
+    const imageOk = !!(defaultInput && defaultInput.value.trim()) || !!(uploadInput && uploadInput.files && uploadInput.files.length > 0);
+    showError('donation-image', !imageOk);
+    return imageOk;
+  };
+
   if (form) {
     form.addEventListener('submit', (event) => {
       const submitter = event.submitter;
       if (submitter && submitter.value === 'draft') {
+        // Drafts skip the rest of the required-field checks (title, funding,
+        // etc. can stay blank while a donation is still being drafted), but
+        // the image is required even for a draft — leaving it unset is what
+        // was letting an unrelated random stock photo stand in as the post
+        // image once the draft/donation went live.
+        if (!validateImageOnly()) {
+          event.preventDefault();
+        }
         return;
       }
       if (!validateDonationForm()) {

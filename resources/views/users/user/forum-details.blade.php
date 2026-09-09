@@ -241,7 +241,7 @@
                       <form action="{{ route('forum.comments.like', [$post->e_id, $comment->id]) }}" method="POST">
                         @csrf
                         <button class="inline-flex items-center gap-1 {{ in_array($comment->id, $likedCommentIds ?? [], true) ? 'text-red-500' : 'hover:text-red-500' }}" type="submit">
-                          <span>Love</span>
+                          <span>Like</span>
                         </button>
                       </form>
                       <button class="inline-flex items-center gap-1 hover:text-primary js-reply-toggle" type="button" data-reply-target="forum-reply-{{ $comment->id }}">
@@ -325,7 +325,7 @@
                               <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-text-muted-light dark:text-text-muted-dark">
                                 <form action="{{ route('forum.comments.like', [$post->e_id, $reply->id]) }}" method="POST">
                                   @csrf
-                                  <button class="{{ in_array($reply->id, $likedCommentIds ?? [], true) ? 'text-red-500' : 'hover:text-red-500' }}" type="submit">Love</button>
+                                  <button class="{{ in_array($reply->id, $likedCommentIds ?? [], true) ? 'text-red-500' : 'hover:text-red-500' }}" type="submit">Like</button>
                                 </form>
                                 @if((int) $reply->user_id !== (int) auth()->id())
                                   <form action="{{ route('forum.comments.report', [$post->e_id, $reply->id]) }}" method="POST" class="js-comment-report-form">

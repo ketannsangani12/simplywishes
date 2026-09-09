@@ -62,7 +62,7 @@
               <div class="px-6 sm:px-8 pt-6">
                 <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                   <ul class="list-disc pl-5 space-y-1">
-                    @foreach ($errors->all() as $error)
+                    @foreach (array_unique($errors->all()) as $error)
                       <li>{{ $error }}</li>
                     @endforeach
                   </ul>
@@ -123,7 +123,7 @@
               <div class="space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <p class="text-sm font-semibold text-text-light dark:text-text-dark">Wish Image</p>
+                    <p class="text-sm font-semibold text-text-light dark:text-text-dark">Wish Image <span class="text-red-500">*</span></p>
                     <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Upload your own photo or pick one of the default images below.</p>
                     <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">Use images you own the rights to. Posts with copyrighted characters or logos may be removed.</p>
                   </div>
@@ -193,6 +193,7 @@
                     </div>
                   @endforelse
                 </div>
+                <p class="text-sm text-red-600 hidden" data-error-for="wish-image">Please upload an image or select one from the default gallery above.</p>
               </div>
 
               <div class="grid md:grid-cols-2 gap-6">
@@ -239,11 +240,11 @@
                   </div>
                   <div class="space-y-4">
                     <div class="space-y-2">
-                      <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="contact">Please enter your email or handle: <span class="text-red-500">*</span></label>
+                      <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="contact">Please enter your email: <span class="text-red-500">*</span></label>
                       <input id="contact" name="contact" type="email" required placeholder="you@example.com"
                         value="{{ old('contact', $wish->show_mail ?? '') }}"
                         class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-2 focus:ring-primary/60 focus:border-primary" />
-                      <p class="text-sm text-red-600 hidden" data-error-for="contact">Email or handle is required.</p>
+                      <p class="text-sm text-red-600 hidden" data-error-for="contact">Email is required.</p>
                     </div>
                     <div class="space-y-2">
                       <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="cost">Expected Cost (USD) <span class="text-red-500">*</span></label>

@@ -130,29 +130,32 @@ class WishController extends Controller
             'wish_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
             'funding' => ['nullable', 'in:yes,no'],
             'payment' => ['nullable', 'string', 'max:255'],
-            'contact' => ['nullable', 'string', 'max:255'],
+            'contact' => ['nullable', 'string', 'max:255', 'email'],
             'expected_cost' => ['nullable', 'numeric', 'min:0'],
             'non_financial_method' => ['nullable', 'string', 'max:100'],
             'description_of_way' => ['nullable', 'string'],
-            'wish_image_upload' => ['nullable', 'image', 'max:5120'],
-            'wish_image_default' => ['nullable', 'string', 'max:500'],
+            'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
+            'wish_image_default' => ['nullable', 'required_without:wish_image_upload', 'string', 'max:500'],
         ] : [
             'wish_title' => ['required', 'string', 'max:100'],
             'wish_description' => ['nullable', 'string'],
             'wish_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
             'funding' => ['required', 'in:yes,no'],
             'payment' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],
-            'contact' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],
+            'contact' => ['nullable', 'required_if:funding,yes', 'string', 'max:255', 'email'],
             'expected_cost' => ['nullable', 'required_if:funding,yes', 'numeric', 'min:0'],
             'non_financial_method' => ['nullable', 'required_if:funding,no', 'string', 'max:100'],
             'description_of_way' => ['nullable', 'required_if:funding,no', 'string'],
-            'wish_image_upload' => ['nullable', 'image', 'max:5120'],
-            'wish_image_default' => ['nullable', 'string', 'max:500'],
+            'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
+            'wish_image_default' => ['nullable', 'required_without:wish_image_upload', 'string', 'max:500'],
             'i_agree_decide' => ['accepted'],
         ];
 
         $validated = $request->validate($rules, [
             'wish_date.after_or_equal' => "Please select today's date or a future date for your wish to be granted",
+            'contact.email' => 'Please enter a valid email address.',
+            'wish_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
+            'wish_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
         ]);
 
         $primaryImage = null;
@@ -643,29 +646,32 @@ class WishController extends Controller
             'wish_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
             'funding' => ['nullable', 'in:yes,no'],
             'payment' => ['nullable', 'string', 'max:255'],
-            'contact' => ['nullable', 'string', 'max:255'],
+            'contact' => ['nullable', 'string', 'max:255', 'email'],
             'expected_cost' => ['nullable', 'numeric', 'min:0'],
             'non_financial_method' => ['nullable', 'string', 'max:100'],
             'description_of_way' => ['nullable', 'string'],
-            'wish_image_upload' => ['nullable', 'image', 'max:5120'],
-            'wish_image_default' => ['nullable', 'string', 'max:500'],
+            'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
+            'wish_image_default' => ['nullable', 'required_without:wish_image_upload', 'string', 'max:500'],
         ] : [
             'wish_title' => ['required', 'string', 'max:100'],
             'wish_description' => ['nullable', 'string'],
             'wish_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
             'funding' => ['required', 'in:yes,no'],
             'payment' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],
-            'contact' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],
+            'contact' => ['nullable', 'required_if:funding,yes', 'string', 'max:255', 'email'],
             'expected_cost' => ['nullable', 'required_if:funding,yes', 'numeric', 'min:0'],
             'non_financial_method' => ['nullable', 'required_if:funding,no', 'string', 'max:100'],
             'description_of_way' => ['nullable', 'required_if:funding,no', 'string'],
-            'wish_image_upload' => ['nullable', 'image', 'max:5120'],
-            'wish_image_default' => ['nullable', 'string', 'max:500'],
+            'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
+            'wish_image_default' => ['nullable', 'required_without:wish_image_upload', 'string', 'max:500'],
             'i_agree_decide' => ['accepted'],
         ];
 
         $validated = $request->validate($rules, [
             'wish_date.after_or_equal' => "Please select today's date or a future date for your wish to be granted",
+            'contact.email' => 'Please enter a valid email address.',
+            'wish_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
+            'wish_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
         ]);
 
         $primaryImage = $wish->primary_image;

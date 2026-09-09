@@ -26,7 +26,7 @@
                       <button class="p-2 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200" aria-label="Save">
                         <span class="material-icons !text-xl">bookmark</span>
                       </button>
-                      <button class="p-2 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200" aria-label="Love">
+                      <button class="p-2 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200" aria-label="Like">
                         <span class="material-icons !text-xl">favorite</span>
                       </button>
                       <button class="p-2 rounded-full bg-sky-100 text-sky-600 hover:bg-sky-200" aria-label="Share">
@@ -119,7 +119,7 @@
                     <div class="mt-3 flex items-center gap-4 text-sm text-text-muted-light dark:text-text-muted-dark">
                       <button class="inline-flex items-center gap-1 hover:text-red-500">
                         <span class="material-icons !text-base text-red-500">favorite</span>
-                        <span>Love</span>
+                        <span>Like</span>
                       </button>
                       <button class="inline-flex items-center gap-1 hover:text-primary">
                         <span class="material-icons !text-base">reply</span>
@@ -152,7 +152,7 @@
                     <div class="mt-3 flex items-center gap-4 text-sm text-text-muted-light dark:text-text-muted-dark">
                       <button class="inline-flex items-center gap-1 hover:text-red-500">
                         <span class="material-icons !text-base text-red-500">favorite</span>
-                        <span>Love</span>
+                        <span>Like</span>
                       </button>
                       <button class="inline-flex items-center gap-1 hover:text-primary">
                         <span class="material-icons !text-base">reply</span>

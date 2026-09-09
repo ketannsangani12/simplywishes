@@ -412,8 +412,8 @@ class DonationController extends Controller
             'expected_cost' => ['nullable', 'numeric', 'min:0'],
             'donation_method' => ['nullable', 'string', 'max:100'],
             'donation_notes' => ['nullable', 'string'],
-            'donation_image_upload' => ['nullable', 'image', 'max:5120'],
-            'donation_image_default' => ['nullable', 'string', 'max:500'],
+            'donation_image_upload' => ['nullable', 'required_without:donation_image_default', 'image', 'max:5120'],
+            'donation_image_default' => ['nullable', 'required_without:donation_image_upload', 'string', 'max:500'],
         ] : [
             'donation_title' => ['required', 'string', 'max:100'],
             'donation_description' => ['nullable', 'string'],
@@ -422,12 +422,15 @@ class DonationController extends Controller
             'expected_cost' => ['nullable', 'required_if:donation_funding,yes', 'numeric', 'min:0'],
             'donation_method' => ['nullable', 'required_if:donation_funding,no', 'string', 'max:100'],
             'donation_notes' => ['nullable', 'string'],
-            'donation_image_upload' => ['nullable', 'image', 'max:5120'],
-            'donation_image_default' => ['nullable', 'string', 'max:500'],
+            'donation_image_upload' => ['nullable', 'required_without:donation_image_default', 'image', 'max:5120'],
+            'donation_image_default' => ['nullable', 'required_without:donation_image_upload', 'string', 'max:500'],
             'donation_terms' => ['accepted'],
         ];
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'donation_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
+            'donation_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
+        ]);
 
         $image = null;
         if ($request->hasFile('donation_image_upload')) {
@@ -496,8 +499,8 @@ class DonationController extends Controller
             'expected_cost' => ['nullable', 'numeric', 'min:0'],
             'donation_method' => ['nullable', 'string', 'max:100'],
             'donation_notes' => ['nullable', 'string'],
-            'donation_image_upload' => ['nullable', 'image', 'max:5120'],
-            'donation_image_default' => ['nullable', 'string', 'max:500'],
+            'donation_image_upload' => ['nullable', 'required_without:donation_image_default', 'image', 'max:5120'],
+            'donation_image_default' => ['nullable', 'required_without:donation_image_upload', 'string', 'max:500'],
         ] : [
             'donation_title' => ['required', 'string', 'max:100'],
             'donation_description' => ['nullable', 'string'],
@@ -506,12 +509,15 @@ class DonationController extends Controller
             'expected_cost' => ['nullable', 'required_if:donation_funding,yes', 'numeric', 'min:0'],
             'donation_method' => ['nullable', 'required_if:donation_funding,no', 'string', 'max:100'],
             'donation_notes' => ['nullable', 'string'],
-            'donation_image_upload' => ['nullable', 'image', 'max:5120'],
-            'donation_image_default' => ['nullable', 'string', 'max:500'],
+            'donation_image_upload' => ['nullable', 'required_without:donation_image_default', 'image', 'max:5120'],
+            'donation_image_default' => ['nullable', 'required_without:donation_image_upload', 'string', 'max:500'],
             'donation_terms' => ['accepted'],
         ];
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'donation_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
+            'donation_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
+        ]);
 
         $image = $donation->image;
         if ($request->hasFile('donation_image_upload')) {
