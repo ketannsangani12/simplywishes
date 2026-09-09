@@ -176,7 +176,7 @@
                     <span>No (Non-Financial)</span>
                   </label>
                 </div>
-                <p class="text-sm text-red-600 hidden" data-error-for="donation-funding">Please select an option.</p>
+                <p class="text-sm text-red-600 {{ ($isEdit && !$fundingValue) ? '' : 'hidden' }}" data-error-for="donation-funding">Please select an option.</p>
               </div>
 
               <div class="rounded-xl border border-border-light dark:border-border-dark bg-slate-50/80 dark:bg-surface-dark/60 p-6 space-y-5 hidden" id="donation-financial-block">

@@ -127,6 +127,16 @@
           @endphp
           @php
             $isFinancial = (int) $wish->non_pay_option !== 1;
+            // A draft can be saved with the "Does your wish require direct
+            // funding?" choice left blank entirely (that field is only
+            // mandatory once the wish is actually submitted, not while it's
+            // still a draft). The DB has no dedicated "not yet chosen" state
+            // though — non_pay_option just defaults to 0, the same value a
+            // genuine "Yes (Financial)" choice would store — so an
+            // unresolved draft and a real financial wish look identical
+            // unless we also check whether any financial detail was ever
+            // filled in.
+            $financialAssistanceMissing = $isFinancial && empty($wish->financial_assistance) && empty($wish->expected_cost);
             $deliveryType = $wish->way_of_wish ?: 'Not set';
             $deliveryTypeLabel = match ($wish->way_of_wish) {
                 'online_order' => 'Online order',
@@ -193,9 +203,20 @@
             </div>
             <div>
               <p class="text-text-muted-light dark:text-text-muted-dark">Wish Type</p>
-              <p class="font-semibold">{{ $isFinancial ? 'Financial' : 'Non-Financial' }}</p>
+              <p class="font-semibold">{{ $financialAssistanceMissing ? 'Not selected yet' : ($isFinancial ? 'Financial' : 'Non-Financial') }}</p>
             </div>
-            @if($isFinancial)
+            @if($financialAssistanceMissing)
+              <div class="sm:col-span-2 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+                <p class="font-semibold">Financial assistance details are still missing.</p>
+                <p class="mt-1">This wish needs a financial assistance choice (and, if financial, a payment method and expected cost) before it can be submitted.</p>
+                @if($isCreator && (int) $wish->wish_progress_status === 0)
+                  <a href="{{ route('wishes.edit', $wish->w_id) }}" class="mt-2 inline-flex items-center gap-1 font-semibold text-amber-900 dark:text-amber-100 hover:underline">
+                    Complete this wish
+                    <span class="material-icons !text-base">arrow_forward</span>
+                  </a>
+                @endif
+              </div>
+            @elseif($isFinancial)
               <div>
                 <p class="text-text-muted-light dark:text-text-muted-dark">Wish Expected Cost</p>
                 <p class="font-semibold">{{ $wish->expected_cost ? '$' . number_format($wish->expected_cost, 0) : 'Not set' }}</p>

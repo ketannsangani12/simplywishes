@@ -118,6 +118,11 @@
             $creatorName = $creator ? trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? '')) : '';
             $creatorName = $creatorName !== '' ? $creatorName : ($creator->name ?? 'Donation Creator');
             $isFinancial = (int) $donation->non_pay_option !== 1;
+            // See wish-preview.blade.php for why this needs its own check —
+            // a draft can be saved with the funding choice left blank, and
+            // non_pay_option alone can't tell that apart from a genuine
+            // "Yes (Financial)" choice.
+            $financialAssistanceMissing = $isFinancial && empty($donation->financial_assistance) && empty($donation->expected_cost);
             $deliveryType = $donation->delivery_type ?: ($donation->way_of_donation ?: 'Not set');
             $deliveryTypeLabel = match ($donation->delivery_type ?: $donation->way_of_donation) {
                 'online_order' => 'Online order',
@@ -186,9 +191,20 @@
             </div>
             <div>
               <p class="text-text-muted-light dark:text-text-muted-dark">Donation Type</p>
-              <p class="font-semibold">{{ $isFinancial ? 'Financial' : 'Non-Financial' }}</p>
+              <p class="font-semibold">{{ $financialAssistanceMissing ? 'Not selected yet' : ($isFinancial ? 'Financial' : 'Non-Financial') }}</p>
             </div>
-            @if($isFinancial)
+            @if($financialAssistanceMissing)
+              <div class="sm:col-span-2 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+                <p class="font-semibold">Financial assistance details are still missing.</p>
+                <p class="mt-1">This donation needs a financial assistance choice (and, if financial, a payment method and expected cost) before it can be submitted.</p>
+                @if($isCreator && (int) $donation->status <= 1)
+                  <a href="{{ route('donations.edit', $donation->id) }}" class="mt-2 inline-flex items-center gap-1 font-semibold text-amber-900 dark:text-amber-100 hover:underline">
+                    Complete this donation
+                    <span class="material-icons !text-base">arrow_forward</span>
+                  </a>
+                @endif
+              </div>
+            @elseif($isFinancial)
               <div>
                 <p class="text-text-muted-light dark:text-text-muted-dark">Donation Expected Cost</p>
                 <p class="font-semibold">{{ $donation->expected_cost ? '$' . number_format($donation->expected_cost, 0) : 'Not set' }}</p>
