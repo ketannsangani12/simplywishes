@@ -589,6 +589,7 @@
       }
 
       grantModal.classList.add('hidden');
+      grantModal.classList.remove('flex');
       grantModal.setAttribute('aria-hidden', 'true');
     };
 
@@ -598,6 +599,7 @@
       }
 
       grantModal.classList.remove('hidden');
+      grantModal.classList.add('flex');
       grantModal.setAttribute('aria-hidden', 'false');
       toggleGrantSubmit();
     };
