@@ -39,11 +39,26 @@
             {{ $donation->title ?: 'Untitled donation' }}
           </h1>
           <div class="flex flex-nowrap items-center gap-2 shrink-0 overflow-x-auto scrollbar-hide">
-            @if((int) ($donation->created_by ?? 0) === (int) auth()->id() && in_array((int) $donation->status, [0, 1], true))
+            @php
+              $isDonationOwner = (int) ($donation->created_by ?? 0) === (int) auth()->id();
+              $donationStatus = (int) ($donation->status ?? 0);
+              // Editing only makes sense while the donation is still a
+              // Draft or Current — once it's been Accepted (In Progress) or
+              // Completed the details are locked in. Deleting, though,
+              // should follow the same rule as any other owned post:
+              // allowed for a Draft/Current donation, and also for one
+              // that's already Completed (the "Granted" section), just not
+              // while it's actively In Progress with someone mid-fulfillment.
+              $isDonationEditable = $isDonationOwner && in_array($donationStatus, [0, 1], true);
+              $isDonationDeletable = $isDonationOwner && in_array($donationStatus, [0, 1, 3], true);
+            @endphp
+            @if($isDonationEditable)
               <a class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('donations.edit', ['donation' => $donation->id, 'source' => $source, 'source_tab' => $sourceTab]) }}">
                 <span class="material-icons !text-base">edit</span>
                 Update
               </a>
+            @endif
+            @if($isDonationDeletable)
               <form class="shrink-0" action="{{ route('donations.destroy', $donation->id) }}" method="POST">
                 @csrf
                 @method('DELETE')

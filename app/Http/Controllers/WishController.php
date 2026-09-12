@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -25,6 +26,25 @@ use Illuminate\View\View;
 class WishController extends Controller
 {
     private const MAX_ACTIVE_LISTINGS = 5;
+
+    // Every notification email below is sent synchronously (not queued), so
+    // a mail failure (a bad/expired SMTP credential, the mail host being
+    // unreachable from production, a provider rate-limit, etc.) would
+    // otherwise throw and abort the whole request AFTER the wish/donation
+    // had already been created/granted/fulfilled in the database — the
+    // visible symptom being the user never sees the success page/redirect
+    // they were expecting, even though the underlying action actually went
+    // through. Notifying the wisher/grantor is a nice-to-have, not the
+    // point of the request, so a failure here is logged and swallowed
+    // rather than allowed to break the response.
+    private function sendMailQuietly(callable $send, string $context): void
+    {
+        try {
+            $send();
+        } catch (\Throwable $e) {
+            Log::error("Failed to send {$context} email: " . $e->getMessage());
+        }
+    }
 
     private function storeUploadedWishImage(\Illuminate\Http\UploadedFile $file): string
     {
@@ -136,7 +156,7 @@ class WishController extends Controller
             'funding' => ['required', 'in:yes,no'],
             'payment' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],
             'contact' => ['nullable', 'required_if:funding,yes', 'string', 'max:255', 'email'],
-            'expected_cost' => ['nullable', 'required_if:funding,yes', 'numeric', 'min:0'],
+            'expected_cost' => ['nullable', 'required_if:funding,yes', 'numeric', 'gt:0'],
             'non_financial_method' => ['nullable', 'required_if:funding,no', 'string', 'max:100'],
             'description_of_way' => ['nullable', 'required_if:funding,no', 'string'],
             'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
@@ -152,6 +172,7 @@ class WishController extends Controller
             'contact.email' => 'Please enter a valid email address.',
             'wish_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
             'wish_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
+            'expected_cost.gt' => 'Please enter a cost greater than zero.',
         ]);
 
         $primaryImage = null;
@@ -187,7 +208,7 @@ class WishController extends Controller
         ]);
 
         if (!$isDraft) {
-            Mail::to($user->email)->send(new WishCreated($wish, $user));
+            $this->sendMailQuietly(fn () => Mail::to($user->email)->send(new WishCreated($wish, $user)), 'WishCreated');
             $wish->forceFill(['wish_email_status' => 1])->save();
         }
 
@@ -648,7 +669,7 @@ class WishController extends Controller
             'funding' => ['required', 'in:yes,no'],
             'payment' => ['nullable', 'required_if:funding,yes', 'string', 'max:255'],
             'contact' => ['nullable', 'required_if:funding,yes', 'string', 'max:255', 'email'],
-            'expected_cost' => ['nullable', 'required_if:funding,yes', 'numeric', 'min:0'],
+            'expected_cost' => ['nullable', 'required_if:funding,yes', 'numeric', 'gt:0'],
             'non_financial_method' => ['nullable', 'required_if:funding,no', 'string', 'max:100'],
             'description_of_way' => ['nullable', 'required_if:funding,no', 'string'],
             'wish_image_upload' => ['nullable', 'required_without:wish_image_default', 'image', 'max:5120'],
@@ -664,6 +685,7 @@ class WishController extends Controller
             'contact.email' => 'Please enter a valid email address.',
             'wish_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
             'wish_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
+            'expected_cost.gt' => 'Please enter a cost greater than zero.',
         ]);
 
         $primaryImage = $wish->primary_image;
@@ -698,7 +720,7 @@ class WishController extends Controller
         $wish->save();
 
         if (!$isDraft && (int) $wish->wish_email_status !== 1) {
-            Mail::to($request->user()->email)->send(new WishCreated($wish, $request->user()));
+            $this->sendMailQuietly(fn () => Mail::to($request->user()->email)->send(new WishCreated($wish, $request->user())), 'WishCreated');
             $wish->forceFill(['wish_email_status' => 1])->save();
         }
 
@@ -726,9 +748,13 @@ class WishController extends Controller
 
     public function destroy(Request $request, int $wish): RedirectResponse
     {
+        // Deletable while it's still Current (0), and also once it's been
+        // Granted/fulfilled (2) — same as any other owned post can be
+        // cleaned up once it's done. Not while it's In Progress (1), since
+        // a grantor is actively mid-fulfillment at that point.
         $wish = Wish::where('w_id', $wish)
             ->where('wished_by', Auth::id())
-            ->where('wish_progress_status', 0)
+            ->whereIn('wish_progress_status', [0, 2])
             ->firstOrFail();
 
         $wish->delete();
@@ -800,8 +826,8 @@ class WishController extends Controller
         $grantor = $request->user();
 
         if ($creator && $grantor) {
-            Mail::to($creator->email)->send(new WishGranted($wish, $creator, $grantor));
-            Mail::to($grantor->email)->send(new WishGrantorConfirmation($wish, $creator, $grantor));
+            $this->sendMailQuietly(fn () => Mail::to($creator->email)->send(new WishGranted($wish, $creator, $grantor)), 'WishGranted');
+            $this->sendMailQuietly(fn () => Mail::to($grantor->email)->send(new WishGrantorConfirmation($wish, $creator, $grantor)), 'WishGrantorConfirmation');
         }
 
         // Carries forward whatever source/source_tab the Grant form was
@@ -835,12 +861,12 @@ class WishController extends Controller
 
         $creator = Auth::user();
         if ($creator) {
-            Mail::to($creator->email)->send(new WishFulfilled($wish, $creator));
+            $this->sendMailQuietly(fn () => Mail::to($creator->email)->send(new WishFulfilled($wish, $creator)), 'WishFulfilled');
         }
 
         $grantor = $wish->granted_by ? User::find($wish->granted_by) : null;
         if ($grantor) {
-            Mail::to($grantor->email)->send(new WishGrantorFulfilled($wish, $grantor));
+            $this->sendMailQuietly(fn () => Mail::to($grantor->email)->send(new WishGrantorFulfilled($wish, $grantor)), 'WishGrantorFulfilled');
         }
 
         // Carries forward whatever source/source_tab the Fulfilled form was

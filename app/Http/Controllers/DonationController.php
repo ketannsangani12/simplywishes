@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -25,6 +26,26 @@ use Illuminate\View\View;
 class DonationController extends Controller
 {
     private const MAX_ACTIVE_LISTINGS = 5;
+
+    // Every notification email below is sent synchronously (not queued), so
+    // a mail failure (a bad/expired SMTP credential, the mail host being
+    // unreachable from production, a provider rate-limit, etc.) would
+    // otherwise throw and abort the whole request AFTER the donation had
+    // already been created/accepted/completed in the database — the
+    // visible symptom being the user never sees the success page/redirect
+    // they were expecting (it can look like the action "did nothing" or
+    // "the post disappeared"), even though the underlying action actually
+    // went through. Notifying the donor/acceptor is a nice-to-have, not the
+    // point of the request, so a failure here is logged and swallowed
+    // rather than allowed to break the response.
+    private function sendMailQuietly(callable $send, string $context): void
+    {
+        try {
+            $send();
+        } catch (\Throwable $e) {
+            Log::error("Failed to send {$context} email: " . $e->getMessage());
+        }
+    }
 
     private function storeUploadedDonationImage(\Illuminate\Http\UploadedFile $file): string
     {
@@ -414,7 +435,7 @@ class DonationController extends Controller
             'donation_description' => ['nullable', 'string'],
             'donation_funding' => ['required', 'in:yes,no'],
             'donation_payment' => ['nullable', 'required_if:donation_funding,yes', 'string', 'max:255'],
-            'expected_cost' => ['nullable', 'required_if:donation_funding,yes', 'numeric', 'min:0'],
+            'expected_cost' => ['nullable', 'required_if:donation_funding,yes', 'numeric', 'gt:0'],
             'donation_method' => ['nullable', 'required_if:donation_funding,no', 'string', 'max:100'],
             // Also fixes a pre-existing gap: this field is marked mandatory
             // in the form ("Add details for your selected method *") for a
@@ -432,6 +453,7 @@ class DonationController extends Controller
             'donation_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
             'donation_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
             'donation_notes.required_if' => 'Please provide the details for your selected method.',
+            'expected_cost.gt' => 'Please enter a cost greater than zero.',
         ]);
 
         $image = null;
@@ -463,7 +485,7 @@ class DonationController extends Controller
         ]);
 
         if (!$isDraft) {
-            Mail::to($user->email)->send(new DonationCreated($donation, $user));
+            $this->sendMailQuietly(fn () => Mail::to($user->email)->send(new DonationCreated($donation, $user)), 'DonationCreated');
             $donation->forceFill(['donation_email_status' => 1])->save();
         }
 
@@ -503,7 +525,7 @@ class DonationController extends Controller
             'donation_description' => ['nullable', 'string'],
             'donation_funding' => ['required', 'in:yes,no'],
             'donation_payment' => ['nullable', 'required_if:donation_funding,yes', 'string', 'max:255'],
-            'expected_cost' => ['nullable', 'required_if:donation_funding,yes', 'numeric', 'min:0'],
+            'expected_cost' => ['nullable', 'required_if:donation_funding,yes', 'numeric', 'gt:0'],
             'donation_method' => ['nullable', 'required_if:donation_funding,no', 'string', 'max:100'],
             // Also fixes a pre-existing gap: this field is marked mandatory
             // in the form ("Add details for your selected method *") for a
@@ -521,6 +543,7 @@ class DonationController extends Controller
             'donation_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
             'donation_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
             'donation_notes.required_if' => 'Please provide the details for your selected method.',
+            'expected_cost.gt' => 'Please enter a cost greater than zero.',
         ]);
 
         $image = $donation->image;
@@ -553,7 +576,7 @@ class DonationController extends Controller
         $donation->save();
 
         if (!$isDraft && (int) $donation->donation_email_status !== 1) {
-            Mail::to($request->user()->email)->send(new DonationCreated($donation, $request->user()));
+            $this->sendMailQuietly(fn () => Mail::to($request->user()->email)->send(new DonationCreated($donation, $request->user())), 'DonationCreated');
             $donation->forceFill(['donation_email_status' => 1])->save();
         }
 
@@ -578,9 +601,14 @@ class DonationController extends Controller
 
     public function destroy(Request $request, int $donation): RedirectResponse
     {
+        // Deletable while it's still a Draft (0) or Current (1), and also
+        // once it's Completed (3, the "Granted" section) — same as any
+        // other owned post can be cleaned up once it's done. Not while it's
+        // In Progress/Accepted (2), since someone is actively mid-fulfillment
+        // at that point.
         $donation = Donation::where('id', $donation)
             ->where('created_by', Auth::id())
-            ->whereIn('status', [0, 1])
+            ->whereIn('status', [0, 1, 3])
             ->firstOrFail();
 
         $donation->delete();
@@ -648,12 +676,12 @@ class DonationController extends Controller
 
         if ($acceptor && $donor) {
             if ((int) $donation->non_pay_option !== 1) {
-                Mail::to($acceptor->email)->send(new DonationAcceptedFinancial($donation, $acceptor, $donor));
+                $this->sendMailQuietly(fn () => Mail::to($acceptor->email)->send(new DonationAcceptedFinancial($donation, $acceptor, $donor)), 'DonationAcceptedFinancial');
             } else {
-                Mail::to($acceptor->email)->send(new DonationAcceptedNonFinancial($donation, $acceptor, $donor));
+                $this->sendMailQuietly(fn () => Mail::to($acceptor->email)->send(new DonationAcceptedNonFinancial($donation, $acceptor, $donor)), 'DonationAcceptedNonFinancial');
             }
 
-            Mail::to($donor->email)->send(new DonationAcceptedCreator($donation, $donor, $acceptor));
+            $this->sendMailQuietly(fn () => Mail::to($donor->email)->send(new DonationAcceptedCreator($donation, $donor, $acceptor)), 'DonationAcceptedCreator');
         }
 
         // Carries forward whatever source/source_tab the Accept form was
@@ -687,12 +715,12 @@ class DonationController extends Controller
 
         $acceptor = $donation->accepted_by ? User::find($donation->accepted_by) : null;
         if ($acceptor) {
-            Mail::to($acceptor->email)->send(new DonationAcceptedCompleted($donation, $acceptor));
+            $this->sendMailQuietly(fn () => Mail::to($acceptor->email)->send(new DonationAcceptedCompleted($donation, $acceptor)), 'DonationAcceptedCompleted');
         }
 
         $donor = Auth::user();
         if ($donor) {
-            Mail::to($donor->email)->send(new DonationCreatorCompleted($donation, $donor));
+            $this->sendMailQuietly(fn () => Mail::to($donor->email)->send(new DonationCreatorCompleted($donation, $donor)), 'DonationCreatorCompleted');
         }
 
         // Carries forward whatever source/source_tab the Complete Donation

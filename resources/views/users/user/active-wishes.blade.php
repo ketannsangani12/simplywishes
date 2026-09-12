@@ -80,7 +80,7 @@ No popular wishes or donations yet.
 </div>
 </div>
 <div class="p-4 space-y-3">
-<div class="flex items-center justify-between gap-3">
+<div class="flex items-start justify-between gap-3">
 <a href="{{ $item['link'] }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $item['title'] }}</h3>
 </a>
@@ -147,7 +147,7 @@ No granted wishes or donations yet.
 </div>
 </div>
 <div class="p-4 space-y-3">
-<div class="flex items-center justify-between mb-2">
+<div class="flex items-start justify-between mb-2">
 <a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $wish->wish_title ?: 'Untitled wish' }}</h3>
 </a>
@@ -208,7 +208,7 @@ No granted wishes or donations yet.
 </div>
 </div>
 <div class="p-4 space-y-3">
-<div class="flex items-center justify-between mb-2">
+<div class="flex items-start justify-between mb-2">
 <a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'granted']) }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $donation->title ?: 'Untitled donation' }}</h3>
 </a>
@@ -279,7 +279,7 @@ No in-progress wishes or donations yet.
 </div>
 </div>
 <div class="p-4 space-y-3">
-<div class="flex items-center justify-between mb-2">
+<div class="flex items-start justify-between mb-2">
 <a href="{{ route('wishes.show', ['wish' => $wish->w_id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $wish->wish_title ?: 'Untitled wish' }}</h3>
 </a>
@@ -340,7 +340,7 @@ No in-progress wishes or donations yet.
 </div>
 </div>
 <div class="p-4 space-y-3">
-<div class="flex items-center justify-between mb-2">
+<div class="flex items-start justify-between mb-2">
 <a href="{{ route('donations.show', ['donation' => $donation->id, 'source' => 'active', 'source_tab' => 'in-progress']) }}" class="min-w-0 flex-1 block hover:underline">
 <h3 class="font-bold text-lg text-text-light dark:text-text-dark">{{ $donation->title ?: 'Untitled donation' }}</h3>
 </a>
@@ -428,10 +428,17 @@ No current wishes available yet.
   $creatorName = $creator ? trim(($creator->first_name ?? '') . ' ' . ($creator->last_name ?? '')) : '';
   $creatorName = $creatorName !== '' ? $creatorName : ($creator->name ?? 'Wish Creator');
   $creatorImage = $creator && $creator->profile_image ? asset($creator->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode($creatorName) . '&background=E2E8F0&color=0F172A';
+  $wishType = (int) $wish->non_pay_option === 1 ? 'Non-financial' : 'Financial';
 @endphp
 <div class="flex items-center gap-2">
 <img alt="{{ $creatorName }}" class="w-7 h-7 rounded-full object-cover" src="{{ $creatorImage }}"/>
 <span class="text-sm text-text-muted-light">{{ $creatorName }}</span>
+</div>
+<div>
+  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">Current</span>
+</div>
+<div class="text-xs font-medium text-text-muted-light">
+  Wish Type: <span class="text-text-light">{{ $wishType }}</span>
 </div>
 </div>
 </div>

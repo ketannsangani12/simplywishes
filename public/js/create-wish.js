@@ -248,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const date = document.getElementById('wish-date');
     const payment = document.querySelector('input[name="payment"]:checked');
     const contact = document.getElementById('contact');
+    const cost = document.getElementById('cost');
     const funding = document.querySelector('input[name="funding"]:checked');
     const nonFinancial = document.querySelector('input[name="non_financial_method"]:checked');
     const nonFinancialNotesValue = nonFinancialNotes ? nonFinancialNotes.value.trim() : '';
@@ -282,9 +283,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const contactFormatOk = contactFilled && isEmailValid(contactValue);
       showError('contact', !contactFormatOk, contactFilled ? 'Please enter a valid email address.' : 'Email is required.');
       valid = valid && contactFormatOk;
+
+      const costValue = cost ? parseFloat(cost.value) : NaN;
+      const costOk = !Number.isNaN(costValue) && costValue > 0;
+      showError('cost', !costOk, cost && cost.value.trim() ? 'Please enter a cost greater than zero.' : 'Cost is required.');
+      valid = valid && costOk;
     } else {
       showError('payment', false);
       showError('contact', false);
+      showError('cost', false);
     }
 
     if (funding && funding.value === 'no') {
@@ -353,6 +360,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (contact) {
       contact.addEventListener('input', () => {
         if (isEmailValid(contact.value.trim())) showError('contact', false);
+      });
+    }
+    const cost = document.getElementById('cost');
+    if (cost) {
+      cost.addEventListener('input', () => {
+        const value = parseFloat(cost.value);
+        if (!Number.isNaN(value) && value > 0) showError('cost', false);
       });
     }
     if (nonFinancialNotesInput) {

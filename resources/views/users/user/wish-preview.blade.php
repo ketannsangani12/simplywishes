@@ -39,11 +39,25 @@
             {{ $wish->wish_title ?: 'Untitled wish' }}
           </h1>
           <div class="flex flex-nowrap items-center gap-2 shrink-0 overflow-x-auto scrollbar-hide">
-            @if((int) ($wish->wished_by ?? 0) === (int) auth()->id() && (int) ($wish->wish_progress_status ?? 0) === 0)
+            @php
+              $isWishOwner = (int) ($wish->wished_by ?? 0) === (int) auth()->id();
+              $wishProgressStatus = (int) ($wish->wish_progress_status ?? 0);
+              // Editing only makes sense while the wish is still Current —
+              // once it's Granted (or In Progress) the details are locked
+              // in. Deleting, though, should follow the same rule as any
+              // other owned post: allowed for a Current wish, and also for
+              // one that's already Granted (fulfilled and done), just not
+              // while it's actively In Progress with a grantor mid-fulfillment.
+              $isWishEditable = $isWishOwner && $wishProgressStatus === 0;
+              $isWishDeletable = $isWishOwner && in_array($wishProgressStatus, [0, 2], true);
+            @endphp
+            @if($isWishEditable)
               <a class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-brand-blue-light text-sm font-semibold hover:bg-primary/30 transition-colors" href="{{ route('wishes.edit', ['wish' => $wish->w_id, 'source' => $source, 'source_tab' => $sourceTab]) }}">
                 <span class="material-icons !text-base">edit</span>
                 Update
               </a>
+            @endif
+            @if($isWishDeletable)
               <form class="shrink-0" action="{{ route('wishes.destroy', $wish->w_id) }}" method="POST">
                 @csrf
                 @method('DELETE')

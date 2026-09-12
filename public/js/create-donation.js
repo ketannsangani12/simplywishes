@@ -204,7 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
       showError('donation-payment', !paymentOk);
       valid = valid && paymentOk;
 
-      const costOk = !!(cost && String(cost.value).trim());
+      const costValue = cost ? parseFloat(cost.value) : NaN;
+      const costOk = !Number.isNaN(costValue) && costValue > 0;
       showError('donation-cost', !costOk);
       valid = valid && costOk;
     } else {
@@ -312,7 +313,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cost = document.getElementById('donation-cost');
     if (cost) {
       cost.addEventListener('input', () => {
-        if (String(cost.value).trim()) showError('donation-cost', false);
+        const value = parseFloat(cost.value);
+        if (!Number.isNaN(value) && value > 0) showError('donation-cost', false);
       });
     }
 
