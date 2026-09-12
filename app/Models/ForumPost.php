@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Scopes\ExcludeBlockedUsersScope;
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -12,6 +13,11 @@ class ForumPost extends Model
 {
     protected $table = 'forum';
     protected $primaryKey = 'e_id';
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new ExcludeBlockedUsersScope('created_by'));
+    }
 
     protected $fillable = [
         'e_title',

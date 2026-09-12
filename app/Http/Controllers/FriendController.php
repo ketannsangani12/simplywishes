@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\FriendRequestReceived;
+use App\Models\ChatConversation;
 use App\Models\Friend;
 use App\Models\FriendBlock;
 use App\Models\FriendRequest;
@@ -134,14 +135,55 @@ class FriendController extends Controller
             $query->where('sender_id', $user)->where('receiver_id', $blockerId);
         })->delete();
 
+        // Blocking also pulls any existing conversation out of both inboxes
+        // — same "hidden" mechanism a user already has for removing a
+        // conversation from their own view, just applied to both sides at
+        // once here.
+        $this->setConversationHiddenBetween($blockerId, $user, true);
+
         return back()->with('status', 'User blocked.');
     }
 
     public function unblock(int $user): RedirectResponse
     {
-        FriendBlock::where('blocker_id', Auth::id())->where('blocked_id', $user)->delete();
+        $currentUserId = (int) Auth::id();
+
+        FriendBlock::where('blocker_id', $currentUserId)->where('blocked_id', $user)->delete();
+
+        // Only bring the conversation back once neither side still has the
+        // other blocked — the other person may independently still have
+        // *me* blocked even after I've unblocked them.
+        if (! FriendBlock::existsBetween($currentUserId, $user)) {
+            $this->setConversationHiddenBetween($currentUserId, $user, false);
+        }
 
         return back()->with('status', 'User unblocked.');
+    }
+
+    /**
+     * Hide (or restore) any existing conversation between these two users
+     * for both participants at once — used when a block starts or ends,
+     * as opposed to the single-sided "remove this conversation from just
+     * my inbox" a user can already do from the chat itself.
+     */
+    private function setConversationHiddenBetween(int $userId, int $otherUserId, bool $hidden): void
+    {
+        $conversation = ChatConversation::where(function ($query) use ($userId, $otherUserId) {
+            $query->where('user_one_id', $userId)->where('user_two_id', $otherUserId);
+        })->orWhere(function ($query) use ($userId, $otherUserId) {
+            $query->where('user_one_id', $otherUserId)->where('user_two_id', $userId);
+        })->first();
+
+        if (! $conversation) {
+            return;
+        }
+
+        $value = $hidden ? now() : null;
+
+        $conversation->update([
+            'user_one_hidden_at' => $value,
+            'user_two_hidden_at' => $value,
+        ]);
     }
 
     private function areFriends(int $userId, int $friendId): bool

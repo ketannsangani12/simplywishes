@@ -106,9 +106,12 @@ class SiteController extends Controller
             $tab = 'wishers';
         }
 
-        $userBaseQuery = function () use ($searchTerm) {
+        $blockedIds = FriendBlock::blockedUserIdsFor((int) Auth::id());
+
+        $userBaseQuery = function () use ($searchTerm, $blockedIds) {
             return User::query()
                 ->whereNull('deleted_at')
+                ->when($blockedIds->isNotEmpty(), fn ($query) => $query->whereNotIn('users.id', $blockedIds))
                 ->when($searchTerm !== '', function ($query) use ($searchTerm) {
                     $query->where(function ($userQuery) use ($searchTerm) {
                         $userQuery->where('name', 'like', "%{$searchTerm}%")
@@ -206,6 +209,14 @@ class SiteController extends Controller
         $requestReceived = ! $isSelf && FriendRequest::where('sender_id', $member->id)->where('receiver_id', $viewerId)->where('status', 0)->exists();
         $isBlockedByMe = ! $isSelf && FriendBlock::where('blocker_id', $viewerId)->where('blocked_id', $member->id)->exists();
         $isBlockingMe = ! $isSelf && FriendBlock::where('blocker_id', $member->id)->where('blocked_id', $viewerId)->exists();
+
+        // Someone who has blocked me shouldn't be findable by me at all —
+        // not even a restricted view of their profile, since it's their
+        // block, not mine. It should behave exactly like the profile
+        // doesn't exist.
+        if ($isBlockingMe) {
+            abort(404);
+        }
 
         return view('users.user.member-profile', [
             'member' => $member,
@@ -1023,8 +1034,16 @@ class SiteController extends Controller
         $searchResults = collect();
 
         if ($searchTerm !== '') {
+            // Someone who has blocked *me* shouldn't turn up in my search at
+            // all — not even the restricted "you blocked this user" profile
+            // view, since I'm not the one who blocked them. A user I've
+            // blocked myself is still findable here, though, since that's
+            // how their profile's "Unblock" button stays reachable.
+            $blockingMeIds = FriendBlock::where('blocked_id', $userId)->pluck('blocker_id');
+
             $searchResults = User::query()
                 ->where('id', '!=', $userId)
+                ->when($blockingMeIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $blockingMeIds))
                 ->where(function ($query) use ($searchTerm) {
                     $query->where('name', 'like', "%{$searchTerm}%")
                         ->orWhere('first_name', 'like', "%{$searchTerm}%")

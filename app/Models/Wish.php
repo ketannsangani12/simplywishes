@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\ExcludeBlockedUsersScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -10,6 +11,11 @@ class Wish extends Model
     protected $table = 'wishes';
     protected $primaryKey = 'w_id';
     public $timestamps = false;
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new ExcludeBlockedUsersScope('wished_by'));
+    }
 
     protected $fillable = [
         'wished_by',

@@ -99,10 +99,12 @@ class ChatController extends Controller
     {
         $userId = Auth::id();
         $searchTerm = trim((string) $request->query('q', ''));
+        $blockedIds = FriendBlock::blockedUserIdsFor((int) $userId);
 
         $users = User::with('presence')
             ->where('id', '!=', $userId)
             ->whereNull('deleted_at')
+            ->when($blockedIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $blockedIds))
             ->when($searchTerm !== '', function ($query) use ($searchTerm) {
                 $query->where(function ($userQuery) use ($searchTerm) {
                     $userQuery->where('name', 'like', "%{$searchTerm}%")

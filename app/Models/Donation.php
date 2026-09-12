@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\ExcludeBlockedUsersScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -9,6 +10,11 @@ class Donation extends Model
 {
     protected $table = 'donations';
     public $timestamps = false;
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new ExcludeBlockedUsersScope('created_by'));
+    }
 
     protected $fillable = [
         'created_by',

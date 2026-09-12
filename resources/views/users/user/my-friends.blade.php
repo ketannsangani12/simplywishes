@@ -211,7 +211,7 @@
                         <form method="POST" action="{{ route('friends.unfriend', $friend->id) }}">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <button type="button" class="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark hover:bg-gray-50 dark:hover:bg-gray-800" data-confirm-delete data-confirm-title="Are you sure you want to remove {{ $friendName }} from your friends list?" data-confirm-label="Unfriend">
                             <span class="material-symbols-outlined text-sm">person_remove</span>
                             Unfriend
                           </button>
@@ -327,7 +327,7 @@
                         <form method="POST" action="{{ route('friends.unfriend', $user->id) }}">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <button type="button" class="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark hover:bg-gray-50 dark:hover:bg-gray-800" data-confirm-delete data-confirm-title="Are you sure you want to remove {{ $name }} from your friends list?" data-confirm-label="Unfriend">
                             <span class="material-symbols-outlined text-sm">person_remove</span>
                             Unfriend
                           </button>
