@@ -49,6 +49,7 @@ No popular wishes or donations yet.
 </a>
 <div class="absolute left-3 top-3"><span class="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow">{{ $isWish ? 'Wish' : 'Donation' }}</span></div>
 <div class="absolute top-3 right-3 flex items-center gap-2">
+@auth
 <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ $isWish ? (in_array($item['wish_id'], $favWishIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '') : (in_array($item['donation_id'], $favDonationIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '') }}" data-activity="fav" @if($isWish) data-wish-id="{{ $item['wish_id'] }}" aria-label="Save wish" @else data-donation-id="{{ $item['donation_id'] }}" aria-label="Save donation" @endif type="button">
 <span class="material-icons !text-base {{ $isWish ? (in_array($item['wish_id'], $favWishIds ?? [], true) ? 'text-yellow-400' : '') : (in_array($item['donation_id'], $favDonationIds ?? [], true) ? 'text-yellow-400' : '') }}">{{ $isWish ? (in_array($item['wish_id'], $favWishIds ?? [], true) ? 'bookmark' : 'bookmark_border') : (in_array($item['donation_id'], $favDonationIds ?? [], true) ? 'bookmark' : 'bookmark_border') }}</span>
 </button>
@@ -77,6 +78,17 @@ No popular wishes or donations yet.
 </div>
 </div>
 </div>
+@else
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">bookmark_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">favorite_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">share</span>
+</div>
+@endauth
 </div>
 </div>
 <div class="p-4 space-y-3">
@@ -116,6 +128,7 @@ No granted wishes or donations yet.
 </a>
 <div class="absolute left-3 top-3"><span class="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow">Wish</span></div>
 <div class="absolute top-3 right-3 flex items-center gap-2">
+@auth
 <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-wish-id="{{ $wish->w_id }}" aria-label="Save wish" type="button">
 <span class="material-icons !text-base {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
 </button>
@@ -144,6 +157,17 @@ No granted wishes or donations yet.
 </div>
 </div>
 </div>
+@else
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">bookmark_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">favorite_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">share</span>
+</div>
+@endauth
 </div>
 </div>
 <div class="p-4 space-y-3">
@@ -177,6 +201,7 @@ No granted wishes or donations yet.
 </a>
 <div class="absolute left-3 top-3"><span class="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow">Donation</span></div>
 <div class="absolute top-3 right-3 flex items-center gap-2">
+@auth
 <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-donation-id="{{ $donation->id }}" aria-label="Save donation" type="button">
 <span class="material-icons !text-base {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($donation->id, $favDonationIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
 </button>
@@ -205,6 +230,17 @@ No granted wishes or donations yet.
 </div>
 </div>
 </div>
+@else
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">bookmark_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">favorite_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">share</span>
+</div>
+@endauth
 </div>
 </div>
 <div class="p-4 space-y-3">
@@ -248,6 +284,7 @@ No in-progress wishes or donations yet.
 </a>
 <div class="absolute left-3 top-3"><span class="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow">Wish</span></div>
 <div class="absolute top-3 right-3 flex items-center gap-2">
+@auth
 <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-wish-id="{{ $wish->w_id }}" aria-label="Save wish" type="button">
 <span class="material-icons !text-base {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
 </button>
@@ -276,6 +313,17 @@ No in-progress wishes or donations yet.
 </div>
 </div>
 </div>
+@else
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">bookmark_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">favorite_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">share</span>
+</div>
+@endauth
 </div>
 </div>
 <div class="p-4 space-y-3">
@@ -309,6 +357,7 @@ No in-progress wishes or donations yet.
 </a>
 <div class="absolute left-3 top-3"><span class="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow">Donation</span></div>
 <div class="absolute top-3 right-3 flex items-center gap-2">
+@auth
 <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-donation-id="{{ $donation->id }}" aria-label="Save donation" type="button">
 <span class="material-icons !text-base {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($donation->id, $favDonationIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
 </button>
@@ -337,6 +386,17 @@ No in-progress wishes or donations yet.
 </div>
 </div>
 </div>
+@else
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">bookmark_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">favorite_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">share</span>
+</div>
+@endauth
 </div>
 </div>
 <div class="p-4 space-y-3">
@@ -389,6 +449,7 @@ No current wishes available yet.
 <img alt="Wish image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
 </a>
 <div class="absolute top-3 right-3 flex items-center gap-2">
+@auth
 <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-wish-id="{{ $wish->w_id }}" aria-label="Save wish" type="button">
 <span class="material-icons !text-base {{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($wish->w_id, $favWishIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
 </button>
@@ -417,6 +478,17 @@ No current wishes available yet.
 </div>
 </div>
 </div>
+@else
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">bookmark_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">favorite_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">share</span>
+</div>
+@endauth
 </div>
 </div>
 <div class="p-4 space-y-3">
@@ -473,6 +545,7 @@ No current donations available yet.
 <img alt="Donation image" class="w-full aspect-square object-cover max-h-48" src="{{ $image }}"/>
 </a>
 <div class="absolute top-3 right-3 flex items-center gap-2">
+@auth
 <button class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow hover:bg-white hover:text-primary transition js-activity {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'ring-2 ring-primary/60 text-primary is-active' : '' }}" data-activity="fav" data-donation-id="{{ $donation->id }}" aria-label="Save donation" type="button">
 <span class="material-icons !text-base {{ in_array($donation->id, $favDonationIds ?? [], true) ? 'text-yellow-400' : '' }}">{{ in_array($donation->id, $favDonationIds ?? [], true) ? 'bookmark' : 'bookmark_border' }}</span>
 </button>
@@ -501,6 +574,17 @@ No current donations available yet.
 </div>
 </div>
 </div>
+@else
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">bookmark_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">favorite_border</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-white/90 text-slate-700 shadow flex items-center justify-center" aria-hidden="true">
+<span class="material-icons !text-base">share</span>
+</div>
+@endauth
 </div>
 </div>
 <div class="p-4 space-y-3">

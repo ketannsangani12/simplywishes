@@ -2,14 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
+use App\Models\ChatConversation;
+use App\Models\ChatMessage;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Donation;
+use App\Models\DonationComment;
+use App\Models\DonationCommentLike;
+use App\Models\ForumComment;
+use App\Models\ForumCommentLike;
+use App\Models\ForumLike;
+use App\Models\ForumPost;
+use App\Models\Friend;
+use App\Models\FriendBlock;
+use App\Models\FriendRequest;
+use App\Models\HappyStory;
+use App\Models\HappyStoryComment;
+use App\Models\HappyStoryCommentLike;
+use App\Models\Report;
 use App\Models\State;
 use App\Models\User;
+use App\Models\UserPresence;
+use App\Models\Wish;
+use App\Models\WishComment;
+use App\Models\WishCommentLike;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -258,7 +280,10 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        $request->validate([
+        // Named error bag so a failed delete-account attempt only shows its
+        // error inside the delete-account modal — not in the page's general
+        // error summary, which reads from the default (unnamed) bag.
+        $request->validateWithBag('deleteAccount', [
             'delete_password' => ['required', 'string'],
         ], [
             'delete_password.required' => 'Please enter your password to confirm account deletion.',
@@ -266,7 +291,7 @@ class AuthController extends Controller
 
         if (! Hash::check($request->input('delete_password'), $user->password)) {
             return back()
-                ->withErrors(['delete_password' => 'The password you entered is incorrect.'])
+                ->withErrors(['delete_password' => 'The password you entered is incorrect.'], 'deleteAccount')
                 ->with('open_delete_account', true);
         }
 
@@ -279,31 +304,18 @@ class AuthController extends Controller
             }
         }
 
-        // Deactivate & anonymize rather than hard-delete: wishes, donations,
-        // forum posts, chat messages, friend requests, etc. all reference
-        // the user by a plain integer column with no DB foreign key, so a
-        // hard delete would leave every one of those orphaned instead of
-        // cleanly removed. This scrubs personal info, frees the email for
-        // reuse, and blocks login (see login()), while their historical
-        // content stays intact and shows as "Deleted User" to everyone else.
-        $user->forceFill([
-            'name' => 'Deleted User',
-            'first_name' => 'Deleted',
-            'last_name' => 'User',
-            'username' => null,
-            'email' => 'deleted-user-' . $user->id . '-' . Str::random(10) . '@deleted.simplywishes.invalid',
-            'fb_id' => null,
-            'google_id' => null,
-            'about' => null,
-            'country' => null,
-            'state' => null,
-            'city' => null,
-            'profile_image' => null,
-            'email_verified_at' => null,
-            'password' => Hash::make(Str::random(40)),
-            'remember_token' => null,
-            'deleted_at' => now(),
-        ])->save();
+        // A genuine, complete erasure — not a rename. An earlier version of
+        // this kept the row (renamed to "Deleted User") and left every post,
+        // friendship, block, and chat conversation in place purely because
+        // none of those tables have a real DB foreign key on the user id.
+        // That's a privacy problem, not just a UX one: a deleted user's
+        // wishes/donations stayed grantable/acceptable, their conversations
+        // stayed open for the other side to keep messaging into, they still
+        // turned up in friend search and could still receive friend
+        // requests, and any wish/donation they'd granted/accepted for
+        // someone else was stuck showing "Deleted User" forever. Everything
+        // below removes all of it; see $this->eraseUserData().
+        $this->eraseUserData((int) $user->id);
 
         Auth::logout();
         $request->session()->invalidate();
@@ -312,6 +324,130 @@ class AuthController extends Controller
         return redirect()
             ->route('home')
             ->with('status', 'Your account has been deleted. We\'re sorry to see you go.');
+    }
+
+    /**
+     * Wipe every trace of a user from the site, then remove the account
+     * itself. Order doesn't matter for referential integrity — none of
+     * these tables have a real foreign key on the user id (see the old
+     * deleted_at migration's own note on that) — but it's grouped by
+     * "their own content", "their footprint on other people's content",
+     * "relationships", "chat", and finally the account row itself.
+     *
+     * withoutGlobalScopes() on every Wish/Donation/HappyStory/ForumPost
+     * query here specifically bypasses ExcludeBlockedUsersScope: that scope
+     * hides a blocked user's posts from the *current* session's normal
+     * browsing, which is exactly wrong for an erasure sweep that must see
+     * every row regardless of who this user has blocked or been blocked by.
+     */
+    private function eraseUserData(int $userId): void
+    {
+        DB::transaction(function () use ($userId) {
+            $ownWishIds = Wish::withoutGlobalScopes()->where('wished_by', $userId)->pluck('w_id');
+            $ownDonationIds = Donation::withoutGlobalScopes()->where('created_by', $userId)->pluck('id');
+            $ownForumIds = ForumPost::withoutGlobalScopes()->where('created_by', $userId)->pluck('e_id');
+            $ownStoryIds = HappyStory::withoutGlobalScopes()->where('user_id', $userId)->pluck('hs_id');
+
+            // Comments (anyone's) and comment-likes on this user's own posts
+            // — the posts themselves are about to be deleted, so nothing
+            // should be left pointing at them.
+            $wishCommentIds = WishComment::whereIn('wish_id', $ownWishIds)->pluck('id');
+            WishCommentLike::whereIn('comment_id', $wishCommentIds)->delete();
+            WishComment::whereIn('wish_id', $ownWishIds)->delete();
+
+            $donationCommentIds = DonationComment::whereIn('donation_id', $ownDonationIds)->pluck('id');
+            DonationCommentLike::whereIn('comment_id', $donationCommentIds)->delete();
+            DonationComment::whereIn('donation_id', $ownDonationIds)->delete();
+
+            $forumCommentIds = ForumComment::whereIn('forum_id', $ownForumIds)->pluck('id');
+            ForumCommentLike::whereIn('comment_id', $forumCommentIds)->delete();
+            ForumComment::whereIn('forum_id', $ownForumIds)->delete();
+            ForumLike::whereIn('forum_id', $ownForumIds)->delete();
+
+            $storyCommentIds = HappyStoryComment::whereIn('happy_story_id', $ownStoryIds)->pluck('id');
+            HappyStoryCommentLike::whereIn('comment_id', $storyCommentIds)->delete();
+            HappyStoryComment::whereIn('happy_story_id', $ownStoryIds)->delete();
+
+            // This user's own comments/likes on *other* people's posts.
+            $commentedElsewhereWishIds = WishComment::where('user_id', $userId)->pluck('id');
+            WishCommentLike::whereIn('comment_id', $commentedElsewhereWishIds)->delete();
+            WishCommentLike::where('user_id', $userId)->delete();
+            WishComment::where('user_id', $userId)->delete();
+
+            $commentedElsewhereDonationIds = DonationComment::where('user_id', $userId)->pluck('id');
+            DonationCommentLike::whereIn('comment_id', $commentedElsewhereDonationIds)->delete();
+            DonationCommentLike::where('user_id', $userId)->delete();
+            DonationComment::where('user_id', $userId)->delete();
+
+            $commentedElsewhereForumIds = ForumComment::where('user_id', $userId)->pluck('id');
+            ForumCommentLike::whereIn('comment_id', $commentedElsewhereForumIds)->delete();
+            ForumCommentLike::where('user_id', $userId)->delete();
+            ForumComment::where('user_id', $userId)->delete();
+            ForumLike::where('user_id', $userId)->delete();
+
+            $commentedElsewhereStoryIds = HappyStoryComment::where('user_id', $userId)->pluck('id');
+            HappyStoryCommentLike::whereIn('comment_id', $commentedElsewhereStoryIds)->delete();
+            HappyStoryCommentLike::where('user_id', $userId)->delete();
+            HappyStoryComment::where('user_id', $userId)->delete();
+
+            // The posts themselves — every phase: draft, active/current,
+            // in progress, granted/completed, saved by someone else.
+            Wish::withoutGlobalScopes()->where('wished_by', $userId)->delete();
+            Donation::withoutGlobalScopes()->where('created_by', $userId)->delete();
+            ForumPost::withoutGlobalScopes()->where('created_by', $userId)->delete();
+            HappyStory::withoutGlobalScopes()->where('user_id', $userId)->delete();
+
+            // Someone else's wish/donation this user granted/accepted as a
+            // third party stays — it's not this user's post to erase — but
+            // it can't go on citing a person who no longer exists. Put it
+            // back the way it looked before this user ever got involved:
+            // no grantor/acceptor, back to its normal "available" state,
+            // free for someone else to grant/accept instead of stuck
+            // showing "Deleted User" forever.
+            Wish::withoutGlobalScopes()->where('granted_by', $userId)->update([
+                'granted_by' => null,
+                'granted_date' => null,
+                'process_status' => 0,
+                'process_granted_by' => null,
+                'process_granted_date' => null,
+                'wish_progress_status' => 0,
+                'grant_note' => null,
+            ]);
+
+            Donation::withoutGlobalScopes()->where('accepted_by', $userId)->update([
+                'accepted_by' => null,
+                'accepted_at' => null,
+                'status' => 1,
+                'process_status' => 0,
+                'process_granted_by' => null,
+                'process_granted_date' => null,
+            ]);
+
+            // Friends, pending requests (sent or received), and blocks (in
+            // either direction).
+            Friend::where('user_id', $userId)->orWhere('friend_id', $userId)->delete();
+            FriendRequest::where('sender_id', $userId)->orWhere('receiver_id', $userId)->delete();
+            FriendBlock::where('blocker_id', $userId)->orWhere('blocked_id', $userId)->delete();
+
+            // Every chat conversation involving this user, messages included
+            // — not just hidden from view the way blocking hides one, gone.
+            $conversationIds = ChatConversation::where('user_one_id', $userId)
+                ->orWhere('user_two_id', $userId)
+                ->pluck('id');
+            ChatMessage::whereIn('conversation_id', $conversationIds)->delete();
+            ChatConversation::whereIn('id', $conversationIds)->delete();
+
+            // This user's own likes/saves on other people's posts, their
+            // online-presence record, and any moderation reports naming them
+            // (filed by them, or filed about them).
+            Activity::where('user_id', $userId)->delete();
+            UserPresence::where('user_id', $userId)->delete();
+            Report::where('reporter_id', $userId)->orWhere('reported_user_id', $userId)->delete();
+
+            // The account itself, last — everything above no longer
+            // references it, so nothing is left dangling.
+            User::withoutGlobalScopes()->whereKey($userId)->delete();
+        });
     }
 
     public function statesByCountry(int $country): JsonResponse
