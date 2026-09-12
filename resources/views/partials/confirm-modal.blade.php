@@ -20,15 +20,15 @@
       <span class="material-icons text-red-500 !text-2xl" aria-hidden="true">warning</span>
       <div>
         <h2 class="text-lg font-semibold text-text-light dark:text-text-dark" id="global-confirm-modal-title">Are you sure?</h2>
-        <p class="mt-1 text-sm text-text-muted-light dark:text-text-muted-dark" id="global-confirm-modal-message">This action cannot be undone.</p>
+        <p class="mt-1 text-sm text-text-muted-light dark:text-text-muted-dark hidden" id="global-confirm-modal-message"></p>
       </div>
     </div>
     <div class="flex justify-end gap-3 pt-2">
-      <button type="button" class="px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-semibold text-text-light dark:text-text-dark hover:bg-slate-50 dark:hover:bg-slate-700" id="global-confirm-modal-cancel">
-        Cancel
-      </button>
       <button type="button" class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700" id="global-confirm-modal-confirm">
         Delete
+      </button>
+      <button type="button" class="px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-semibold text-text-light dark:text-text-dark hover:bg-slate-50 dark:hover:bg-slate-700" id="global-confirm-modal-cancel">
+        Cancel
       </button>
     </div>
   </div>

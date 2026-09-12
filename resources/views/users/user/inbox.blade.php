@@ -588,8 +588,7 @@
 
     async function deleteMessage(id) {
       const confirmed = await window.confirmDialog({
-        title: 'Delete message?',
-        message: 'This message will be permanently deleted for you. This cannot be undone.',
+        title: 'Are you sure you want to delete this message?',
       });
       if (!confirmed) return;
       try {
@@ -707,8 +706,7 @@
       chatOptionsMenu.classList.add('hidden');
       if (!activeConversationId) return;
       const confirmed = await window.confirmDialog({
-        title: 'Delete conversation?',
-        message: 'It will be removed from your inbox. This cannot be undone.',
+        title: 'Are you sure you want to delete this conversation?',
       });
       if (!confirmed) return;
 

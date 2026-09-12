@@ -102,7 +102,7 @@
               <form action="{{ route('happy.stories.destroy', $story->hs_id) }}" method="POST">
                 @csrf
                 @method('DELETE')
-                <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition" type="button" data-confirm-delete data-confirm-title="Delete happy story?" data-confirm-message="This story and all of its comments will be permanently deleted. This cannot be undone.">
+                <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition" type="button" data-confirm-delete data-confirm-title="Are you sure you want to delete this story?">
                   <span class="material-icons !text-base">delete</span>
                   Delete
                 </button>
@@ -220,7 +220,7 @@
                                 <form action="{{ route('happy.stories.comments.destroy', [$story->hs_id, $comment->id]) }}" method="POST">
                                   @csrf
                                   @method('DELETE')
-                                  <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete comment" data-confirm-delete data-confirm-title="Delete comment?" data-confirm-message="This comment will be permanently deleted. This cannot be undone.">
+                                  <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete comment" data-confirm-delete data-confirm-title="Are you sure you want to delete this comment?">
                                     <span class="material-icons !text-base">delete</span>
                                   </button>
                                 </form>
@@ -312,7 +312,7 @@
                                             <form action="{{ route('happy.stories.comments.destroy', [$story->hs_id, $reply->id]) }}" method="POST">
                                               @csrf
                                               @method('DELETE')
-                                              <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete reply" data-confirm-delete data-confirm-title="Delete reply?" data-confirm-message="This reply will be permanently deleted. This cannot be undone.">
+                                              <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete reply" data-confirm-delete data-confirm-title="Are you sure you want to delete this reply?">
                                                 <span class="material-icons !text-base">delete</span>
                                               </button>
                                             </form>

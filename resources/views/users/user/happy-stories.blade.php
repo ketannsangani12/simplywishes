@@ -115,7 +115,7 @@
                   <form action="{{ route('happy.stories.destroy', $story->hs_id) }}" method="POST">
                     @csrf
                     @method('DELETE')
-                    <button class="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition" type="button" data-confirm-delete data-confirm-title="Delete happy story?" data-confirm-message="This story and all of its comments will be permanently deleted. This cannot be undone.">
+                    <button class="inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition" type="button" data-confirm-delete data-confirm-title="Are you sure you want to delete this story?">
                       <span class="material-symbols-outlined text-base">delete</span>
                       Delete
                     </button>

@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const confirmButton = document.getElementById('global-confirm-modal-confirm');
 
   const DEFAULT_TITLE = 'Are you sure?';
-  const DEFAULT_MESSAGE = 'This action cannot be undone.';
   const DEFAULT_CONFIRM_LABEL = 'Delete';
 
   // Exactly one of these is ever in play at a time, depending on which mode
@@ -21,7 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const open = ({ title, message, confirmLabel } = {}) => {
     titleEl.textContent = title || DEFAULT_TITLE;
-    messageEl.textContent = message || DEFAULT_MESSAGE;
+    // The title alone ("Are you sure you want to delete this wish?") is the
+    // whole question — this subtext is only shown when a caller explicitly
+    // has something to add, not filled with a generic default.
+    if (message) {
+      messageEl.textContent = message;
+      messageEl.classList.remove('hidden');
+    } else {
+      messageEl.textContent = '';
+      messageEl.classList.add('hidden');
+    }
     confirmButton.textContent = confirmLabel || DEFAULT_CONFIRM_LABEL;
     modal.classList.remove('hidden');
     modal.classList.add('flex');

@@ -11,6 +11,7 @@
   $postImage = $post->imageUrl();
   $postVideoUrl = $post->videoUrl();
   $postLikesCount = $post->likes_count ?? $post->likes->count();
+  $forumItemLabel = (int) $post->is_video_only === 1 ? 'video' : 'article';
 
   // A text-only article genuinely has no thumbnail (the on-page <img> is
   // skipped for it too), but og:image still needs *something* — otherwise
@@ -71,7 +72,7 @@
                 <form action="{{ route('forum.destroy', $post->e_id) }}" method="POST">
                   @csrf
                   @method('DELETE')
-                  <button type="button" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold bg-red-50 text-red-600 hover:bg-red-100" aria-label="Delete forum" data-confirm-delete data-confirm-title="Delete forum post?" data-confirm-message="This post and all of its comments will be permanently deleted. This cannot be undone.">
+                  <button type="button" class="inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold bg-red-50 text-red-600 hover:bg-red-100" aria-label="Delete forum" data-confirm-delete data-confirm-title="Are you sure you want to delete this {{ $forumItemLabel }}?">
                     <span class="material-icons text-base">delete</span>
                     Delete
                   </button>
@@ -218,7 +219,7 @@
                           <form action="{{ route('forum.comments.destroy', [$post->e_id, $comment->id]) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete comment" data-confirm-delete data-confirm-title="Delete comment?" data-confirm-message="This comment will be permanently deleted. This cannot be undone.">
+                            <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete comment" data-confirm-delete data-confirm-title="Are you sure you want to delete this comment?">
                               <span class="material-icons !text-base">delete</span>
                             </button>
                           </form>
@@ -303,7 +304,7 @@
                                     <form action="{{ route('forum.comments.destroy', [$post->e_id, $reply->id]) }}" method="POST">
                                       @csrf
                                       @method('DELETE')
-                                      <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete reply" data-confirm-delete data-confirm-title="Delete reply?" data-confirm-message="This reply will be permanently deleted. This cannot be undone.">
+                                      <button class="text-text-muted-light transition hover:text-red-500" type="button" aria-label="Delete reply" data-confirm-delete data-confirm-title="Are you sure you want to delete this reply?">
                                         <span class="material-icons !text-base">delete</span>
                                       </button>
                                     </form>
