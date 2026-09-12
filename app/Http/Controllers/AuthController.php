@@ -105,6 +105,9 @@ class AuthController extends Controller
             'password' => ['required', 'min:6'],
             'confirm' => ['required', 'same:password'],
             'avatar' => ['nullable', 'image', 'max:10240'],
+            'terms' => ['accepted'],
+        ], [
+            'terms.accepted' => 'Please acknowledge you accept this condition.',
         ]);
 
         $country = Country::find($validated['country']);

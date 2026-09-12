@@ -125,7 +125,7 @@
         <div class="lg:col-span-2 space-y-6 text-sm">
           <div>
             <p class="text-text-muted-light dark:text-text-muted-dark">Description</p>
-            <p class="font-semibold">{{ $wish->wish_description ?: 'No description yet.' }}</p>
+            <p class="font-semibold whitespace-pre-line">{{ $wish->wish_description ?: 'No description yet.' }}</p>
           </div>
 
           @php

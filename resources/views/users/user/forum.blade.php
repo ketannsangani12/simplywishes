@@ -119,21 +119,7 @@
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-content">Write or Insert your article in the space provided below <span class="text-red-500">*</span></label>
-                    <div class="rounded-md border border-slate-300 dark:border-slate-600">
-                      <div class="flex items-center p-2 border-b border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 space-x-1 text-slate-600 dark:text-slate-300">
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">undo</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">redo</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">format_bold</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">format_italic</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">format_underlined</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">strikethrough_s</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">link</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">format_quote</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">image</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">help_outline</span></button>
-                      </div>
-                      <textarea class="w-full h-48 p-3 bg-transparent border-0 focus:ring-0 resize-y dark:text-white" id="article-content" name="article_content">{{ old('article_content') }}</textarea>
-                    </div>
+                    <textarea class="w-full h-48 rounded-md border border-slate-300 p-3 shadow-sm focus:border-primary focus:ring-primary dark:bg-slate-700 dark:border-slate-600 dark:text-white resize-y" id="article-content" name="article_content">{{ old('article_content') }}</textarea>
                   </div>
                   <div class="space-y-5">
                     <div>
@@ -183,21 +169,7 @@
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="video-description">Description</label>
-                    <div class="rounded-md border border-slate-300 dark:border-slate-600">
-                      <div class="flex items-center p-2 border-b border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 space-x-1 text-slate-600 dark:text-slate-300">
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">undo</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">redo</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">format_bold</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">format_italic</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">format_underlined</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">strikethrough_s</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">link</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">format_quote</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">image</span></button>
-                        <button class="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600" type="button"><span class="material-icons text-base">help_outline</span></button>
-                      </div>
-                      <textarea class="w-full h-32 p-3 bg-transparent border-0 focus:ring-0 resize-y dark:text-white" id="video-description" name="video_content">{{ old('video_content') }}</textarea>
-                    </div>
+                    <textarea class="w-full h-32 rounded-md border border-slate-300 p-3 shadow-sm focus:border-primary focus:ring-primary dark:bg-slate-700 dark:border-slate-600 dark:text-white resize-y" id="video-description" name="video_content">{{ old('video_content') }}</textarea>
                   </div>
                   <div>
                     <p class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Upload a Video <span class="text-red-500">*</span></p>

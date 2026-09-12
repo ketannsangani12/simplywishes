@@ -112,7 +112,7 @@
           </div>
 
           <div class="prose max-w-none dark:prose-invert prose-slate">
-            <p>{{ $post->description ?: $post->e_text }}</p>
+            <p class="whitespace-pre-line">{{ $post->description ?: $post->e_text }}</p>
           </div>
 
           @if ($post->featured_video_url)

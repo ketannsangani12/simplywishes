@@ -199,9 +199,12 @@
                 </div>
               </div>
 
-              <div class="flex items-start gap-3">
-                <input class="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary" id="terms" type="checkbox" required />
-                <label class="text-sm text-text-light dark:text-text-dark" for="terms">I agree to the <a class="text-brand-blue-light hover:underline" href="{{ route('terms.of.use') }}">Terms Of Use</a>, <a class="text-brand-blue-light hover:underline" href="{{ route('community.guidelines') }}">Community Guidelines</a> and <a class="text-brand-blue-light hover:underline" href="{{ route('privacy.policy') }}">Privacy Policy</a> <span class="text-red-500">*</span></label>
+              <div>
+                <div class="flex items-start gap-3">
+                  <input class="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary" id="terms" name="terms" type="checkbox" required />
+                  <label class="text-sm text-text-light dark:text-text-dark" for="terms">I agree to the <a class="text-brand-blue-light hover:underline" href="{{ route('terms.of.use') }}">Terms Of Use</a>, <a class="text-brand-blue-light hover:underline" href="{{ route('community.guidelines') }}">Community Guidelines</a> and <a class="text-brand-blue-light hover:underline" href="{{ route('privacy.policy') }}">Privacy Policy</a> <span class="text-red-500">*</span></label>
+                </div>
+                <p class="mt-1 text-sm text-red-600 hidden" id="terms-error">Please acknowledge you accept this condition.</p>
               </div>
 
               <div class="pt-2">
@@ -226,6 +229,8 @@
         const lastNameInput = document.getElementById('last-name');
         const passwordInput = document.getElementById('password');
         const confirmInput = document.getElementById('confirm');
+        const termsInput = document.getElementById('terms');
+        const termsError = document.getElementById('terms-error');
         const passwordToggleButtons = document.querySelectorAll('[data-toggle-password]');
         const statesUrlTemplate = countrySelect.dataset.statesUrl;
         const citiesUrlTemplate = stateSelect.dataset.citiesUrl;
@@ -347,6 +352,15 @@
           return true;
         };
 
+        const validateTerms = () => {
+          if (!termsInput.checked) {
+            termsError.classList.remove('hidden');
+            return false;
+          }
+          termsError.classList.add('hidden');
+          return true;
+        };
+
         [emailInput, firstNameInput, lastNameInput, passwordInput, confirmInput].forEach((field) => {
           field.addEventListener('blur', () => validateField(field));
           field.addEventListener('input', () => {
@@ -359,6 +373,8 @@
         [countrySelect, stateSelect, citySelect].forEach((field) => {
           field.addEventListener('change', () => validateSelect(field, 'Please make a selection.'));
         });
+
+        termsInput.addEventListener('change', () => validateTerms());
 
         passwordToggleButtons.forEach((button) => {
           button.addEventListener('click', () => {
@@ -398,6 +414,7 @@
           isValid = setFirstInvalid(citySelect, validateSelect(citySelect, 'Please select a city.')) && isValid;
           isValid = setFirstInvalid(passwordInput, validateField(passwordInput)) && isValid;
           isValid = setFirstInvalid(confirmInput, validateField(confirmInput)) && isValid;
+          isValid = setFirstInvalid(termsInput, validateTerms()) && isValid;
 
           if (!isValid) {
             event.preventDefault();

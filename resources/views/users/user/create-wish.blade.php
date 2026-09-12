@@ -106,18 +106,8 @@
                   <label class="block text-sm font-semibold text-text-light dark:text-text-dark" for="wish-description">Wish Description</label>
                   <span class="text-text-muted-light text-xs">(details help granters understand your need)</span>
                 </div>
-                <div class="rounded-xl border border-border-light dark:border-border-dark overflow-hidden">
-                  <div class="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-[#0f172a] border-b border-border-light dark:border-border-dark text-text-muted-light dark:text-text-muted-dark">
-                    <button class="p-2 rounded hover:bg-white dark:hover:bg-surface-dark" type="button"><span class="material-icons">format_bold</span></button>
-                    <button class="p-2 rounded hover:bg-white dark:hover:bg-surface-dark" type="button"><span class="material-icons">format_italic</span></button>
-                    <button class="p-2 rounded hover:bg-white dark:hover:bg-surface-dark" type="button"><span class="material-icons">format_list_bulleted</span></button>
-                    <button class="p-2 rounded hover:bg-white dark:hover:bg-surface-dark" type="button"><span class="material-icons">link</span></button>
-                    <button class="p-2 rounded hover:bg-white dark:hover:bg-surface-dark" type="button"><span class="material-icons">insert_photo</span></button>
-                    <button class="p-2 rounded hover:bg-white dark:hover:bg-surface-dark" type="button"><span class="material-icons">help_outline</span></button>
-                  </div>
-                  <textarea id="wish-description" name="wish_description" rows="6" placeholder="Describe what you wish for, why it matters, and any helpful details for granters."
-                    class="w-full border-0 rounded-b-xl bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-0 resize-y">{{ old('wish_description', $wish->wish_description ?? '') }}</textarea>
-                </div>
+                <textarea id="wish-description" name="wish_description" rows="6" placeholder="Describe what you wish for, why it matters, and any helpful details for granters."
+                  class="w-full rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark focus:ring-2 focus:ring-primary/60 focus:border-primary resize-y">{{ old('wish_description', $wish->wish_description ?? '') }}</textarea>
               </div>
 
               <div class="space-y-4">
