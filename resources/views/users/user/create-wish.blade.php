@@ -254,7 +254,7 @@
                           value="{{ old('expected_cost', $wish->expected_cost ?? '') }}"
                           class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark pl-8 focus:ring-2 focus:ring-primary/60 focus:border-primary" />
                       </div>
-                      <p class="text-sm text-red-600 hidden" data-error-for="cost">Please enter a cost greater than zero.</p>
+                      <p class="text-sm text-red-600 hidden" data-error-for="cost">Expected cost is required.</p>
                     </div>
                   </div>
                 </div>

@@ -454,6 +454,7 @@ class DonationController extends Controller
             'donation_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
             'donation_notes.required_if' => 'Please provide the details for your selected method.',
             'expected_cost.gt' => 'Please enter a cost greater than zero.',
+            'expected_cost.required_if' => 'Expected cost is required.',
         ]);
 
         $image = null;
@@ -544,6 +545,7 @@ class DonationController extends Controller
             'donation_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
             'donation_notes.required_if' => 'Please provide the details for your selected method.',
             'expected_cost.gt' => 'Please enter a cost greater than zero.',
+            'expected_cost.required_if' => 'Expected cost is required.',
         ]);
 
         $image = $donation->image;

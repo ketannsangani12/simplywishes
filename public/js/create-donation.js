@@ -157,9 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const financialBlock = document.getElementById('donation-financial-block');
   const methodLabel = document.getElementById('donation-method-label');
 
-  const showError = (key, show) => {
+  const showError = (key, show, message) => {
     const el = document.querySelector(`[data-error-for="${key}"]`);
     if (!el) return;
+    if (message) {
+      el.textContent = message;
+    }
     el.classList.toggle('hidden', !show);
   };
 
@@ -206,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const costValue = cost ? parseFloat(cost.value) : NaN;
       const costOk = !Number.isNaN(costValue) && costValue > 0;
-      showError('donation-cost', !costOk);
+      showError('donation-cost', !costOk, cost && cost.value.trim() ? 'Please enter a cost greater than zero.' : 'Expected cost is required.');
       valid = valid && costOk;
     } else {
       showError('donation-payment', false);

@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const costValue = cost ? parseFloat(cost.value) : NaN;
       const costOk = !Number.isNaN(costValue) && costValue > 0;
-      showError('cost', !costOk, cost && cost.value.trim() ? 'Please enter a cost greater than zero.' : 'Cost is required.');
+      showError('cost', !costOk, cost && cost.value.trim() ? 'Please enter a cost greater than zero.' : 'Expected cost is required.');
       valid = valid && costOk;
     } else {
       showError('payment', false);

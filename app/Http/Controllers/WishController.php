@@ -173,6 +173,7 @@ class WishController extends Controller
             'wish_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
             'wish_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
             'expected_cost.gt' => 'Please enter a cost greater than zero.',
+            'expected_cost.required_if' => 'Expected cost is required.',
         ]);
 
         $primaryImage = null;
@@ -686,6 +687,7 @@ class WishController extends Controller
             'wish_image_upload.required_without' => 'Please upload an image or select one from the default gallery.',
             'wish_image_default.required_without' => 'Please upload an image or select one from the default gallery.',
             'expected_cost.gt' => 'Please enter a cost greater than zero.',
+            'expected_cost.required_if' => 'Expected cost is required.',
         ]);
 
         $primaryImage = $wish->primary_image;
