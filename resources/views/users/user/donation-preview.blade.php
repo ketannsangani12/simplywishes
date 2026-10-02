@@ -183,18 +183,18 @@
                 </button>
               </form>
               <div class="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-                Accepted by {{ $acceptedByName }}{{ $donation->accepted_at ? ' on ' . \Illuminate\Support\Carbon::parse($donation->accepted_at)->format('M j, Y g:i A') : '' }}.
+                Accepted by {{ $acceptedByName }}@if($donation->accepted_at) on <x-local-time :value="$donation->accepted_at" />@endif.
               </div>
             @elseif($isInProgress)
               <div class="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-                Accepted by {{ $acceptedByName }}{{ $donation->accepted_at ? ' on ' . \Illuminate\Support\Carbon::parse($donation->accepted_at)->format('M j, Y g:i A') : '' }}.
+                Accepted by {{ $acceptedByName }}@if($donation->accepted_at) on <x-local-time :value="$donation->accepted_at" />@endif.
               </div>
             @elseif((int) $donation->status === 3)
               <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 space-y-1">
                 <div><span class="font-semibold">Donation accepted by:</span> {{ $acceptedByName }}</div>
-                <div><span class="font-semibold">Donation accepted on:</span> {{ $donation->accepted_at ? \Illuminate\Support\Carbon::parse($donation->accepted_at)->format('M j, Y g:i A') : 'Not available' }}</div>
+                <div><span class="font-semibold">Donation accepted on:</span> @if($donation->accepted_at)<x-local-time :value="$donation->accepted_at" />@else Not available @endif</div>
                 @if($donation->completed_at)
-                  <div><span class="font-semibold">Donation completed on:</span> {{ \Illuminate\Support\Carbon::parse($donation->completed_at)->format('M j, Y g:i A') }}</div>
+                  <div><span class="font-semibold">Donation completed on:</span> <x-local-time :value="$donation->completed_at" /></div>
                 @endif
               </div>
             @endif
@@ -295,7 +295,7 @@
                     <div class="flex items-start justify-between gap-3">
                       <div>
                         <h3 class="font-semibold text-primary">{{ $commenterName }}</h3>
-                        <div class="text-xs text-text-muted-light dark:text-text-muted-dark">{{ $comment->created_at?->format('F j Y g:i a') }}</div>
+                        <div class="text-xs text-text-muted-light dark:text-text-muted-dark"><x-local-time :value="$comment->created_at" style="datetime-long" /></div>
                       </div>
                       @if((int) $comment->user_id === (int) auth()->id())
                         <div class="flex items-center gap-2">
@@ -378,7 +378,7 @@
                               <div class="flex items-start justify-between gap-3">
                                 <div>
                                   <h4 class="font-semibold text-primary">{{ $replyName }}</h4>
-                                  <div class="text-xs text-text-muted-light dark:text-text-muted-dark">{{ $reply->created_at?->format('F j Y g:i a') }}</div>
+                                  <div class="text-xs text-text-muted-light dark:text-text-muted-dark"><x-local-time :value="$reply->created_at" style="datetime-long" /></div>
                                 </div>
                                 @if((int) $reply->user_id === (int) auth()->id())
                                   <div class="flex items-center gap-2">
@@ -576,7 +576,7 @@
         const encodedText = encodeURIComponent(`Check out this donation: ${donationTitle}`);
 
         if (channel === 'facebook') {
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank', 'noopener,noreferrer');
+          window.SimplyShare.facebook(url);
         } else if (channel === 'twitter') {
           window.open(`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`, '_blank', 'noopener,noreferrer');
         } else if (channel === 'instagram') {

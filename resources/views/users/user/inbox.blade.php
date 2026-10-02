@@ -308,7 +308,7 @@
         nameEl.textContent = c.name;
         const timeEl = document.createElement('span');
         timeEl.className = 'text-xs text-text-muted-light shrink-0';
-        timeEl.textContent = c.last_message_at || '';
+        timeEl.textContent = localTime(c.last_message_at_iso, 'day', c.last_message_at);
         top.appendChild(nameEl);
         top.appendChild(timeEl);
 
@@ -433,10 +433,16 @@
       bubble.appendChild(body);
     }
 
+    // Message times come from the server in UTC; show them in the viewer's
+    // time zone (public/js/local-time.js), keeping the server label as fallback.
+    function localTime(iso, style, fallback) {
+      return (window.SimplyTime && window.SimplyTime.format(iso, style)) || fallback || '';
+    }
+
     function statusText(msg) {
-      if (msg.is_deleted || !msg.is_mine) return msg.created_at || '';
+      if (msg.is_deleted || !msg.is_mine) return localTime(msg.created_at_iso, 'datetime-short', msg.created_at);
       const seen = msg.id <= lastReadId;
-      return (msg.created_at || '') + ' · ' + (seen ? 'Seen' : 'Sent');
+      return localTime(msg.created_at_iso, 'datetime-short', msg.created_at) + ' · ' + (seen ? 'Seen' : 'Sent');
     }
 
     function appendMessage(msg) {

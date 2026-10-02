@@ -191,17 +191,17 @@
                 </button>
               </form>
               <div class="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-                Granted by {{ $grantedByName }}{{ $wish->granted_date ? ' on ' . $wish->granted_date : '' }}.
+                Granted by {{ $grantedByName }}@if($wish->granted_date) on <x-local-time :value="$wish->granted_date" />@endif.
               </div>
             @elseif($isInProgress)
               <div class="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-                Granted by {{ $grantedByName }}{{ $wish->granted_date ? ' on ' . $wish->granted_date : '' }}.
+                Granted by {{ $grantedByName }}@if($wish->granted_date) on <x-local-time :value="$wish->granted_date" />@endif.
               </div>
             @elseif($isGranted)
               <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 space-y-1">
-                Granted by {{ $grantedByName }}{{ $wish->granted_date ? ' on ' . $wish->granted_date : '' }}.
+                Granted by {{ $grantedByName }}@if($wish->granted_date) on <x-local-time :value="$wish->granted_date" />@endif.
                 @if($wish->fulfilled_date)
-                  <div><span class="font-semibold">Fulfilled on:</span> {{ \Illuminate\Support\Carbon::parse($wish->fulfilled_date)->format('M j, Y g:i A') }}</div>
+                  <div><span class="font-semibold">Fulfilled on:</span> <x-local-time :value="$wish->fulfilled_date" /></div>
                 @endif
               </div>
             @endif
@@ -306,7 +306,7 @@
                     <div class="flex items-start justify-between gap-3">
                       <div>
                         <h3 class="font-semibold text-primary">{{ $commenterName }}</h3>
-                        <div class="text-xs text-text-muted-light dark:text-text-muted-dark">{{ $comment->created_at?->format('F j Y g:i a') }}</div>
+                        <div class="text-xs text-text-muted-light dark:text-text-muted-dark"><x-local-time :value="$comment->created_at" style="datetime-long" /></div>
                       </div>
                       @if((int) $comment->user_id === (int) auth()->id())
                         <div class="flex items-center gap-2">
@@ -389,7 +389,7 @@
                               <div class="flex items-start justify-between gap-3">
                                 <div>
                                   <h4 class="font-semibold text-primary">{{ $replyName }}</h4>
-                                  <div class="text-xs text-text-muted-light dark:text-text-muted-dark">{{ $reply->created_at?->format('F j Y g:i a') }}</div>
+                                  <div class="text-xs text-text-muted-light dark:text-text-muted-dark"><x-local-time :value="$reply->created_at" style="datetime-long" /></div>
                                 </div>
                                 @if((int) $reply->user_id === (int) auth()->id())
                                   <div class="flex items-center gap-2">
@@ -587,7 +587,7 @@
         const encodedText = encodeURIComponent(`Check out this wish: ${wishTitle}`);
 
         if (channel === 'facebook') {
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank', 'noopener,noreferrer');
+          window.SimplyShare.facebook(url);
         } else if (channel === 'twitter') {
           window.open(`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`, '_blank', 'noopener,noreferrer');
         } else if (channel === 'instagram') {

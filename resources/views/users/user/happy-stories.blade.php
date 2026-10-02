@@ -104,7 +104,7 @@
                     </div>
                   @endauth
                 </div>
-                <span class="text-emerald-600 font-semibold whitespace-nowrap">{{ optional($story->created_at)->format('M d, Y') }}</span>
+                <span class="text-emerald-600 font-semibold whitespace-nowrap"><x-local-time :value="$story->created_at" style="date" /></span>
               </div>
               @if((int) $story->user_id === (int) auth()->id())
                 <div class="flex items-center gap-2">

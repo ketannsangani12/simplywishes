@@ -61,9 +61,8 @@
                     {{ $userInitial }}
                   </div>
                 @endif
-                <div class="flex items-center gap-2 text-left min-w-0">
+                <div class="flex items-center text-left min-w-0">
                   <p class="text-sm font-semibold text-text-light dark:text-text-dark truncate">Hi, {{ $userName }}</p>
-                  <span class="material-symbols-outlined text-base text-text-muted-light dark:text-text-muted-dark">arrow_drop_down</span>
                 </div>
               </summary>
               <div

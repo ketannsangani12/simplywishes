@@ -268,7 +268,7 @@
         <label class="text-sm font-semibold text-text-light" for="delete-password">Password</label>
         <input id="delete-password" name="delete_password" type="password" autocomplete="current-password"
           class="w-full rounded-lg border border-gray-200 bg-white text-text-light px-4 py-3 focus:ring-2 focus:ring-red-300 focus:border-red-400" />
-        @error('delete_password', 'deleteAccount')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        @error('delete_password', 'deleteAccount')<p id="delete-password-error" class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
       </div>
 
       <div class="flex justify-end gap-3 pt-2">
@@ -426,6 +426,10 @@
     const hideDeleteModal = () => {
       deleteModal?.classList.add('hidden');
       deleteModal?.classList.remove('flex');
+      // Start fresh next time: drop the "incorrect password" error from the
+      // last failed attempt and the password typed for it.
+      document.getElementById('delete-password-error')?.remove();
+      if (deletePasswordInput) deletePasswordInput.value = '';
     };
 
     openDeleteModal?.addEventListener('click', showDeleteModal);

@@ -19,7 +19,7 @@
   // exactly the bug being fixed here. Same generic fallback as the forum
   // card on the home page uses for the same case.
   $ogImageUrl = $postImage ?: ((int) $post->is_video_only === 1
-      ? 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=80'
+      ? asset('images/forum-default/video-thumbnail.jpg')
       : 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80');
   if (! filter_var($ogImageUrl, FILTER_VALIDATE_URL)) {
       $ogImageUrl = request()->getSchemeAndHttpHost() . $ogImageUrl;
@@ -54,7 +54,7 @@
               <div>
                 <p class="text-sm text-text-muted-light dark:text-text-muted-dark">By</p>
                 <p class="font-semibold text-brand-blue-light dark:text-brand-blue-dark">{{ $creatorName }}</p>
-                <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">{{ optional($post->created_at)->format('M d, Y g:i a') }}</p>
+                <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1"><x-local-time :value="$post->created_at" /></p>
               </div>
             </div>
             <div class="flex items-center gap-3">
@@ -209,7 +209,7 @@
                     <div class="flex items-start justify-between gap-3">
                       <div>
                         <h3 class="font-semibold text-primary">{{ $commentName }}</h3>
-                        <div class="text-xs text-text-muted-light dark:text-text-muted-dark">{{ $comment->created_at?->format('F j Y g:i a') }}</div>
+                        <div class="text-xs text-text-muted-light dark:text-text-muted-dark"><x-local-time :value="$comment->created_at" style="datetime-long" /></div>
                       </div>
                       @if((int) $comment->user_id === (int) auth()->id())
                         <div class="flex items-center gap-2">
@@ -294,7 +294,7 @@
                               <div class="flex items-start justify-between gap-3">
                                 <div>
                                   <h4 class="font-semibold text-primary">{{ $replyName }}</h4>
-                                  <div class="text-xs text-text-muted-light dark:text-text-muted-dark">{{ $reply->created_at?->format('F j Y g:i a') }}</div>
+                                  <div class="text-xs text-text-muted-light dark:text-text-muted-dark"><x-local-time :value="$reply->created_at" style="datetime-long" /></div>
                                 </div>
                                 @if((int) $reply->user_id === (int) auth()->id())
                                   <div class="flex items-center gap-2">
@@ -484,7 +484,7 @@
         const encodedText = encodeURIComponent(`Check out this forum post: ${forumTitle}`);
 
         if (channel === 'facebook') {
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank', 'noopener,noreferrer');
+          window.SimplyShare.facebook(url);
         } else if (channel === 'twitter') {
           window.open(`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`, '_blank', 'noopener,noreferrer');
         } else if (channel === 'instagram') {

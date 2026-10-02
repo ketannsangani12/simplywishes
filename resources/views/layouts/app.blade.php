@@ -26,6 +26,8 @@
   <meta name="twitter:card" content="summary_large_image" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
   <script src="/js/confirm-modal.js" defer></script>
+  <script src="/js/social-share.js" defer></script>
+  <script src="/js/local-time.js" defer></script>
   <link href="https://fonts.googleapis.com" rel="preconnect" />
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
   <link
@@ -93,6 +95,18 @@
     }
 
     .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Safari/iOS draw a native disclosure triangle on <summary> that
+       `list-none` does not remove, giving the header dropdowns (user menu,
+       hamburger) a stray extra arrow. This layout uses the Tailwind CDN, so
+       the rule must live here rather than in resources/css/app.css. */
+    summary {
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker {
       display: none;
     }
   </style>

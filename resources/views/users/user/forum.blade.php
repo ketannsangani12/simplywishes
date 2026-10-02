@@ -18,7 +18,7 @@
 
     if (! $image) {
       return $post->is_video_only
-        ? 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80'
+        ? asset('images/forum-default/video-thumbnail.jpg')
         : 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1200&q=80';
     }
 
@@ -240,7 +240,7 @@
                   <img alt="{{ $creatorLabel }} avatar" class="w-6 h-6 rounded-full mr-2 object-cover" src="{{ $creator?->profile_image ? (filter_var($creator->profile_image, FILTER_VALIDATE_URL) ? $creator->profile_image : asset($creator->profile_image)) : 'https://ui-avatars.com/api/?name=' . urlencode($creatorLabel) . '&background=E2E8F0&color=0F172A' }}" />
                   <span>{{ $creatorLabel }}</span>
                   <span class="mx-2">•</span>
-                  <span>{{ optional($post->created_at)->format('M d, Y') }}</span>
+                  <span><x-local-time :value="$post->created_at" style="date" /></span>
                 </div>
                 <p class="text-slate-600 dark:text-slate-300 mb-4 flex-grow">
                   {{ \Illuminate\Support\Str::limit($post->description ?: $post->e_text ?: 'No description yet.', 160) }}

@@ -791,7 +791,7 @@ No current donations available yet.
         const encodedText = encodeURIComponent(`Check out this ${wishId ? 'wish' : 'donation'}: ${wishId ? wishTitle : donationTitle}`);
 
         if (channel === 'facebook') {
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank', 'noopener,noreferrer');
+          window.SimplyShare.facebook(url);
         } else if (channel === 'twitter') {
           window.open(`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`, '_blank', 'noopener,noreferrer');
         } else if (channel === 'instagram') {

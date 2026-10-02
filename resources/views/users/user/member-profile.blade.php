@@ -61,7 +61,7 @@
                   @endif
                   @if($member->created_at)
                     <span class="inline-flex items-center gap-1">
-                      <span class="material-symbols-outlined text-base">calendar_month</span>Member since {{ $member->created_at->format('M Y') }}
+                      <span class="material-symbols-outlined text-base">calendar_month</span>Member since <x-local-time :value="$member->created_at" style="month" />
                     </span>
                   @endif
                 </div>

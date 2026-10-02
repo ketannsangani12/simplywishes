@@ -58,7 +58,7 @@
             <div class="flex flex-wrap items-center gap-3 text-sm text-text-muted-light dark:text-text-muted-dark">
               <span>By {{ $authorName($story) }}</span>
               <span class="h-1 w-1 rounded-full bg-current opacity-40"></span>
-              <span>{{ optional($story->created_at)->format('F j, Y g:i a') }}</span>
+              <span><x-local-time :value="$story->created_at" style="datetime-long" /></span>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -210,7 +210,7 @@
                           <div class="flex items-start justify-between gap-3">
                             <div>
                               <h3 class="font-semibold text-primary">{{ $commenterName }}</h3>
-                              <div class="text-xs text-text-muted-light dark:text-text-muted-dark">{{ $comment->created_at?->format('F j Y g:i a') }}</div>
+                              <div class="text-xs text-text-muted-light dark:text-text-muted-dark"><x-local-time :value="$comment->created_at" style="datetime-long" /></div>
                             </div>
                             @if((int) $comment->user_id === (int) auth()->id())
                               <div class="flex items-center gap-2">
@@ -302,7 +302,7 @@
                                       <div class="flex items-start justify-between gap-2">
                                         <div>
                                           <h4 class="font-semibold text-primary">{{ $replyName }}</h4>
-                                          <div class="text-xs text-text-muted-light dark:text-text-muted-dark">{{ $reply->created_at?->format('F j Y g:i a') }}</div>
+                                          <div class="text-xs text-text-muted-light dark:text-text-muted-dark"><x-local-time :value="$reply->created_at" style="datetime-long" /></div>
                                         </div>
                                         @if((int) $reply->user_id === (int) auth()->id())
                                           <div class="flex items-center gap-2">
@@ -455,7 +455,7 @@
         const encodedText = encodeURIComponent(`Check out this happy story: ${storyTitle}`);
 
         if (channel === 'facebook') {
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank', 'noopener,noreferrer');
+          window.SimplyShare.facebook(url);
         } else if (channel === 'twitter') {
           window.open(`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`, '_blank', 'noopener,noreferrer');
         } else if (channel === 'instagram') {

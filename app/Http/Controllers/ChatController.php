@@ -381,6 +381,7 @@ class ChatController extends Controller
             'status_label' => $other?->presence?->isOnline() ? 'Online' : 'Offline',
             'last_message' => $lastMessagePreview,
             'last_message_at' => optional($latestMessage?->created_at ?? $conversation->last_message_at)->format('M d'),
+            'last_message_at_iso' => optional($latestMessage?->created_at ?? $conversation->last_message_at)->toIso8601ZuluString(),
             'unread_count' => ChatMessage::where('conversation_id', $conversation->id)
                 ->where('sender_id', '!=', $userId)
                 ->when($this->chatMessagesHaveDeletedAt(), fn ($query) => $query->whereNull('deleted_at'))
@@ -453,6 +454,7 @@ class ChatController extends Controller
             'sender_name' => $name,
             'sender_avatar' => $this->avatarForUser($sender, $name),
             'created_at' => $message->created_at?->format('M d, g:i A'),
+            'created_at_iso' => $message->created_at?->toIso8601ZuluString(),
             'read_at' => $message->read_at?->format('M d, g:i A'),
             'reply_to' => $this->replyPreview($message->replyTo),
         ];
