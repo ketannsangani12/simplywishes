@@ -5,7 +5,7 @@
 @push('head')
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="/js/create-wish.js" defer></script>
+  <script src="/js/create-wish.js?v={{ @filemtime(public_path('js/create-wish.js')) }}" defer></script>
   <style>
     /* Editing an older draft can pre-fill this calendar with a date that
        was valid when it was saved but has since slipped into the past
@@ -58,11 +58,17 @@
                 </div>
               </div>
             @endif
-            @if ($errors->any())
+            @php
+                // Errors that have their own spot next to a field are shown there
+                // instead (e.g. "Expected cost is required." under the cost field),
+                // not repeated in this list.
+                $topErrors = collect($errors->getMessages())->except(['expected_cost'])->flatten()->unique();
+              @endphp
+              @if ($topErrors->isNotEmpty())
               <div class="px-6 sm:px-8 pt-6">
                 <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                   <ul class="list-disc pl-5 space-y-1">
-                    @foreach (array_unique($errors->all()) as $error)
+                    @foreach ($topErrors as $error)
                       <li>{{ $error }}</li>
                     @endforeach
                   </ul>
@@ -244,7 +250,7 @@
                           value="{{ old('expected_cost', $wish->expected_cost ?? '') }}"
                           class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark pl-8 focus:ring-2 focus:ring-primary/60 focus:border-primary" />
                       </div>
-                      <p class="text-sm text-red-600 hidden" data-error-for="cost">Expected cost is required.</p>
+                      <p class="text-sm text-red-600 @unless($errors->has('expected_cost')) hidden @endunless" data-error-for="cost">{{ $errors->first('expected_cost') ?: 'Expected cost is required.' }}</p>
                     </div>
                   </div>
                 </div>

@@ -3,7 +3,7 @@
 @section('title', 'Simply Wishes Forum')
 
 @push('head')
-  <script src="/js/forum-upload-guard.js" defer></script>
+  <script src="/js/forum-upload-guard.js?v={{ @filemtime(public_path('js/forum-upload-guard.js')) }}" defer></script>
 @endpush
 
 @php

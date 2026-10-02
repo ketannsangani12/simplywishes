@@ -39,7 +39,14 @@
     return 'https://ui-avatars.com/api/?name=' . urlencode($label) . '&background=E2E8F0&color=0F172A';
   };
 
-  $buildWishItem = function ($wish, string $statusLabel, string $statusClass) use ($displayName, $avatarFor, $relatedUsers) {
+  // Newest first by when the item entered its tab (created, granted/accepted,
+  // fulfilled/completed) — wish and donation ids are separate sequences, so
+  // sorting the merged list by id mixed new items into the middle.
+  $movedAt = fn ($value, $model) => \App\Support\TabOrdering::timestamp($value)
+    ?? \App\Support\TabOrdering::timestamp($model->created_at)
+    ?? 0;
+
+  $buildWishItem = function ($wish, string $statusLabel, string $statusClass) use ($movedAt, $displayName, $avatarFor, $relatedUsers) {
     $owner = $relatedUsers->get($wish->wished_by);
     $ownerName = $displayName($owner);
 
@@ -55,11 +62,11 @@
       'ownerName' => $ownerName,
       'ownerAvatar' => $avatarFor($owner, $ownerName),
       'ownerLabel' => 'Friend wish',
-      'sort_id' => (int) $wish->w_id,
+      'sort_at' => $movedAt(match ($statusLabel) { 'In Progress' => $wish->granted_date, 'Granted' => $wish->fulfilled_date, default => $wish->created_at }, $wish),
     ];
   };
 
-  $buildDonationItem = function ($donation, string $statusLabel, string $statusClass) use ($displayName, $avatarFor, $relatedUsers) {
+  $buildDonationItem = function ($donation, string $statusLabel, string $statusClass) use ($movedAt, $displayName, $avatarFor, $relatedUsers) {
     $owner = $relatedUsers->get($donation->created_by);
     $ownerName = $displayName($owner);
 
@@ -75,7 +82,7 @@
       'ownerName' => $ownerName,
       'ownerAvatar' => $avatarFor($owner, $ownerName),
       'ownerLabel' => 'Friend donation',
-      'sort_id' => (int) $donation->id,
+      'sort_at' => $movedAt(match ($statusLabel) { 'In Progress' => $donation->accepted_at, 'Granted' => $donation->completed_at, default => $donation->created_at }, $donation),
     ];
   };
 
@@ -84,19 +91,19 @@
       ->map(fn ($wish) => $buildWishItem($wish, 'Active', 'bg-brand-blue-light/90 text-white'))
       ->concat(collect($friendItemsByTab['active']['donations'])
         ->map(fn ($donation) => $buildDonationItem($donation, 'Active', 'bg-brand-blue-light/90 text-white')))
-      ->sortByDesc('sort_id')
+      ->sortByDesc('sort_at')
       ->values(),
     'granted' => collect($friendItemsByTab['granted']['wishes'])
       ->map(fn ($wish) => $buildWishItem($wish, 'Granted', 'bg-emerald-600/90 text-white'))
       ->concat(collect($friendItemsByTab['granted']['donations'])
         ->map(fn ($donation) => $buildDonationItem($donation, 'Granted', 'bg-emerald-600/90 text-white')))
-      ->sortByDesc('sort_id')
+      ->sortByDesc('sort_at')
       ->values(),
     'progress' => collect($friendItemsByTab['progress']['wishes'])
       ->map(fn ($wish) => $buildWishItem($wish, 'In Progress', 'bg-amber-500/90 text-white'))
       ->concat(collect($friendItemsByTab['progress']['donations'])
         ->map(fn ($donation) => $buildDonationItem($donation, 'In Progress', 'bg-amber-500/90 text-white')))
-      ->sortByDesc('sort_id')
+      ->sortByDesc('sort_at')
       ->values(),
   ];
 

@@ -14,6 +14,7 @@ use App\Models\FriendBlock;
 use App\Models\FriendRequest;
 use App\Models\Wish;
 use App\Models\State;
+use App\Support\TabOrdering;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,7 +45,7 @@ class SiteController extends Controller
         $grantedWishItems = Wish::with('creator')
             ->where('wish_status', 1)
             ->where('wish_progress_status', 2)
-            ->orderByDesc('granted_date')
+            ->orderByDesc('fulfilled_date')
             ->limit(3)
             ->get()
             ->map(function ($wish) {
@@ -64,9 +65,9 @@ class SiteController extends Controller
 
         $grantedItems = $grantedWishItems
             ->concat($grantedDonationItems)
-            ->sortByDesc(function ($item) {
-                return $item->granted_date ?? $item->completed_at ?? $item->created_at ?? null;
-            })
+            ->sortByDesc(fn ($item) => TabOrdering::timestamp($item->section_type === 'wish' ? $item->fulfilled_date : $item->completed_at)
+                ?? TabOrdering::timestamp($item->created_at)
+                ?? 0)
             ->take(3)
             ->values();
 
@@ -448,37 +449,47 @@ class SiteController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        $inProgressWishes = Wish::where('wished_by', $userId)
+        // In Progress / Granted also list what this user is granting or has
+        // accepted from someone else, not only their own posts — otherwise an
+        // accepted donation (or a wish they granted) never shows up for them.
+        $inProgressWishes = Wish::query()
+            ->where(fn ($query) => $query->where('wished_by', $userId)->orWhere('granted_by', $userId))
             ->where('wish_status', 1)
             ->where('wish_progress_status', 1)
             ->orderByDesc('w_id')
             ->get();
 
-        $inProgressDonations = Donation::where('created_by', $userId)
+        $inProgressDonations = Donation::query()
+            ->where(fn ($query) => $query->where('created_by', $userId)->orWhere('accepted_by', $userId))
             ->where('status', 2)
             ->orderByDesc('id')
             ->get();
 
-        $grantedWishes = Wish::where('wished_by', $userId)
+        $grantedWishes = Wish::query()
+            ->where(fn ($query) => $query->where('wished_by', $userId)->orWhere('granted_by', $userId))
             ->where('wish_status', 1)
             ->where('wish_progress_status', 2)
             ->orderByDesc('w_id')
             ->get();
 
-        $grantedDonations = Donation::where('created_by', $userId)
+        $grantedDonations = Donation::query()
+            ->where(fn ($query) => $query->where('created_by', $userId)->orWhere('accepted_by', $userId))
             ->where('status', 3)
             ->orderByDesc('id')
             ->get();
 
-        $savedWishIds = Activity::where('user_id', $userId)
+        // wish_id => when it was saved, so the Saved tab can list newest saves first.
+        $savedWishTimes = Activity::where('user_id', $userId)
             ->where('type', 'fav')
             ->whereNotNull('wish_id')
-            ->pluck('wish_id');
+            ->pluck('created_at', 'wish_id');
+        $savedWishIds = $savedWishTimes->keys();
 
-        $savedDonationIds = Activity::where('user_id', $userId)
+        $savedDonationTimes = Activity::where('user_id', $userId)
             ->where('type', 'fav')
             ->whereNotNull('donation_id')
-            ->pluck('donation_id');
+            ->pluck('created_at', 'donation_id');
+        $savedDonationIds = $savedDonationTimes->keys();
 
         $savedWishes = Wish::whereIn('w_id', $savedWishIds)
             ->orderByDesc('w_id')
@@ -497,7 +508,9 @@ class SiteController extends Controller
             'grantedWishes',
             'grantedDonations',
             'savedWishes',
-            'savedDonations'
+            'savedDonations',
+            'savedWishTimes',
+            'savedDonationTimes'
         ));
     }
 

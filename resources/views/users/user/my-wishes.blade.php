@@ -11,6 +11,14 @@
     'saved' => 'My Saved Wishes & Donations',
   ];
 
+  // Each tab lists newest first by when the item entered it (created,
+  // granted/accepted, fulfilled/completed, saved), not by id: wish and
+  // donation ids are separate sequences, so sorting the merged list by id
+  // dropped a just-accepted donation into the middle of the list.
+  $movedAt = fn ($value, $model) => \App\Support\TabOrdering::timestamp($value)
+    ?? \App\Support\TabOrdering::timestamp($model->created_at)
+    ?? 0;
+
   $activeItems = collect($activeWishes)->map(fn ($wish) => [
     'type' => 'wish',
     'id' => $wish->w_id,
@@ -20,6 +28,7 @@
     'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
     'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Active',
+    'moved_at' => $movedAt($wish->created_at, $wish),
   ])->concat(collect($activeDonations)->map(fn ($donation) => [
     'type' => 'donation',
     'id' => $donation->id,
@@ -29,47 +38,52 @@
     'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
     'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Active',
-  ]))->sortByDesc('id')->values();
+    'moved_at' => $movedAt($donation->created_at, $donation),
+  ]))->sortByDesc('moved_at')->values();
 
   $inProgressItems = collect($inProgressWishes)->map(fn ($wish) => [
     'type' => 'wish',
     'id' => $wish->w_id,
     'title' => $wish->wish_title ?: 'Untitled wish',
-    'subtitle' => 'Wish',
+    'subtitle' => (int) $wish->wished_by === (int) auth()->id() ? 'Wish' : 'Wish you granted',
     'description' => $wish->wish_description ?: 'No description yet.',
     'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
     'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'In Progress',
+    'moved_at' => $movedAt($wish->granted_date, $wish),
   ])->concat(collect($inProgressDonations)->map(fn ($donation) => [
     'type' => 'donation',
     'id' => $donation->id,
     'title' => $donation->title ?: 'Untitled donation',
-    'subtitle' => 'Donation',
+    'subtitle' => (int) $donation->created_by === (int) auth()->id() ? 'Donation' : 'Donation you accepted',
     'description' => $donation->description ?: 'No description yet.',
     'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
     'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'In Progress',
-  ]))->sortByDesc('id')->values();
+    'moved_at' => $movedAt($donation->accepted_at, $donation),
+  ]))->sortByDesc('moved_at')->values();
 
   $grantedItems = collect($grantedWishes)->map(fn ($wish) => [
     'type' => 'wish',
     'id' => $wish->w_id,
     'title' => $wish->wish_title ?: 'Untitled wish',
-    'subtitle' => 'Wish',
+    'subtitle' => (int) $wish->wished_by === (int) auth()->id() ? 'Wish' : 'Wish you granted',
     'description' => $wish->wish_description ?: 'No description yet.',
     'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
     'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Granted',
+    'moved_at' => $movedAt($wish->fulfilled_date, $wish),
   ])->concat(collect($grantedDonations)->map(fn ($donation) => [
     'type' => 'donation',
     'id' => $donation->id,
     'title' => $donation->title ?: 'Untitled donation',
-    'subtitle' => 'Donation',
+    'subtitle' => (int) $donation->created_by === (int) auth()->id() ? 'Donation' : 'Donation you accepted',
     'description' => $donation->description ?: 'No description yet.',
     'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
     'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Granted',
-  ]))->sortByDesc('id')->values();
+    'moved_at' => $movedAt($donation->completed_at, $donation),
+  ]))->sortByDesc('moved_at')->values();
 
   $savedItems = collect($savedWishes)->map(fn ($wish) => [
     'type' => 'wish',
@@ -80,6 +94,7 @@
     'image' => $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=800&q=80',
     'link' => route('wishes.show', ['wish' => $wish->w_id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Saved',
+    'moved_at' => $movedAt($savedWishTimes[$wish->w_id] ?? null, $wish),
   ])->concat(collect($savedDonations)->map(fn ($donation) => [
     'type' => 'donation',
     'id' => $donation->id,
@@ -89,7 +104,8 @@
     'image' => $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
     'link' => route('donations.show', ['donation' => $donation->id, 'source' => 'my-wishes', 'source_tab' => $tab]),
     'status' => 'Saved',
-  ]))->sortByDesc('id')->values();
+    'moved_at' => $movedAt($savedDonationTimes[$donation->id] ?? null, $donation),
+  ]))->sortByDesc('moved_at')->values();
 
   $itemsByTab = [
     'active' => $activeItems,

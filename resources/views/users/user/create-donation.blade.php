@@ -3,7 +3,7 @@
 @section('title', 'Simply Wishes - Make a Donation')
 
 @push('head')
-  <script src="/js/create-donation.js" defer></script>
+  <script src="/js/create-donation.js?v={{ @filemtime(public_path('js/create-donation.js')) }}" defer></script>
 @endpush
 
 @section('content')
@@ -25,11 +25,17 @@
                 </div>
               </div>
             @endif
-            @if ($errors->any())
+            @php
+                // Errors that have their own spot next to a field are shown there
+                // instead (e.g. "Expected cost is required." under the cost field),
+                // not repeated in this list.
+                $topErrors = collect($errors->getMessages())->except(['expected_cost'])->flatten()->unique();
+              @endphp
+              @if ($topErrors->isNotEmpty())
               <div class="px-6 sm:px-8 pt-6">
                 <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                   <ul class="list-disc pl-5 space-y-1">
-                    @foreach (array_unique($errors->all()) as $error)
+                    @foreach ($topErrors as $error)
                       <li>{{ $error }}</li>
                     @endforeach
                   </ul>
@@ -188,7 +194,7 @@
                       value="{{ old('expected_cost', $donation->expected_cost ?? '') }}"
                       class="w-full rounded-lg border-border-light dark:border-border-dark bg-white dark:bg-surface-dark text-text-light dark:text-text-dark pl-8 focus:ring-2 focus:ring-primary/60 focus:border-primary" />
                   </div>
-                  <p class="text-sm text-red-600 hidden" data-error-for="donation-cost">Expected cost is required.</p>
+                  <p class="text-sm text-red-600 @unless($errors->has('expected_cost')) hidden @endunless" data-error-for="donation-cost">{{ $errors->first('expected_cost') ?: 'Expected cost is required.' }}</p>
                 </div>
               </div>
 

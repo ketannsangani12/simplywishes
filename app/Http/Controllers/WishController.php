@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Wish;
 use App\Models\WishComment;
 use App\Models\WishCommentLike;
+use App\Support\TabOrdering;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -251,6 +252,12 @@ class WishController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        // The Granted and In Progress tabs mix wishes and donations in one
+        // grid, newest move first: whatever was most recently granted /
+        // accepted (or fulfilled / completed) is at the top.
+        $inProgressItems = TabOrdering::merge($inProgressWishes, 'granted_date', $inProgressDonations, 'accepted_at');
+        $grantedItems = TabOrdering::merge($grantedWishes, 'fulfilled_date', $grantedDonations, 'completed_at');
+
         $wishLikeCounts = Activity::where('type', 'like')
             ->whereNotNull('wish_id')
             ->select('wish_id', DB::raw('COUNT(*) as like_count'))
@@ -342,6 +349,8 @@ class WishController extends Controller
             'grantedDonations',
             'inProgressWishes',
             'inProgressDonations',
+            'inProgressItems',
+            'grantedItems',
             'donations',
             'mostPopularItems',
             'userMap',

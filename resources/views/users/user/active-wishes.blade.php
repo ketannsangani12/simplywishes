@@ -117,7 +117,10 @@ No granted wishes or donations yet.
 </div>
 @else
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-@foreach($grantedWishes as $wish)
+{{-- One loop, newest grant first (see TabOrdering) — wishes and donations interleaved by when they were fulfilled/completed. --}}
+@foreach($grantedItems as $entry)
+@if($entry->type === 'wish')
+@php $wish = $entry->model; @endphp
 @php
   $image = $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
 @endphp
@@ -189,8 +192,8 @@ No granted wishes or donations yet.
 </div>
 </div>
 </div>
-@endforeach
-@foreach(($grantedDonations ?? collect()) as $donation)
+@else
+@php $donation = $entry->model; @endphp
 @php
   $image = $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
 @endphp
@@ -262,6 +265,7 @@ No granted wishes or donations yet.
 </div>
 </div>
 </div>
+@endif
 @endforeach
 </div>
 @endif
@@ -273,7 +277,10 @@ No in-progress wishes or donations yet.
 </div>
 @else
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-@foreach($inProgressWishes as $wish)
+{{-- One loop, newest move first (see TabOrdering) — wishes and donations interleaved by when they were granted/accepted. --}}
+@foreach($inProgressItems as $entry)
+@if($entry->type === 'wish')
+@php $wish = $entry->model; @endphp
 @php
   $image = $wish->imageUrl() ?: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80';
 @endphp
@@ -345,8 +352,8 @@ No in-progress wishes or donations yet.
 </div>
 </div>
 </div>
-@endforeach
-@foreach(($inProgressDonations ?? collect()) as $donation)
+@else
+@php $donation = $entry->model; @endphp
 @php
   $image = $donation->imageUrl() ?: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
 @endphp
@@ -418,6 +425,7 @@ No in-progress wishes or donations yet.
 </div>
 </div>
 </div>
+@endif
 @endforeach
 </div>
 @endif
