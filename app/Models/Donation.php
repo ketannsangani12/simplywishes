@@ -14,6 +14,16 @@ class Donation extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new ExcludeBlockedUsersScope('created_by'));
+
+        // Set "last updated" from the app on create. Left to the column's
+        // database default, it was stamped in the DB server's local time
+        // (US Eastern) while the app reads every time as UTC, so a draft
+        // saved a moment ago showed "Updated 4 hours ago".
+        static::creating(function (self $model) {
+            if (blank($model->date_updated)) {
+                $model->date_updated = now();
+            }
+        });
     }
 
     protected $fillable = [

@@ -726,6 +726,7 @@ class WishController extends Controller
             'show_mail' => ($validated['funding'] ?? null) === 'yes' ? ($validated['contact'] ?? null) : null,
             'i_agree_decide' => $isDraft ? 0 : 1,
             'wish_status' => $isDraft ? 0 : 1,
+            'date_updated' => now(),
         ]);
 
         $wish->save();
