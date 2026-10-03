@@ -317,6 +317,33 @@ class SiteController extends Controller
         return view('users.user.happy-stories', compact('stories', 'searchTerm', 'likedStoryIds', 'storyLikeCounts'));
     }
 
+    /**
+     * Where a story's Back button (and deleting the story) should return to:
+     * the story list it was opened from — My Happy Stories stays My Happy
+     * Stories, search included — or the public Happy Stories list otherwise.
+     *
+     * Remembered per story, because the story page is reloaded after
+     * commenting, editing etc. and that reload no longer points at the list.
+     */
+    private function happyStoriesListUrl(int $storyId): string
+    {
+        $key = 'happy_story_back.' . $storyId;
+        $previous = url()->previous();
+        $isList = fn (string $url) => $url === route('happy.stories') || $url === route('my.happy.stories')
+            || str_starts_with($url, route('happy.stories') . '?') || str_starts_with($url, route('my.happy.stories') . '?');
+
+        if ($isList($previous)) {
+            session([$key => $previous]);
+        } elseif (! str_starts_with($previous, route('happy.stories.show', $storyId))) {
+            // Opened from somewhere else (home page, a profile, a link…).
+            session()->forget($key);
+        }
+
+        $url = (string) session($key, '');
+
+        return $isList($url) ? $url : route('happy.stories');
+    }
+
     public function happyStory(int $story): View
     {
         $userId = Auth::id();
@@ -388,7 +415,9 @@ class SiteController extends Controller
             ->pluck('comment_id')
             ->all();
 
-        return view('users.user.happy-story-details', compact('story', 'comments', 'likedCommentIds', 'hasReportedStory', 'likedStoryIds', 'storyLikeCount'));
+        $backUrl = $this->happyStoriesListUrl($story->hs_id);
+
+        return view('users.user.happy-story-details', compact('story', 'comments', 'likedCommentIds', 'hasReportedStory', 'likedStoryIds', 'storyLikeCount', 'backUrl'));
     }
 
     public function reportHappyStory(Request $request, int $story): RedirectResponse
@@ -768,7 +797,7 @@ class SiteController extends Controller
         $this->deleteHappyStoryImage($story->story_image);
 
         return redirect()
-            ->route('happy.stories')
+            ->to($this->happyStoriesListUrl($story->hs_id))
             ->with('status', 'Your happy story has been deleted successfully.');
     }
 

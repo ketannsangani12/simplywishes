@@ -62,7 +62,7 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition" href="{{ route('happy.stories') }}">
+            <a class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition" href="{{ $backUrl ?? route('happy.stories') }}">
               <span class="material-icons !text-base">arrow_back</span>
               Back
             </a>
