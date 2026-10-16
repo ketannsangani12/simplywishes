@@ -185,7 +185,7 @@
                 @csrf
                 <input type="hidden" name="source" value="{{ $source }}" />
                 <input type="hidden" name="source_tab" value="{{ $sourceTab }}" />
-                <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-brand-blue-light text-white font-semibold shadow hover:opacity-90 transition" type="submit" onclick="return confirm('Are You Sure Your Wish Has been Fulfilled?');">
+                <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-brand-blue-light text-white font-semibold shadow hover:opacity-90 transition" type="button" data-confirm-delete data-confirm-tone="primary" data-confirm-title="Are you sure your wish has been fulfilled?" data-confirm-label="Yes, fulfilled">
                   <span class="material-icons !text-base">task_alt</span>
                   Fulfilled
                 </button>

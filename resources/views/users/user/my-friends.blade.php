@@ -486,7 +486,7 @@
                   <form method="POST" action="{{ route('friends.unblock', $blockedUser->id) }}">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark">Unblock</button>
+                    <button type="button" data-confirm-delete data-confirm-title="Are you sure you want to unblock {{ $blockedName }}? They will be able to view your profile, see your posts and interact with you again." data-confirm-label="Unblock" class="rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-semibold text-text-light dark:text-text-dark">Unblock</button>
                   </form>
                 </div>
               @empty

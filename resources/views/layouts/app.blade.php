@@ -30,6 +30,7 @@
   <script src="/js/confirm-modal.js?v={{ @filemtime(public_path('js/confirm-modal.js')) }}" defer></script>
   <script src="/js/social-share.js?v={{ @filemtime(public_path('js/social-share.js')) }}" defer></script>
   <script src="/js/local-time.js?v={{ @filemtime(public_path('js/local-time.js')) }}" defer></script>
+  <script src="/js/comment-enter-submit.js?v={{ @filemtime(public_path('js/comment-enter-submit.js')) }}" defer></script>
   <link href="https://fonts.googleapis.com" rel="preconnect" />
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
   <link

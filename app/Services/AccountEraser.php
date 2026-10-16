@@ -78,44 +78,44 @@ class AccountEraser
             // Comments (anyone's) and comment-likes on this user's own posts
             // — the posts themselves are about to be deleted, so nothing
             // should be left pointing at them.
-            $wishCommentIds = WishComment::whereIn('wish_id', $ownWishIds)->pluck('id');
+            $wishCommentIds = WishComment::withoutGlobalScopes()->whereIn('wish_id', $ownWishIds)->pluck('id');
             WishCommentLike::whereIn('comment_id', $wishCommentIds)->delete();
-            WishComment::whereIn('wish_id', $ownWishIds)->delete();
+            WishComment::withoutGlobalScopes()->whereIn('wish_id', $ownWishIds)->delete();
 
-            $donationCommentIds = DonationComment::whereIn('donation_id', $ownDonationIds)->pluck('id');
+            $donationCommentIds = DonationComment::withoutGlobalScopes()->whereIn('donation_id', $ownDonationIds)->pluck('id');
             DonationCommentLike::whereIn('comment_id', $donationCommentIds)->delete();
-            DonationComment::whereIn('donation_id', $ownDonationIds)->delete();
+            DonationComment::withoutGlobalScopes()->whereIn('donation_id', $ownDonationIds)->delete();
 
-            $forumCommentIds = ForumComment::whereIn('forum_id', $ownForumIds)->pluck('id');
+            $forumCommentIds = ForumComment::withoutGlobalScopes()->whereIn('forum_id', $ownForumIds)->pluck('id');
             ForumCommentLike::whereIn('comment_id', $forumCommentIds)->delete();
-            ForumComment::whereIn('forum_id', $ownForumIds)->delete();
+            ForumComment::withoutGlobalScopes()->whereIn('forum_id', $ownForumIds)->delete();
             ForumLike::whereIn('forum_id', $ownForumIds)->delete();
 
-            $storyCommentIds = HappyStoryComment::whereIn('happy_story_id', $ownStoryIds)->pluck('id');
+            $storyCommentIds = HappyStoryComment::withoutGlobalScopes()->whereIn('happy_story_id', $ownStoryIds)->pluck('id');
             HappyStoryCommentLike::whereIn('comment_id', $storyCommentIds)->delete();
-            HappyStoryComment::whereIn('happy_story_id', $ownStoryIds)->delete();
+            HappyStoryComment::withoutGlobalScopes()->whereIn('happy_story_id', $ownStoryIds)->delete();
 
             // This user's own comments/likes on *other* people's posts.
-            $commentedElsewhereWishIds = WishComment::where('user_id', $userId)->pluck('id');
+            $commentedElsewhereWishIds = WishComment::withoutGlobalScopes()->where('user_id', $userId)->pluck('id');
             WishCommentLike::whereIn('comment_id', $commentedElsewhereWishIds)->delete();
             WishCommentLike::where('user_id', $userId)->delete();
-            WishComment::where('user_id', $userId)->delete();
+            WishComment::withoutGlobalScopes()->where('user_id', $userId)->delete();
 
-            $commentedElsewhereDonationIds = DonationComment::where('user_id', $userId)->pluck('id');
+            $commentedElsewhereDonationIds = DonationComment::withoutGlobalScopes()->where('user_id', $userId)->pluck('id');
             DonationCommentLike::whereIn('comment_id', $commentedElsewhereDonationIds)->delete();
             DonationCommentLike::where('user_id', $userId)->delete();
-            DonationComment::where('user_id', $userId)->delete();
+            DonationComment::withoutGlobalScopes()->where('user_id', $userId)->delete();
 
-            $commentedElsewhereForumIds = ForumComment::where('user_id', $userId)->pluck('id');
+            $commentedElsewhereForumIds = ForumComment::withoutGlobalScopes()->where('user_id', $userId)->pluck('id');
             ForumCommentLike::whereIn('comment_id', $commentedElsewhereForumIds)->delete();
             ForumCommentLike::where('user_id', $userId)->delete();
-            ForumComment::where('user_id', $userId)->delete();
+            ForumComment::withoutGlobalScopes()->where('user_id', $userId)->delete();
             ForumLike::where('user_id', $userId)->delete();
 
-            $commentedElsewhereStoryIds = HappyStoryComment::where('user_id', $userId)->pluck('id');
+            $commentedElsewhereStoryIds = HappyStoryComment::withoutGlobalScopes()->where('user_id', $userId)->pluck('id');
             HappyStoryCommentLike::whereIn('comment_id', $commentedElsewhereStoryIds)->delete();
             HappyStoryCommentLike::where('user_id', $userId)->delete();
-            HappyStoryComment::where('user_id', $userId)->delete();
+            HappyStoryComment::withoutGlobalScopes()->where('user_id', $userId)->delete();
 
             // The posts themselves — every phase: draft, active/current,
             // in progress, granted/completed, saved by someone else.

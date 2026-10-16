@@ -177,7 +177,7 @@
                 @csrf
                 <input type="hidden" name="source" value="{{ $source }}" />
                 <input type="hidden" name="source_tab" value="{{ $sourceTab }}" />
-                <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-brand-blue-light text-white font-semibold shadow hover:opacity-90 transition" type="submit" onclick="return confirm('Mark this donation as completed?');">
+                <button class="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-brand-blue-light text-white font-semibold shadow hover:opacity-90 transition" type="button" data-confirm-delete data-confirm-tone="primary" data-confirm-title="Are you sure you want to mark this donation as completed?" data-confirm-label="Complete donation">
                   <span class="material-icons !text-base">task_alt</span>
                   Complete Donation
                 </button>

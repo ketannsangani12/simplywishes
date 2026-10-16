@@ -194,10 +194,10 @@ class ForumController extends Controller
             ->where('created_by', Auth::id())
             ->firstOrFail();
 
-        $commentIds = ForumComment::where('forum_id', $post->e_id)->pluck('id');
+        $commentIds = ForumComment::withoutGlobalScopes()->where('forum_id', $post->e_id)->pluck('id');
 
         ForumCommentLike::whereIn('comment_id', $commentIds)->delete();
-        ForumComment::whereIn('id', $commentIds)->delete();
+        ForumComment::withoutGlobalScopes()->whereIn('id', $commentIds)->delete();
         ForumLike::where('forum_id', $post->e_id)->delete();
 
         $this->deleteForumUpload($post->e_image);
@@ -448,12 +448,12 @@ class ForumController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        $commentIds = ForumComment::where('id', $comment->id)
+        $commentIds = ForumComment::withoutGlobalScopes()->where('id', $comment->id)
             ->orWhere('parent_id', $comment->id)
             ->pluck('id');
 
         ForumCommentLike::whereIn('comment_id', $commentIds)->delete();
-        ForumComment::whereIn('id', $commentIds)->delete();
+        ForumComment::withoutGlobalScopes()->whereIn('id', $commentIds)->delete();
 
         return redirect()
             ->route('forum.show', $post->e_id)

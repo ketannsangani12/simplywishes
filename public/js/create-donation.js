@@ -166,6 +166,25 @@ document.addEventListener('DOMContentLoaded', () => {
     el.classList.toggle('hidden', !show);
   };
 
+  // Bring the first visible field error into view (and put the cursor in
+  // that field) so the user sees what's missing right where it is — e.g.
+  // the cost box at the bottom — instead of being left elsewhere on the page.
+  // Does nothing if the message is already on screen.
+  const revealFirstError = () => {
+    const errorEl = form && Array.from(form.querySelectorAll('[data-error-for]'))
+      .find((el) => !el.classList.contains('hidden') && el.offsetParent !== null);
+    if (!errorEl) return;
+
+    const rect = errorEl.getBoundingClientRect();
+    if (rect.top < 0 || rect.bottom > window.innerHeight) {
+      errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const field = document.getElementById(errorEl.getAttribute('data-error-for'));
+    if (field && typeof field.focus === 'function') {
+      field.focus({ preventScroll: true });
+    }
+  };
+
   const validateDonationForm = ({ skipTerms = false } = {}) => {
     let valid = true;
 
@@ -280,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // since that's tied to actually going live.
       if (!validateDonationForm({ skipTerms: isDraft })) {
         event.preventDefault();
+        revealFirstError();
       }
     });
   }
@@ -337,4 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   bindHideOnInput();
   updateMethodLabel();
+
+  // After the server rejects the form (e.g. a missing/zero cost), the page
+  // reloads at the top while the message is shown next to its field.
+  revealFirstError();
 });

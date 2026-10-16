@@ -785,10 +785,10 @@ class SiteController extends Controller
             ->firstOrFail();
 
         DB::transaction(function () use ($story) {
-            $commentIds = HappyStoryComment::where('happy_story_id', $story->hs_id)->pluck('id');
+            $commentIds = HappyStoryComment::withoutGlobalScopes()->where('happy_story_id', $story->hs_id)->pluck('id');
 
             HappyStoryCommentLike::whereIn('comment_id', $commentIds)->delete();
-            HappyStoryComment::whereIn('id', $commentIds)->delete();
+            HappyStoryComment::withoutGlobalScopes()->whereIn('id', $commentIds)->delete();
             Activity::where('happy_story_id', $story->hs_id)->delete();
 
             $story->delete();
@@ -895,12 +895,12 @@ class SiteController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        $commentIds = HappyStoryComment::where('id', $comment->id)
+        $commentIds = HappyStoryComment::withoutGlobalScopes()->where('id', $comment->id)
             ->orWhere('parent_id', $comment->id)
             ->pluck('id');
 
         HappyStoryCommentLike::whereIn('comment_id', $commentIds)->delete();
-        HappyStoryComment::whereIn('id', $commentIds)->delete();
+        HappyStoryComment::withoutGlobalScopes()->whereIn('id', $commentIds)->delete();
 
         return redirect()
             ->route('happy.stories.show', $story->hs_id)

@@ -17,7 +17,7 @@
   <div class="absolute inset-0" id="global-confirm-modal-backdrop"></div>
   <div class="relative w-full max-w-sm rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-surface-dark shadow-xl p-6 space-y-4">
     <div class="flex items-start gap-3">
-      <span class="material-icons text-red-500 !text-2xl" aria-hidden="true">warning</span>
+      <span class="material-icons text-red-500 !text-2xl" aria-hidden="true" id="global-confirm-modal-icon">warning</span>
       <div>
         <h2 class="text-lg font-semibold text-text-light dark:text-text-dark" id="global-confirm-modal-title">Are you sure?</h2>
         <p class="mt-1 text-sm text-text-muted-light dark:text-text-muted-dark hidden" id="global-confirm-modal-message"></p>

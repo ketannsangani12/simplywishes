@@ -26,10 +26,6 @@ use Illuminate\Support\Facades\Auth;
  */
 class ExcludeBlockedUsersScope implements Scope
 {
-    /** Per-request cache: block-lookup is small, but no need to repeat it
-     *  for every single query a page fires off. */
-    private static array $blockedIdsCache = [];
-
     public function __construct(private readonly string $ownerColumn)
     {
     }
@@ -49,11 +45,16 @@ class ExcludeBlockedUsersScope implements Scope
             return;
         }
 
-        if (! array_key_exists($userId, self::$blockedIdsCache)) {
-            self::$blockedIdsCache[$userId] = FriendBlock::blockedUserIdsFor((int) $userId)->all();
+        // Looked up once per request (every comment/post query on a page
+        // reuses it). Kept on the request, not in a static, so a long-lived
+        // process (queue worker, Octane, tests) never reuses a stale list.
+        $attributes = request()->attributes;
+        $cacheKey = 'blocked_user_ids.' . $userId;
+        if (! $attributes->has($cacheKey)) {
+            $attributes->set($cacheKey, FriendBlock::blockedUserIdsFor((int) $userId)->all());
         }
 
-        $blockedIds = self::$blockedIdsCache[$userId];
+        $blockedIds = $attributes->get($cacheKey);
 
         if ($blockedIds === []) {
             return;

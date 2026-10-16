@@ -299,12 +299,12 @@ class DonationController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        $commentIds = DonationComment::where('id', $comment->id)
+        $commentIds = DonationComment::withoutGlobalScopes()->where('id', $comment->id)
             ->orWhere('parent_id', $comment->id)
             ->pluck('id');
 
         DonationCommentLike::whereIn('comment_id', $commentIds)->delete();
-        DonationComment::whereIn('id', $commentIds)->delete();
+        DonationComment::withoutGlobalScopes()->whereIn('id', $commentIds)->delete();
 
         return redirect()
             ->route('donations.show', $donation->id)

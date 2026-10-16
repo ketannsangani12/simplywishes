@@ -13,7 +13,7 @@
   <div class="absolute inset-0" id="global-confirm-modal-backdrop"></div>
   <div class="relative w-full max-w-sm rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-surface-dark shadow-xl p-6 space-y-4">
     <div class="flex items-start gap-3">
-      <span class="material-icons text-red-500 !text-2xl" aria-hidden="true">warning</span>
+      <span class="material-icons text-red-500 !text-2xl" aria-hidden="true" id="global-confirm-modal-icon">warning</span>
       <div>
         <h2 class="text-lg font-semibold text-text-light dark:text-text-dark" id="global-confirm-modal-title">Are you sure?</h2>
         <p class="mt-1 text-sm text-text-muted-light dark:text-text-muted-dark hidden" id="global-confirm-modal-message"></p>
@@ -41,6 +41,7 @@
       titleEl: document.getElementById('global-confirm-modal-title'),
       messageEl: document.getElementById('global-confirm-modal-message'),
       confirmButton: document.getElementById('global-confirm-modal-confirm'),
+      iconEl: document.getElementById('global-confirm-modal-icon'),
     };
   };
 
@@ -49,7 +50,16 @@
   let pendingForm = null;
   let pendingResolve = null;
 
-  const open = ({ title, message, confirmLabel } = {}) => {
+  // "danger" (default): red button + warning icon, for deletes/blocks.
+  // "primary": blue button + check icon, for positive final steps such as
+  // "Yes, fulfilled" / "Complete donation".
+  const TONES = {
+    danger: { button: 'bg-red-600 hover:bg-red-700', icon: 'warning', iconColor: 'text-red-500' },
+    primary: { button: 'bg-brand-blue-light hover:opacity-90', icon: 'task_alt', iconColor: 'text-brand-blue-light' },
+  };
+  const BUTTON_BASE = 'px-4 py-2 rounded-lg text-white text-sm font-semibold';
+
+  const open = ({ title, message, confirmLabel, tone } = {}) => {
     const d = dialog();
     d.titleEl.textContent = title || DEFAULT_TITLE;
     // The title alone ("Are you sure you want to delete this wish?") is the
@@ -63,6 +73,12 @@
       d.messageEl.classList.add('hidden');
     }
     d.confirmButton.textContent = confirmLabel || DEFAULT_CONFIRM_LABEL;
+    const t = TONES[tone] || TONES.danger;
+    d.confirmButton.className = `${BUTTON_BASE} ${t.button}`;
+    if (d.iconEl) {
+      d.iconEl.textContent = t.icon;
+      d.iconEl.className = `material-icons ${t.iconColor} !text-2xl`;
+    }
     d.modal.classList.remove('hidden');
     d.modal.classList.add('flex');
     d.modal.setAttribute('aria-hidden', 'false');
@@ -121,6 +137,7 @@
       title: trigger.getAttribute('data-confirm-title'),
       message: trigger.getAttribute('data-confirm-message'),
       confirmLabel: trigger.getAttribute('data-confirm-label'),
+      tone: trigger.getAttribute('data-confirm-tone'),
     });
   });
 

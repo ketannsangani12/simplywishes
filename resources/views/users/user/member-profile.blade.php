@@ -28,7 +28,10 @@
               <form method="POST" action="{{ route('friends.unblock', $member->id) }}">
                 @csrf
                 @method('DELETE')
-                <button type="submit"
+                <button type="button"
+                  data-confirm-delete
+                  data-confirm-title="Are you sure you want to unblock {{ $name }}? They will be able to view your profile, see your posts and interact with you again."
+                  data-confirm-label="Unblock"
                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-brand-blue-light dark:text-brand-blue-dark text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800">
                   Unblock
                 </button>
@@ -114,7 +117,7 @@
                   @csrf
                   <button type="button"
                     data-confirm-delete
-                    data-confirm-title="Are you sure you want to block {{ $name }}? They will be removed as a friend and won't be able to message you or send friend requests."
+                    data-confirm-title="Are you sure you want to block {{ $name }}? They will no longer be able to message you or send you friend requests."
                     data-confirm-label="Block"
                     class="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border border-red-200 text-red-600 text-xs sm:text-sm font-semibold hover:bg-red-50 whitespace-nowrap">
                     <span class="material-symbols-outlined text-sm sm:text-base">block</span> Block

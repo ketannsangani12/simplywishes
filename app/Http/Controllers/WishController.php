@@ -526,12 +526,12 @@ class WishController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        $commentIds = WishComment::where('id', $comment->id)
+        $commentIds = WishComment::withoutGlobalScopes()->where('id', $comment->id)
             ->orWhere('parent_id', $comment->id)
             ->pluck('id');
 
         WishCommentLike::whereIn('comment_id', $commentIds)->delete();
-        WishComment::whereIn('id', $commentIds)->delete();
+        WishComment::withoutGlobalScopes()->whereIn('id', $commentIds)->delete();
 
         return redirect()
             ->route('wishes.show', $wish->w_id)
