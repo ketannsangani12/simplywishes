@@ -35,7 +35,7 @@
 
       if (! $image) {
           return $post->is_video_only
-              ? asset('images/forum-default/video-thumbnail.jpg')
+              ? asset('images/forum-default/video-thumbnail.jpeg')
               : 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80';
       }
 

@@ -19,7 +19,7 @@
   // exactly the bug being fixed here. Same generic fallback as the forum
   // card on the home page uses for the same case.
   $ogImageUrl = $postImage ?: ((int) $post->is_video_only === 1
-      ? asset('images/forum-default/video-thumbnail.jpg')
+      ? asset('images/forum-default/video-thumbnail.jpeg')
       : 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=900&q=80');
   if (! filter_var($ogImageUrl, FILTER_VALIDATE_URL)) {
       $ogImageUrl = request()->getSchemeAndHttpHost() . $ogImageUrl;
