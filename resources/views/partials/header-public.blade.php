@@ -2,21 +2,7 @@
       <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between gap-3 py-4 xl:py-0 xl:h-20">
           <a aria-label="Simply Wishes homepage" class="flex items-center gap-3 shrink-0" href="{{ route('home') }}">
-            <svg class="w-10 h-10 text-primary" fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <circle class="fill-current text-[#FBBF24]" cx="50" cy="50" r="5"></circle>
-              <circle class="fill-current text-[#FBBF24] opacity-80" cx="50" cy="30" r="4"></circle>
-              <circle class="fill-current text-[#FBBF24] opacity-70" cx="70" cy="40" r="3.5"></circle>
-              <circle class="fill-current text-[#FBBF24] opacity-70" cx="30" cy="40" r="3.5"></circle>
-              <circle class="fill-current text-[#FBBF24] opacity-60" cx="60" cy="20" r="3"></circle>
-              <circle class="fill-current text-[#FBBF24] opacity-60" cx="40" cy="20" r="3"></circle>
-              <circle class="fill-current text-[#38BDF8] opacity-90" cx="80" cy="55" r="3"></circle>
-              <circle class="fill-current text-[#38BDF8] opacity-90" cx="20" cy="55" r="3"></circle>
-              <circle class="fill-current text-[#38BDF8] opacity-80" cx="65" cy="70" r="2.5"></circle>
-              <circle class="fill-current text-[#38BDF8] opacity-80" cx="35" cy="70" r="2.5"></circle>
-              <circle class="fill-current text-[#38BDF8] opacity-70" cx="50" cy="80" r="2"></circle>
-            </svg>
-            <span class="text-2xl font-bold font-display text-brand-blue-light dark:text-brand-blue-dark">Simply<span
-                class="text-primary">Wishes</span></span>
+            <img src="{{ asset('images/simplywishes-logo.png') }}" alt="Simply Wishes" class="w-32 sm:w-36 h-auto shrink-0" />
           </a>
           <div class="hidden xl:flex items-center gap-x-4 2xl:gap-x-7">
             <a class="text-sm 2xl:text-base font-medium whitespace-nowrap text-text-light dark:text-text-dark hover:text-primary transition-colors"

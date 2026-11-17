@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <link rel="icon" type="image/png" href="{{ asset('images/simplywishes-icon.png') }}" />
   <title>@yield('title', 'Simply Wishes')</title>
   {{--
     Open Graph tags for link previews (Facebook, etc). Without an explicit

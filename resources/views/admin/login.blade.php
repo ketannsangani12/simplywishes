@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <link rel="icon" type="image/png" href="{{ asset('images/simplywishes-icon.png') }}" />
   <title>Simply Wishes - Admin Log In</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
   <link href="https://fonts.googleapis.com" rel="preconnect" />
@@ -51,20 +52,7 @@
   <main class="min-h-screen flex flex-col items-center justify-center px-4 py-12">
     <div class="w-full max-w-md">
       <div class="flex flex-col items-center mb-8">
-        <svg class="w-14 h-14 text-primary" fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <circle class="fill-current text-[#FBBF24]" cx="50" cy="50" r="5"></circle>
-          <circle class="fill-current text-[#FBBF24] opacity-80" cx="50" cy="30" r="4"></circle>
-          <circle class="fill-current text-[#FBBF24] opacity-70" cx="70" cy="40" r="3.5"></circle>
-          <circle class="fill-current text-[#FBBF24] opacity-70" cx="30" cy="40" r="3.5"></circle>
-          <circle class="fill-current text-[#FBBF24] opacity-60" cx="60" cy="20" r="3"></circle>
-          <circle class="fill-current text-[#FBBF24] opacity-60" cx="40" cy="20" r="3"></circle>
-          <circle class="fill-current text-[#38BDF8] opacity-90" cx="80" cy="55" r="3"></circle>
-          <circle class="fill-current text-[#38BDF8] opacity-90" cx="20" cy="55" r="3"></circle>
-          <circle class="fill-current text-[#38BDF8] opacity-80" cx="65" cy="70" r="2.5"></circle>
-          <circle class="fill-current text-[#38BDF8] opacity-80" cx="35" cy="70" r="2.5"></circle>
-          <circle class="fill-current text-[#38BDF8] opacity-70" cx="50" cy="80" r="2"></circle>
-        </svg>
-        <span class="mt-3 text-3xl font-bold font-display text-brand-blue-light dark:text-brand-blue-dark">Simply<span class="text-primary">Wishes</span></span>
+        <img src="{{ asset('images/simplywishes-logo.png') }}" alt="Simply Wishes" class="w-48 h-auto" />
         <span class="mt-1 text-sm font-semibold uppercase tracking-[0.2em] text-text-muted-light dark:text-text-muted-dark">Admin Panel</span>
       </div>
 

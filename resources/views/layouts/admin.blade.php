@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <link rel="icon" type="image/png" href="{{ asset('images/simplywishes-icon.png') }}" />
   <title>@yield('title', 'Simply Wishes - Admin')</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
   <link href="https://fonts.googleapis.com" rel="preconnect" />
@@ -54,15 +55,7 @@
       <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-wrap items-center justify-between gap-4 h-16">
           <a aria-label="Admin dashboard" class="flex items-center gap-3" href="{{ route('admin.dashboard') }}">
-            <svg class="w-8 h-8 text-primary" fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <circle class="fill-current text-[#FBBF24]" cx="50" cy="50" r="5"></circle>
-              <circle class="fill-current text-[#FBBF24] opacity-80" cx="50" cy="30" r="4"></circle>
-              <circle class="fill-current text-[#FBBF24] opacity-70" cx="70" cy="40" r="3.5"></circle>
-              <circle class="fill-current text-[#FBBF24] opacity-70" cx="30" cy="40" r="3.5"></circle>
-              <circle class="fill-current text-[#38BDF8] opacity-90" cx="80" cy="55" r="3"></circle>
-              <circle class="fill-current text-[#38BDF8] opacity-90" cx="20" cy="55" r="3"></circle>
-            </svg>
-            <span class="text-xl font-bold font-display text-brand-blue-light dark:text-brand-blue-dark">Simply<span class="text-primary">Wishes</span></span>
+            <img src="{{ asset('images/simplywishes-logo.png') }}" alt="Simply Wishes" class="w-24 h-auto shrink-0" />
             <span class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted-light dark:text-text-muted-dark border-l border-border-light dark:border-border-dark pl-3">Admin</span>
           </a>
           <div class="flex items-center gap-5">
