@@ -13,8 +13,7 @@
       <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
         <div>
           <p class="text-sm uppercase tracking-[0.2em] text-primary font-semibold">Inbox</p>
-          <h1 class="text-3xl md:text-4xl font-display font-bold text-brand-blue-light mt-2">Message center for wishers &amp; donors</h1>
-          <p class="text-text-muted-light mt-2 max-w-3xl">Keep every conversation close at hand. Browse recent chats, reply quickly, and see who you are talking to without leaving the page.</p>
+          <h1 class="text-3xl md:text-4xl font-display font-bold text-brand-blue-light mt-2">Message center</h1>
         </div>
         <div class="flex items-center gap-3">
           <button id="open-new-message" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-blue-light text-white text-sm font-semibold shadow hover:shadow-md">

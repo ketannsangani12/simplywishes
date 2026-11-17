@@ -26,10 +26,7 @@
           For account help, questions about a wish or donation, or anything else, email us and we'll get back to you
           as soon as we can.
         </p>
-        <a class="inline-flex items-center gap-2 text-brand-blue-light dark:text-brand-blue-dark font-semibold hover:underline"
-          href="mailto:support@simplywishes.com">
           <span class="material-symbols-outlined text-base">forward_to_inbox</span> support@simplywishes.com
-        </a>
       </div>
 
       <div class="bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6 sm:p-8 space-y-3">

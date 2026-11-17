@@ -38,7 +38,6 @@
             <div>
               <p class="text-sm font-semibold text-text-muted-light uppercase tracking-wide">Account settings</p>
               <h1 class="text-3xl font-display font-bold text-brand-blue-light">Update profile</h1>
-              <p class="text-sm text-text-muted-light">Keep your details fresh so the community can reach you.</p>
             </div>
             <div class="text-sm text-text-muted-light">
               Logged in as <span class="font-semibold text-text-light">{{ $currentFullName }}</span>
@@ -234,9 +233,7 @@
             <div class="mb-4">
               <h2 class="text-lg font-semibold text-red-700">Delete account</h2>
               <p class="text-sm text-red-700/80">
-                This permanently deactivates your account and removes your personal information. You'll be logged out
-                and won't be able to sign back in. Your existing wishes, donations, and posts stay visible to others
-                but are shown as from "Deleted User".
+                This permanently deactivates your account and removes your personal information. You'll be logged out and won't be able to sign back in. Your existing wishes, donations, and posts will stay visible to others but will be shown from "Deleted User".
               </p>
             </div>
             <button type="button" id="open-delete-account" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-300 bg-white text-sm font-semibold text-red-700 hover:bg-red-100 transition-colors">

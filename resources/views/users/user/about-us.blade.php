@@ -15,7 +15,7 @@
               By sharing gifts and granting wishes, we can make the world a kinder, happier and more connected place – as in life, what you give, you receive.
             </p>
             <p class="text-lg text-text-light dark:text-text-dark leading-relaxed">
-              Do you have a wish? Can someone out there make your wish come true? A wish can be anything from a monetary gift, a concert ticket, or a ride from the airport.
+              Do you have a wish? Can someone out there make your wish come true? A wish can be anthing, from a thoughtful gift to help with something practical, like a favor or special experience.
             </p>
             <p class="text-lg text-text-light dark:text-text-dark leading-relaxed">
               Don’t have a gift, wish or dream right now? Take five minutes to share a funny story or post words of encouragement. SimplyWishes.com is all about bringing more light and joy into the world, and that goal starts with you.

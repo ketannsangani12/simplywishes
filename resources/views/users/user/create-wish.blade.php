@@ -47,7 +47,7 @@
             <span class="material-symbols-outlined text-3xl text-primary">auto_awesome</span>
             <div>
               <h1 class="text-3xl sm:text-4xl font-bold text-brand-blue-light dark:text-brand-blue-dark">Make a Wish</h1>
-              <p class="text-text-muted-light dark:text-text-muted-dark mt-1">Share your wish with the community so granters can help you make it real.</p>
+              <p class="text-text-muted-light dark:text-text-muted-dark mt-1">Share your wish with our community so granters can help you make it real.</p>
             </div>
           </div>
           <div class="bg-surface-light dark:bg-surface-dark shadow-xl rounded-xl border border-border-light dark:border-border-dark/60">
@@ -120,7 +120,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <p class="text-sm font-semibold text-text-light dark:text-text-dark">Wish Image <span class="text-red-500">*</span></p>
-                    <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Upload your own photo or pick one of the default images below.</p>
+                    <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Upload your own photo or pick one of the images below.</p>
                     <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">Use images you own the rights to. Posts with copyrighted characters or logos may be removed.</p>
                   </div>
                   <label class="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue-light text-white rounded-lg shadow hover:opacity-90 cursor-pointer">
@@ -289,7 +289,7 @@
               <div class="space-y-3">
                 <label class="inline-flex items-start gap-3 text-sm text-text-light dark:text-text-dark">
                   <input id="terms-check" name="i_agree_decide" class="mt-1 text-primary focus:ring-primary" type="checkbox" required @checked(old('i_agree_decide', $wish->i_agree_decide ?? false)) />
-                  <span>I understand that once the Grantor accepts my Wish, they will have 14 days to fulfill it in the agreed upon manner by both of us. During that time my wish will be marked as "In Progress", until either I mark it as "Fulfilled" or 14 days pass. After 14 days my wish will be considered "Granted". I can re-submit a Wish if it does not get fulfilled by the Grantor after 14 days. <span class="text-red-500">*</span></span>
+                  <span>I understand that once the Granter accepts my Wish, they will have 14 days to fulfill it in the agreed upon manner by both of us. During that time my wish will be marked as "In Progress", until either I mark it as "Fulfilled" or 14 days pass. After 14 days my wish will be considered "Granted". I can re-submit a Wish if it does not get fulfilled by the Granter after 14 days.<span class="text-red-500">*</span></span>
                 </label>
                 <p class="text-sm text-red-600 hidden" data-error-for="terms">Please acknowledge you accept this condition</p>
               </div>

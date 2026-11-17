@@ -27,6 +27,7 @@ No wishes or donations match your search.
 </div>
 <div class="space-y-12">
 <div class="hidden" data-panel="most-popular">
+<h1 class="mb-5 text-2xl font-bold font-display text-brand-blue-light dark:text-white">Most Popular</h1>
 @if(($mostPopularItems ?? collect())->isEmpty())
 <div class="rounded-xl border border-dashed border-border-light bg-white p-10 text-center text-text-muted-light">
 No popular wishes or donations yet.
@@ -111,6 +112,7 @@ No popular wishes or donations yet.
 @endif
 </div>
 <div class="hidden" data-panel="granted">
+<h1 class="mb-5 text-2xl font-bold font-display text-brand-blue-light dark:text-white">Granted</h1>
 @if($grantedWishes->isEmpty() && ($grantedDonations ?? collect())->isEmpty())
 <div class="rounded-xl border border-dashed border-border-light bg-white p-10 text-center text-text-muted-light">
 No granted wishes or donations yet.
@@ -271,6 +273,7 @@ No granted wishes or donations yet.
 @endif
 </div>
 <div class="hidden" data-panel="in-progress">
+<h1 class="mb-5 text-2xl font-bold font-display text-brand-blue-light dark:text-white">In Progress</h1>
 @if($inProgressWishes->isEmpty() && ($inProgressDonations ?? collect())->isEmpty())
 <div class="rounded-xl border border-dashed border-border-light bg-white p-10 text-center text-text-muted-light">
 No in-progress wishes or donations yet.
@@ -431,6 +434,7 @@ No in-progress wishes or donations yet.
 @endif
 </div>
 <div data-panel="current-wishes">
+<h1 class="mb-5 text-2xl font-bold font-display text-brand-blue-light dark:text-white">Current Wishes</h1>
 <div class="flex justify-end mb-4">
 <label class="text-sm text-text-muted-light flex items-center gap-2">
 <span>Wish Type</span>
@@ -527,6 +531,7 @@ No current wishes available yet.
 @endif
 </div>
 <div class="hidden" data-panel="current-donations">
+<h1 class="mb-5 text-2xl font-bold font-display text-brand-blue-light dark:text-white">Current Donations</h1>
 <div class="flex justify-end mb-4">
 <label class="text-sm text-text-muted-light flex items-center gap-2">
 <span>Donation Type</span>

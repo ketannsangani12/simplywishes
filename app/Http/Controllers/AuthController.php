@@ -67,6 +67,7 @@ class AuthController extends Controller
     public function showSignup(): View
     {
         $countries = Country::query()
+            ->orderByRaw("CASE WHEN REPLACE(name, ' ', '') = ? THEN 0 ELSE 1 END", ['UnitedStatesofAmerica-USA'])
             ->orderBy('name')
             ->get(['id', 'name']);
 

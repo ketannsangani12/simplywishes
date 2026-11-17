@@ -62,9 +62,6 @@
         <h1 class="font-display text-4xl sm:text-5xl md:text-7xl font-bold text-brand-blue-light dark:text-white leading-tight">
           A single wish can <span class="text-primary">spark a universe</span> of joy.
         </h1>
-        <p class="mt-6 max-w-2xl mx-auto text-lg text-text-muted-light dark:text-text-muted-dark">
-          Join us in creating life-changing wish experiences for children with critical illnesses. Your support brings hope, strength, and happiness to them and their families.
-        </p>
       </div>
     </div>
   </section>
@@ -82,7 +79,7 @@
       ],
       [
         'title' => 'Current Donations',
-        'description' => 'Items and support opportunities that are currently open.',
+        'description' => '',
         'items' => $currentDonations ?? collect(),
         'empty' => 'No current donations available yet.',
         'seeAll' => route('wishes.active') . '#current-donations',
@@ -91,7 +88,7 @@
       ],
       [
         'title' => 'Granted Wishes & Donations',
-        'description' => 'Recent granted moments from our community.',
+        'description' => '',
         'items' => $grantedItems ?? collect(),
         'empty' => 'No granted wishes or donations yet.',
         'seeAll' => route('wishes.active') . '#granted',
@@ -109,7 +106,7 @@
       ],
       [
         'title' => 'Forum',
-        'description' => 'The latest conversations and contributions from the community.',
+        'description' => '',
         'items' => $forumPosts ?? collect(),
         'empty' => 'No forum posts yet.',
         'seeAll' => route('forum'),
@@ -120,7 +117,7 @@
   @endphp
 
   @foreach($sections as $section)
-    <section class="py-16 md:py-20 {{ $loop->even ? 'bg-surface-light dark:bg-surface-dark' : 'bg-background-light dark:bg-background-dark' }}">
+    <section class="py-8 md:py-20 {{ $loop->even ? 'bg-surface-light dark:bg-surface-dark' : 'bg-background-light dark:bg-background-dark' }}">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
           <div>

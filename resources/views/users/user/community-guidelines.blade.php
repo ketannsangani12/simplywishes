@@ -11,7 +11,7 @@
         <h1 class="mt-3 text-3xl md:text-4xl font-semibold text-brand-blue-light dark:text-brand-blue-dark">Community Guidelines</h1>
         <p class="mt-4 text-lg text-text-light dark:text-text-dark leading-relaxed">
           SimplyWishes only works because wishers, granters, donors, and friends treat each other with honesty and
-          respect. These guidelines describe what we expect from everyone in the community.
+          respect. These guidelines describe what we expect from everyone in our community.
         </p>
         <p class="mt-4 text-sm text-text-muted-light dark:text-text-muted-dark">Last updated: August 21, 2026</p>
       </div>
@@ -79,7 +79,7 @@
         <h2 class="text-2xl font-semibold text-text-light dark:text-text-dark">7. Questions</h2>
         <p class="text-text-light dark:text-text-dark leading-relaxed">
           If you're unsure whether something fits these guidelines, or you'd like to appeal a decision, contact us at
-          <a class="text-brand-blue-light dark:text-brand-blue-dark hover:underline" href="mailto:support@simplywishes.com">support@simplywishes.com</a>.
+          support@simplywishes.com.
         </p>
       </div>
     </article>

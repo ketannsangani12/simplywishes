@@ -107,7 +107,7 @@
               }
             @endphp
             <div class="space-y-3">
-              <p class="text-sm font-semibold text-text-light dark:text-text-dark">Or, choose one from the default images below</p>
+              <p class="text-sm font-semibold text-text-light dark:text-text-dark">Or, choose one from the images below</p>
               <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                 @forelse ($defaultStoryImages as $index => $imagePath)
                   <label class="relative block cursor-pointer group">

@@ -36,7 +36,7 @@
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-3xl font-semibold text-brand-blue-light dark:text-brand-blue-dark">Wishers, Granters &amp; Donors</h1>
-          <p class="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">Browse community members ranked by their activity on SimplyWishes.</p>
+          <p class="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">Browse our active community members.</p>
         </div>
         <form class="flex items-center w-full sm:w-96" method="GET" action="{{ route('wishers.granters.donors') }}" id="wishers-search-form" data-reset-url="{{ route('wishers.granters.donors', ['tab' => 'wishers']) }}">
           <input type="hidden" name="tab" value="{{ $tab ?? 'wishers' }}" />

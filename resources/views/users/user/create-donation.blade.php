@@ -85,7 +85,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <p class="text-sm font-semibold text-text-light dark:text-text-dark">Donation Image <span class="text-red-500">*</span></p>
-                    <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Upload your own photo or pick one of the default images below.</p>
+                    <p class="text-sm text-text-muted-light dark:text-text-muted-dark">Upload your own photo or pick one of the images below.</p>
                     <p class="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">Use images you own the rights to. Posts with copyrighted characters or logos may be removed.</p>
                   </div>
                   <label class="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue-light text-white rounded-lg shadow hover:opacity-90 cursor-pointer">

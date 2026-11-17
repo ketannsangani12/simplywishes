@@ -42,9 +42,9 @@
     <div class="max-w-6xl mx-auto">
       <div class="text-center mb-8 sm:mb-12">
         <p class="text-sm uppercase tracking-[0.24em] text-text-muted-light dark:text-text-muted-dark">Community Forum</p>
-        <h1 class="mt-2 text-4xl sm:text-5xl font-bold text-brand-blue-light dark:text-white">Stories, videos, and voices from our community</h1>
+        <h1 class="mt-2 text-4xl sm:text-5xl font-bold text-brand-blue-light dark:text-white">Voices from our community</h1>
         <p class="mt-3 text-lg text-text-muted-light dark:text-text-muted-dark">
-          Browse real posts shared by the Simply Wishes community.
+          Browse or contribute articles and videos on our community forum.
         </p>
       </div>
 
@@ -133,7 +133,7 @@
                         </div>
                         <div>
                           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-video-file">Or, Upload from your Files</label>
-                          <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Choose a video that you own. Do not upload any copyright images such as images from movie characters or known company products or your post could be deleted without warning.</p>
+                          <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Choose a video that you own. Do not upload any copyrighted images such as images from movie characters or known company products or your post could be deleted without warning.</p>
                           <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="article-video-file" name="article_featured_video_file" type="file" />
                           <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 50MB.</p>
                           <p class="mt-1 text-sm text-red-600 hidden" data-error-for="article-video-file"></p>
@@ -181,7 +181,7 @@
                       <div class="text-center text-slate-500 dark:text-slate-400">( Or )</div>
                       <div>
                         <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1" for="video-file">Upload from your Files</label>
-                        <p class="text-xs text-slate-500 dark:text-slate-500 mb-2">Choose a video that you own. Do not upload any copyright images such as images from movie characters or known company products or your post could be deleted without warning.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-500 mb-2">Choose a video that you own. Do not upload any copyrighted images such as images from movie characters or known company products or your post could be deleted without warning.</p>
                         <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="video-file" name="video_featured_video_file" type="file" />
                         <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Maximum file size: 50MB.</p>
                         <p class="mt-1 text-sm text-red-600 hidden" data-error-for="video-file"></p>

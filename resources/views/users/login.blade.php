@@ -39,7 +39,7 @@
               <label class="text-sm font-semibold text-text-light dark:text-text-dark" for="remember">Remember Me</label>
             </div>
             <div class="text-sm text-text-muted-light dark:text-text-muted-dark">
-              Forgotten Password? reset it <a class="text-[#1f4e79] font-medium hover:underline" href="{{ route('password.forgot') }}">here</a>.
+              Forgotten Password? Reset it <a class="text-[#1f4e79] font-medium hover:underline" href="{{ route('password.forgot') }}">here</a>.
             </div>
             <div class="flex items-center gap-3 pt-2">
               <button class="px-5 py-2.5 bg-[#1f70c1] text-white text-sm font-semibold rounded-md hover:bg-[#185da0] transition-colors" type="submit">Log In</button>

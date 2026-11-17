@@ -82,7 +82,7 @@
                         </div>
                         <div>
                           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1" for="article-video-file">Or, Upload from your Files</label>
-                          <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Choose a video that you own. Do not upload any copyright images such as images from movie characters or known company products or your post could be deleted without warning.</p>
+                          <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Choose a video that you own. Do not upload any copyrighted images such as images from movie characters or known company products or your post could be deleted without warning.</p>
                           <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="article-video-file" type="file" />
                         </div>
                       </div>
@@ -137,7 +137,7 @@
                       <div class="text-center text-slate-500 dark:text-slate-400">( Or )</div>
                       <div>
                         <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1" for="video-file">Upload from your Files</label>
-                        <p class="text-xs text-slate-500 dark:text-slate-500 mb-2">Choose a video that you own. Do not upload any copyright images such as images from movie characters or known company products or your post could be deleted without warning.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-500 mb-2">Choose a video that you own. Do not upload any copyrighted images such as images from movie characters or known company products or your post could be deleted without warning.</p>
                         <input class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary dark:file:bg-primary/20 dark:file:text-white hover:file:bg-primary/20" id="video-file" type="file" />
                       </div>
                     </div>

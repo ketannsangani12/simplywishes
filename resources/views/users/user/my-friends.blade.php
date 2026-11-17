@@ -122,7 +122,7 @@
           <div class="max-w-2xl">
             <h1 class="text-3xl sm:text-4xl font-bold text-brand-blue-light dark:text-white">My Friends</h1>
             <p class="mt-2 text-text-muted-light dark:text-text-muted-dark">
-              Search users, send friend requests, and manage incoming requests from one place.
+              Search users, send friend requests, and manage incoming requests.
             </p>
           </div>
           <form method="GET" action="{{ route('my.friends') }}" class="w-full lg:max-w-xl">
@@ -186,7 +186,6 @@
             @if ($tab === 'friends')
               @if ($friends->isEmpty())
                 <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-6 py-10 text-center">
-                  <p class="text-lg font-semibold text-brand-blue-light dark:text-white">You have no friends yet</p>
                   <p class="mt-2 text-sm text-text-muted-light dark:text-text-muted-dark">
                     Search for people above to send your first request.
                   </p>
